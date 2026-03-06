@@ -30,7 +30,7 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 RATE_LIMIT_RPM = int(os.getenv("RATE_LIMIT_RPM", "60"))
 CORPUS_PATH = os.getenv(
     "CORPUS_PATH",
-    str(Path(__file__).parent.parent / "end-small-talk" / "questions-corpus.txt"),
+    str(Path(__file__).parent / "questions-corpus.txt"),
 )
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
@@ -607,7 +607,8 @@ async def get_plans():
         plans.append({
             "tier": tier_id,
             "name": info["name"],
-            "price_monthly": info["price"],
+            "price_monthly": info.get("price", None),
+            "price_per_call": info.get("price_per_call", None),
             "calls_per_day": info["calls_per_day"],
             "calls_per_day_display": f"{info['calls_per_day']:,}" if info["calls_per_day"] else "Unlimited",
         })
