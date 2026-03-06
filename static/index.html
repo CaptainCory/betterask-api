@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetterAsk — Question Intelligence API</title>
+<meta name="description" content="12 proven question archetypes that extract real signal from humans. Stop asking 'How can I help you?'">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #e0e0e8;
+    --muted: #8888aa;
+    --accent: #7c6aef;
+    --accent2: #e06cff;
+    --green: #4ade80;
+    --red: #f87171;
+    --orange: #fb923c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 0.9em; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 0.85em; line-height: 1.5; }
+  pre code { background: none; border: none; padding: 0; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero { padding: 80px 0 60px; text-align: center; }
+  .hero h1 { font-size: 3.2em; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero .tagline { font-size: 1.3em; color: var(--muted); margin-top: 12px; }
+  .hero .sub { margin-top: 24px; font-size: 1em; color: var(--muted); max-width: 600px; margin-left: auto; margin-right: auto; }
+
+  /* Badges */
+  .badges { display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap; }
+  .badge { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.85em; color: var(--muted); }
+
+  /* Sections */
+  section { padding: 48px 0; }
+  section h2 { font-size: 1.8em; margin-bottom: 24px; font-weight: 700; }
+  section h3 { font-size: 1.1em; margin-bottom: 8px; color: var(--accent); }
+
+  /* Archetypes grid */
+  .archetypes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .arch-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+  .arch-card:hover { border-color: var(--accent); }
+  .arch-card .emoji { font-size: 1.6em; }
+  .arch-card .name { font-weight: 700; margin-left: 8px; }
+  .arch-card .desc { color: var(--muted); font-size: 0.9em; margin-top: 8px; }
+  .arch-card .example { font-style: italic; font-size: 0.85em; margin-top: 8px; color: var(--text); opacity: 0.8; }
+
+  /* Endpoints */
+  .endpoint { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .method { display: inline-block; font-weight: 800; font-size: 0.8em; padding: 3px 10px; border-radius: 4px; margin-right: 8px; }
+  .method.get { background: #166534; color: var(--green); }
+  .method.post { background: #1e3a5f; color: #60a5fa; }
+  .path { font-family: monospace; font-size: 1.1em; font-weight: 600; }
+
+  /* Try it */
+  .try-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+  .try-section label { display: block; font-weight: 600; margin-bottom: 6px; margin-top: 16px; }
+  .try-section label:first-child { margin-top: 0; }
+  .try-section select, .try-section input, .try-section textarea {
+    width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 0.95em; font-family: inherit;
+  }
+  .try-section select:focus, .try-section input:focus { outline: none; border-color: var(--accent); }
+  .try-btn { margin-top: 20px; padding: 12px 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 8px; font-size: 1em; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+  .try-btn:hover { opacity: 0.9; }
+  .try-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #tryResult { margin-top: 20px; }
+
+  /* Scoring */
+  .score-section textarea { min-height: 60px; }
+  #scoreResult { margin-top: 20px; }
+
+  /* Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+  .price-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; text-align: center; position: relative; transition: border-color 0.2s, transform 0.2s; }
+  .price-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .price-card.popular { border-color: var(--accent2); }
+  .price-card.popular::before { content: "MOST POPULAR"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent2); color: #fff; font-size: 0.7em; font-weight: 800; padding: 4px 14px; border-radius: 20px; }
+  .price-card h3 { font-size: 1.3em; color: var(--text); margin-bottom: 8px; }
+  .price-card .price { font-size: 2.2em; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .price-card .price span { font-size: 0.4em; color: var(--muted); -webkit-text-fill-color: var(--muted); }
+  .price-card .limit { color: var(--muted); font-size: 0.9em; margin: 12px 0 20px; }
+  .price-card ul { list-style: none; text-align: left; margin-bottom: 24px; }
+  .price-card ul li { padding: 4px 0; font-size: 0.9em; color: var(--muted); }
+  .price-card ul li::before { content: "✓ "; color: var(--green); }
+  .price-btn { display: inline-block; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 0.95em; cursor: pointer; border: none; transition: opacity 0.2s; }
+  .price-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .price-btn.secondary { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+  .price-btn:hover { opacity: 0.85; }
+  .price-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #freeKeyResult { margin-top: 12px; font-family: monospace; font-size: 0.85em; word-break: break-all; color: var(--green); }
+
+  /* Footer */
+  footer { text-align: center; padding: 48px 0; color: var(--muted); font-size: 0.9em; border-top: 1px solid var(--border); margin-top: 48px; }
+  footer a { color: var(--accent); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; margin-bottom: 24px; }
+  .tab { padding: 10px 24px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--muted); font-weight: 600; }
+  .tab:first-child { border-radius: 8px 0 0 8px; }
+  .tab:last-child { border-radius: 0 8px 8px 0; }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>BetterAsk</h1>
+    <p class="tagline">Stop asking "How can I help you?"</p>
+    <p class="sub">Question Intelligence API powered by 607 battle-tested questions from END SMALL TALK. 12 proven archetypes that extract real signal from humans.</p>
+    <div class="badges">
+      <span class="badge">🎯 12 Archetypes</span>
+      <span class="badge">📊 6-Dimension Scoring</span>
+      <span class="badge">🔌 REST API</span>
+      <span class="badge">📖 OpenAPI Docs</span>
+    </div>
+  </div>
+
+  <!-- Archetypes -->
+  <section>
+    <h2>The 12 Archetypes</h2>
+    <div class="archetypes" id="archetypesGrid"></div>
+  </section>
+
+  <!-- API Endpoints -->
+  <section>
+    <h2>API Endpoints</h2>
+
+    <div class="endpoint">
+      <span class="method post">POST</span><span class="path">/generate</span>
+      <p style="color:var(--muted); margin-top:8px;">Generate questions using archetypes. Returns LLM prompts you pass to your model.</p>
+      <pre><code>{
+  "context": "onboarding",
+  "about": "what motivates this person at work",
+  "depth": "medium",
+  "archetype": "auto",
+  "count": 3,
+  "avoid": ["politics"]
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method post">POST</span><span class="path">/score</span>
+      <p style="color:var(--muted); margin-top:8px;">Score any question against the EST rubric (6 dimensions, weighted composite).</p>
+      <pre><code>{
+  "question": "If you repeated yesterday 365 times, where would you be?"
+}</code></pre>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span><span class="path">/archetypes</span>
+      <p style="color:var(--muted); margin-top:8px;">List all 12 archetypes with descriptions, patterns, examples, and signals.</p>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span><span class="path">/health</span>
+      <p style="color:var(--muted); margin-top:8px;">Service health check — returns status, corpus size, version.</p>
+    </div>
+
+    <p style="margin-top:16px; color:var(--muted);">Full interactive docs: <a href="/docs">/docs</a> (Swagger) · <a href="/redoc">/redoc</a> (ReDoc)</p>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing">
+    <h2>Pricing</h2>
+    <p style="color:var(--muted); margin-bottom:24px;">Start free. Scale when you're ready.</p>
+    <div class="pricing-grid">
+
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price">$0</div>
+        <div class="limit">1,000 calls/day</div>
+        <ul>
+          <li>All 12 archetypes</li>
+          <li>Generate &amp; score</li>
+          <li>No credit card required</li>
+        </ul>
+        <button class="price-btn secondary" onclick="getFreeKey(this)">Get API Key</button>
+        <div id="freeKeyResult"></div>
+      </div>
+
+      <div class="price-card">
+        <h3>Builder</h3>
+        <div class="price">$9<span>/mo</span></div>
+        <div class="limit">3,000 calls/day</div>
+        <ul>
+          <li>Everything in Free</li>
+          <li>3× more volume</li>
+          <li>Email support</li>
+        </ul>
+        <button class="price-btn primary" onclick="subscribe('builder')">Subscribe</button>
+      </div>
+
+      <div class="price-card popular">
+        <h3>Pay-as-you-go</h3>
+        <div class="price">$0.01<span>/call</span></div>
+        <div class="limit">Unlimited</div>
+        <ul>
+          <li>Everything in Builder</li>
+          <li>No daily cap</li>
+          <li>Billed monthly</li>
+        </ul>
+        <button class="price-btn primary" onclick="subscribe('metered')">Get Started</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Try It -->
+  <section>
+    <h2>Try It</h2>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('generate')">Generate</div>
+      <div class="tab" onclick="switchTab('score')">Score</div>
+    </div>
+
+    <div id="tab-generate" class="tab-content active">
+      <div class="try-section">
+        <label>Context</label>
+        <select id="tryContext">
+          <option value="rapport">rapport</option>
+          <option value="onboarding">onboarding</option>
+          <option value="discovery">discovery</option>
+          <option value="coaching">coaching</option>
+          <option value="assessment">assessment</option>
+          <option value="content">content</option>
+          <option value="interview">interview</option>
+        </select>
+        <label>About (what you want to learn)</label>
+        <input id="tryAbout" placeholder="e.g., what drives this person's career decisions" value="what makes this person feel most alive">
+        <label>Depth</label>
+        <select id="tryDepth">
+          <option value="light">light</option>
+          <option value="medium" selected>medium</option>
+          <option value="deep">deep</option>
+        </select>
+        <label>Count</label>
+        <input id="tryCount" type="number" value="3" min="1" max="10">
+        <button class="try-btn" onclick="tryGenerate()">Generate Questions</button>
+        <div id="tryResult"></div>
+      </div>
+    </div>
+
+    <div id="tab-score" class="tab-content">
+      <div class="try-section score-section">
+        <label>Question to Score</label>
+        <textarea id="scoreQuestion" placeholder="Paste any question here...">Describing it as if it's a crime, what do you do for a living?</textarea>
+        <button class="try-btn" onclick="tryScore()">Score Question</button>
+        <div id="scoreResult"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Built on <a href="https://endsmalltalknow.com" target="_blank">END SMALL TALK</a> by Cory Stout · <a href="/docs">API Docs</a></p>
+  </footer>
+
+</div>
+
+<script>
+  const API = window.location.origin;
+
+  async function getFreeKey(btn) {
+    btn.disabled = true; btn.textContent = 'Creating...';
+    try {
+      const res = await fetch(API + '/api-key/free', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('freeKeyResult').innerHTML =
+          `<div style="margin-top:12px;padding:12px;background:var(--bg);border:1px solid var(--green);border-radius:8px;cursor:pointer;" onclick="navigator.clipboard.writeText('${data.api_key}').then(()=>this.style.borderColor='var(--accent)');" title="Click to copy">${data.api_key}</div><div style="color:var(--orange);font-size:0.8em;margin-top:6px;">⚠️ Copy now — won't be shown again</div>`;
+        btn.textContent = '✓ Key Created';
+      } else {
+        btn.textContent = 'Get API Key'; alert(data.detail || 'Error creating key');
+      }
+    } catch(e) { btn.disabled = false; btn.textContent = 'Get API Key'; alert('Network error'); }
+  }
+
+  async function subscribe(tier) {
+    try {
+      const res = await fetch(API + '/subscribe', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ tier })
+      });
+      const data = await res.json();
+      if (res.ok && data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        alert(data.detail || 'Error creating checkout session');
+      }
+    } catch(e) { alert('Network error'); }
+  }
+
+  // Load archetypes
+  fetch(API + '/archetypes').then(r => r.json()).then(data => {
+    const grid = document.getElementById('archetypesGrid');
+    data.archetypes.forEach(a => {
+      grid.innerHTML += `<div class="arch-card">
+        <span class="emoji">${a.emoji}</span><span class="name">${a.name}</span>
+        <div class="desc">${a.description}</div>
+        <div class="example">"${a.example}"</div>
+      </div>`;
+    });
+  }).catch(() => {});
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (name === 'generate' ? i === 0 : i === 1)));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  async function tryGenerate() {
+    const btn = event.target; btn.disabled = true; btn.textContent = 'Generating...';
+    const res = await fetch(API + '/generate', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        context: document.getElementById('tryContext').value,
+        about: document.getElementById('tryAbout').value,
+        depth: document.getElementById('tryDepth').value,
+        count: parseInt(document.getElementById('tryCount').value),
+      })
+    });
+    btn.disabled = false; btn.textContent = 'Generate Questions';
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('tryResult').innerHTML = `<pre style="color:var(--red)">${JSON.stringify(data, null, 2)}</pre>`; return; }
+    let html = '';
+    data.questions.forEach((q, i) => {
+      html += `<div style="margin-top:16px; padding:16px; background:var(--bg); border-radius:8px; border:1px solid var(--border);">
+        <div><strong>${q.archetype_emoji} ${q.archetype_name}</strong></div>
+        ${q.example_from_corpus ? `<div style="margin-top:8px; font-style:italic; color:var(--muted);">Corpus example: "${q.example_from_corpus}"</div>` : ''}
+        <details style="margin-top:8px;"><summary style="cursor:pointer; color:var(--accent);">View LLM Prompt</summary><pre style="margin-top:8px; font-size:0.8em;">${q.generation_prompt}</pre></details>
+      </div>`;
+    });
+    document.getElementById('tryResult').innerHTML = html;
+  }
+
+  async function tryScore() {
+    const btn = event.target; btn.disabled = true; btn.textContent = 'Scoring...';
+    const res = await fetch(API + '/score', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ question: document.getElementById('scoreQuestion').value })
+    });
+    btn.disabled = false; btn.textContent = 'Score Question';
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('scoreResult').innerHTML = `<pre style="color:var(--red)">${JSON.stringify(data, null, 2)}</pre>`; return; }
+    let html = `<div style="margin-top:16px; padding:16px; background:var(--bg); border-radius:8px; border:1px solid var(--border);">
+      <div><strong>Scoring Dimensions</strong></div>`;
+    Object.entries(data.dimensions).forEach(([k, v]) => {
+      const pct = Math.round(v.weight * 100);
+      html += `<div style="margin-top:6px; color:var(--muted);"><code>${k}</code> — ${v.description} <span style="color:var(--accent);">(${pct}%)</span></div>`;
+    });
+    html += `<details style="margin-top:12px;"><summary style="cursor:pointer; color:var(--accent);">View LLM Scoring Prompt</summary><pre style="margin-top:8px; font-size:0.8em;">${data.scoring_prompt}</pre></details></div>`;
+    document.getElementById('scoreResult').innerHTML = html;
+  }
+</script>
+</body>
+</html>

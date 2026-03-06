@@ -1,0 +1,4 @@
+.env
+stripe-credentials.env
+__pycache__/
+*.pyc
