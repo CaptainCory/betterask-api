@@ -84,6 +84,21 @@ def init_db():
             )
         """)
         conn.execute("CREATE INDEX IF NOT EXISTS idx_api_keys_customer ON api_keys(stripe_customer_id)")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS questions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                question TEXT NOT NULL UNIQUE,
+                archetype TEXT,
+                source TEXT DEFAULT 'corpus',
+                tags TEXT,
+                added_at TEXT NOT NULL DEFAULT (datetime('now')),
+                score_composite REAL,
+                score_data TEXT,
+                active INTEGER NOT NULL DEFAULT 1
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_questions_archetype ON questions(archetype)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_questions_source ON questions(source)")
         conn.commit()
     logger.info("Database initialized at %s", DB_PATH)
 
@@ -319,14 +334,32 @@ _corpus: list[str] = []
 
 
 def load_corpus():
+    """Load questions from DB. If DB is empty, seed from corpus text file."""
     global _corpus
-    try:
-        text = Path(CORPUS_PATH).read_text()
-        _corpus = re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)
-        logger.info("Loaded %d questions from corpus", len(_corpus))
-    except FileNotFoundError:
-        logger.warning("Corpus not found at %s — examples will be empty", CORPUS_PATH)
-        _corpus = []
+    with get_db() as conn:
+        count = conn.execute("SELECT COUNT(*) FROM questions WHERE active=1").fetchone()[0]
+        if count == 0:
+            # Seed from text file
+            try:
+                text = Path(CORPUS_PATH).read_text()
+                file_questions = re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)
+                for q in file_questions:
+                    try:
+                        conn.execute(
+                            "INSERT OR IGNORE INTO questions (question, source) VALUES (?, 'corpus')",
+                            (q.strip(),)
+                        )
+                    except Exception:
+                        pass
+                conn.commit()
+                logger.info("Seeded %d questions from corpus file into database", len(file_questions))
+            except FileNotFoundError:
+                logger.warning("Corpus not found at %s and database is empty", CORPUS_PATH)
+
+        # Always load from DB
+        rows = conn.execute("SELECT question FROM questions WHERE active=1 ORDER BY id").fetchall()
+        _corpus = [r[0] for r in rows]
+        logger.info("Loaded %d questions from database", len(_corpus))
 
 
 # ---------------------------------------------------------------------------
@@ -775,9 +808,118 @@ async def stripe_webhook(request: Request):
 # Endpoints — Core API
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Admin — Question Management (requires admin key)
+# ---------------------------------------------------------------------------
+ADMIN_KEY = os.getenv("BETTERASK_ADMIN_KEY", "ba_admin_cory_2026")
+
+
+def require_admin(key: str | None):
+    if key != ADMIN_KEY:
+        raise HTTPException(403, "Admin access required.")
+
+
+@app.post("/admin/questions")
+async def add_questions(
+    x_admin_key: str | None = Header(None),
+    questions: list[str] = [],
+    source: str = "manual",
+    archetype: str | None = None,
+):
+    """Add one or more questions to the permanent database."""
+    require_admin(x_admin_key)
+    added = 0
+    with get_db() as conn:
+        for q in questions:
+            q = q.strip()
+            if not q:
+                continue
+            try:
+                conn.execute(
+                    "INSERT OR IGNORE INTO questions (question, archetype, source) VALUES (?, ?, ?)",
+                    (q, archetype, source),
+                )
+                added += 1
+            except Exception:
+                pass
+        conn.commit()
+    # Reload corpus
+    load_corpus()
+    return {"added": added, "total": len(_corpus)}
+
+
+@app.get("/admin/questions")
+async def list_questions(
+    x_admin_key: str | None = Header(None),
+    source: str | None = None,
+    archetype: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """List questions from the database with optional filters."""
+    require_admin(x_admin_key)
+    query = "SELECT id, question, archetype, source, score_composite, added_at FROM questions WHERE active=1"
+    params = []
+    if source:
+        query += " AND source=?"
+        params.append(source)
+    if archetype:
+        query += " AND archetype=?"
+        params.append(archetype)
+    query += " ORDER BY id DESC LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
+
+    with get_db() as conn:
+        rows = conn.execute(query, params).fetchall()
+        total = conn.execute("SELECT COUNT(*) FROM questions WHERE active=1").fetchone()[0]
+
+    return {
+        "questions": [dict(r) for r in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@app.delete("/admin/questions/{question_id}")
+async def deactivate_question(question_id: int, x_admin_key: str | None = Header(None)):
+    """Soft-delete a question (set active=0)."""
+    require_admin(x_admin_key)
+    with get_db() as conn:
+        conn.execute("UPDATE questions SET active=0 WHERE id=?", (question_id,))
+        conn.commit()
+    load_corpus()
+    return {"deactivated": question_id, "total": len(_corpus)}
+
+
+@app.post("/admin/questions/import")
+async def import_questions_file(
+    x_admin_key: str | None = Header(None),
+    text: str = "",
+    source: str = "import",
+):
+    """Import questions from numbered text (1. Question\\n2. Question...)."""
+    require_admin(x_admin_key)
+    imported = re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)
+    added = 0
+    with get_db() as conn:
+        for q in imported:
+            try:
+                conn.execute(
+                    "INSERT OR IGNORE INTO questions (question, source) VALUES (?, ?)",
+                    (q.strip(), source),
+                )
+                added += 1
+            except Exception:
+                pass
+        conn.commit()
+    load_corpus()
+    return {"parsed": len(imported), "added": added, "total": len(_corpus)}
+
+
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "corpus_size": len(_corpus), "version": "1.1.0"}
+    return {"status": "healthy", "corpus_size": len(_corpus), "version": "1.2.0"}
 
 
 @app.get("/archetypes", response_model=ArchetypeResponse)
