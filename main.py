@@ -349,10 +349,15 @@ def check_rate_limit(client_ip: str):
 # API Key auth helper
 # ---------------------------------------------------------------------------
 
+DEMO_API_KEY = "ba_demo_public_readonly"
+
 def validate_api_key(x_api_key: str | None) -> dict:
     """Validate API key and check tier rate limit. Returns the key record."""
     if not x_api_key:
         raise HTTPException(401, detail="Missing X-API-Key header. Get one at /api-key/free or subscribe at /plans.")
+    # Built-in demo key for the landing page Try It section (free-tier limits)
+    if x_api_key == DEMO_API_KEY:
+        return {"key": DEMO_API_KEY, "tier": "free", "calls_today": 0, "calls_date": "", "active": 1}
     record = get_api_key_record(x_api_key)
     if not record:
         raise HTTPException(401, detail="Invalid or deactivated API key.")

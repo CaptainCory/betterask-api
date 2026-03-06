@@ -282,6 +282,7 @@
 
 <script>
   const API = 'https://betterask-api-production.up.railway.app';
+  const DEMO_KEY = 'ba_demo_public_readonly';
 
   async function getFreeKey(btn) {
     btn.disabled = true; btn.textContent = 'Creating...';
@@ -334,7 +335,7 @@
   async function tryGenerate() {
     const btn = event.target; btn.disabled = true; btn.textContent = 'Generating...';
     const res = await fetch(API + '/generate', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-API-Key': DEMO_KEY},
       body: JSON.stringify({
         context: document.getElementById('tryContext').value,
         about: document.getElementById('tryAbout').value,
@@ -359,7 +360,7 @@
   async function tryScore() {
     const btn = event.target; btn.disabled = true; btn.textContent = 'Scoring...';
     const res = await fetch(API + '/score', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-API-Key': DEMO_KEY},
       body: JSON.stringify({ question: document.getElementById('scoreQuestion').value })
     });
     btn.disabled = false; btn.textContent = 'Score Question';
