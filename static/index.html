@@ -29,10 +29,17 @@
   .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
 
   /* Hero */
-  .hero { padding: 80px 0 60px; text-align: center; }
-  .hero h1 { font-size: 3.2em; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .hero .tagline { font-size: 1.3em; color: var(--muted); margin-top: 12px; }
+  .hero { padding: 100px 0 70px; text-align: center; }
+  .hero .brand { font-size: 0.95em; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); margin-bottom: 20px; }
+  .hero h1 { font-size: 3.4em; font-weight: 800; line-height: 1.15; color: var(--text); max-width: 720px; margin: 0 auto; }
+  .hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero .tagline { font-size: 1.2em; color: var(--muted); margin-top: 20px; max-width: 560px; margin-left: auto; margin-right: auto; }
   .hero .sub { margin-top: 24px; font-size: 1em; color: var(--muted); max-width: 600px; margin-left: auto; margin-right: auto; }
+  .hero-cta { display: flex; gap: 16px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+  .hero-cta a { display: inline-block; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 1.05em; transition: opacity 0.2s, transform 0.2s; }
+  .hero-cta a:hover { opacity: 0.9; transform: translateY(-1px); text-decoration: none; }
+  .hero-cta .cta-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .hero-cta .cta-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
 
   /* Badges */
   .badges { display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap; }
@@ -117,9 +124,13 @@
 
   <!-- Hero -->
   <div class="hero">
-    <h1>BetterAsk</h1>
-    <p class="tagline">Stop asking "How can I help you?"</p>
-    <p class="sub">Question Intelligence API powered by 607 battle-tested questions from END SMALL TALK. 12 proven archetypes that extract real signal from humans.</p>
+    <div class="brand">BetterAsk</div>
+    <h1>Your AI asks bad questions.<br><em>Fix that with one API call.</em></h1>
+    <p class="tagline">607 battle-tested questions. 12 proven archetypes. One API that teaches your product to ask questions humans actually want to answer.</p>
+    <div class="hero-cta">
+      <a href="#try" class="cta-primary">Try It Live →</a>
+      <a href="#pricing" class="cta-secondary">Get Free API Key</a>
+    </div>
     <div class="badges">
       <span class="badge">🎯 12 Archetypes</span>
       <span class="badge">📊 6-Dimension Scoring</span>
@@ -219,7 +230,7 @@
   </section>
 
   <!-- Try It -->
-  <section>
+  <section id="try">
     <h2>Try It</h2>
     <div class="tabs">
       <div class="tab active" onclick="switchTab('generate')">Generate</div>
