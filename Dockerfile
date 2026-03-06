@@ -9,7 +9,7 @@ COPY . .
 
 ENV LOG_LEVEL=INFO \
     RATE_LIMIT_RPM=60 \
-    CORPUS_PATH=/app/data/questions-corpus.txt
+    CORPUS_PATH=/app/questions-corpus.txt
 
 EXPOSE 8000
 
