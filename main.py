@@ -925,9 +925,26 @@ async def import_questions_file(
     return {"parsed": len(imported), "added": added, "total": len(_corpus)}
 
 
+@app.get("/admin/stats")
+async def admin_stats(x_admin_key: str | None = Header(None)):
+    """Usage stats: total keys, calls today, all-time estimate."""
+    require_admin(x_admin_key)
+    with get_db() as conn:
+        total_keys = conn.execute("SELECT COUNT(*) FROM api_keys WHERE active=1").fetchone()[0]
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        calls_today = conn.execute("SELECT SUM(calls_today) FROM api_keys WHERE calls_date=?", (today,)).fetchone()[0] or 0
+        keys = conn.execute("SELECT key, tier, calls_today, calls_date, created_at FROM api_keys WHERE active=1 ORDER BY created_at DESC").fetchall()
+    return {
+        "total_keys": total_keys,
+        "calls_today": calls_today,
+        "corpus_size": len(_corpus),
+        "keys": [dict(r) for r in keys],
+    }
+
+
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "corpus_size": len(_corpus), "version": "1.2.0"}
+    return {"status": "healthy", "corpus_size": len(_corpus), "version": "1.2.1"}
 
 
 @app.get("/archetypes", response_model=ArchetypeResponse)
