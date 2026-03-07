@@ -7,9 +7,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN mkdir -p /data
+
 ENV LOG_LEVEL=INFO \
     RATE_LIMIT_RPM=60 \
-    CORPUS_PATH=/app/questions-corpus.txt
+    CORPUS_PATH=/app/questions-corpus.txt \
+    DB_PATH=/data/betterask.db
 
 EXPOSE 8000
 
