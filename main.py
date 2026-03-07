@@ -333,28 +333,32 @@ SCORING_DIMENSIONS = {
 _corpus: list[str] = []
 
 
+EXTRAS_PATH = os.getenv("EXTRAS_PATH", str(Path(__file__).parent / "seed-extras.txt"))
+
+
 def load_corpus():
-    """Load questions from DB. If DB is empty, seed from corpus text file."""
+    """Load questions from DB. If DB is empty, seed from corpus + extras files."""
     global _corpus
     with get_db() as conn:
         count = conn.execute("SELECT COUNT(*) FROM questions WHERE active=1").fetchone()[0]
         if count == 0:
-            # Seed from text file
-            try:
-                text = Path(CORPUS_PATH).read_text()
-                file_questions = re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)
-                for q in file_questions:
-                    try:
-                        conn.execute(
-                            "INSERT OR IGNORE INTO questions (question, source) VALUES (?, 'corpus')",
-                            (q.strip(),)
-                        )
-                    except Exception:
-                        pass
-                conn.commit()
-                logger.info("Seeded %d questions from corpus file into database", len(file_questions))
-            except FileNotFoundError:
-                logger.warning("Corpus not found at %s and database is empty", CORPUS_PATH)
+            # Seed from corpus text file
+            for path, source in [(CORPUS_PATH, "corpus"), (EXTRAS_PATH, "manual")]:
+                try:
+                    text = Path(path).read_text()
+                    file_questions = re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)
+                    for q in file_questions:
+                        try:
+                            conn.execute(
+                                "INSERT OR IGNORE INTO questions (question, source) VALUES (?, ?)",
+                                (q.strip(), source),
+                            )
+                        except Exception:
+                            pass
+                    logger.info("Seeded %d questions from %s", len(file_questions), path)
+                except FileNotFoundError:
+                    logger.info("Seed file not found: %s (skipping)", path)
+            conn.commit()
 
         # Always load from DB
         rows = conn.execute("SELECT question FROM questions WHERE active=1 ORDER BY id").fetchall()
