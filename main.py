@@ -819,25 +819,29 @@ def require_admin(key: str | None):
         raise HTTPException(403, "Admin access required.")
 
 
+class AddQuestionsRequest(BaseModel):
+    questions: list[str]
+    source: str = "manual"
+    archetype: str | None = None
+
+
 @app.post("/admin/questions")
 async def add_questions(
+    req: AddQuestionsRequest,
     x_admin_key: str | None = Header(None),
-    questions: list[str] = [],
-    source: str = "manual",
-    archetype: str | None = None,
 ):
     """Add one or more questions to the permanent database."""
     require_admin(x_admin_key)
     added = 0
     with get_db() as conn:
-        for q in questions:
+        for q in req.questions:
             q = q.strip()
             if not q:
                 continue
             try:
                 conn.execute(
                     "INSERT OR IGNORE INTO questions (question, archetype, source) VALUES (?, ?, ?)",
-                    (q, archetype, source),
+                    (q, req.archetype, req.source),
                 )
                 added += 1
             except Exception:
@@ -892,22 +896,26 @@ async def deactivate_question(question_id: int, x_admin_key: str | None = Header
     return {"deactivated": question_id, "total": len(_corpus)}
 
 
+class ImportQuestionsRequest(BaseModel):
+    text: str
+    source: str = "import"
+
+
 @app.post("/admin/questions/import")
 async def import_questions_file(
+    req: ImportQuestionsRequest,
     x_admin_key: str | None = Header(None),
-    text: str = "",
-    source: str = "import",
 ):
     """Import questions from numbered text (1. Question\\n2. Question...)."""
     require_admin(x_admin_key)
-    imported = re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)
+    imported = re.findall(r"^\d+\.\s+(.+)$", req.text, re.MULTILINE)
     added = 0
     with get_db() as conn:
         for q in imported:
             try:
                 conn.execute(
                     "INSERT OR IGNORE INTO questions (question, source) VALUES (?, ?)",
-                    (q.strip(), source),
+                    (q.strip(), req.source),
                 )
                 added += 1
             except Exception:
