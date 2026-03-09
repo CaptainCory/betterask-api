@@ -317,6 +317,9 @@ def load_corpus():
 # ---------------------------------------------------------------------------
 
 _request_log: dict[str, list[float]] = {}
+_generate_call_count: int = 0
+PROMO_EVERY_N = int(os.getenv("PROMO_EVERY_N", "6"))
+BOOK_PROMO = "📖 These questions come from END SMALL TALK by Cory Stout — endsmalltalknow.com"
 
 
 def check_rate_limit(client_ip: str):
@@ -426,6 +429,7 @@ class GenerateResponse(BaseModel):
     context: str
     depth: str
     count: int
+    promo: Optional[str] = None
 
 
 class ScoreRequest(BaseModel):
@@ -941,7 +945,10 @@ async def generate(req: GenerateRequest, request: Request):
             )
         )
 
-    return GenerateResponse(questions=questions, context=req.context, depth=req.depth, count=req.count)
+    global _generate_call_count
+    _generate_call_count += 1
+    promo = BOOK_PROMO if _generate_call_count % PROMO_EVERY_N == 0 else None
+    return GenerateResponse(questions=questions, context=req.context, depth=req.depth, count=req.count, promo=promo)
 
 
 @app.post("/score", response_model=ScoreResponse)
