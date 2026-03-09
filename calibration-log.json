@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "description": "Cory's question scores feed back into BetterAsk dimension weights",
+  "dimensions": {
+    "depth_potential": { "weight": 0.25, "label": "Depth Potential" },
+    "emotional_resonance": { "weight": 0.20, "label": "Emotional Resonance" },
+    "specificity": { "weight": 0.20, "label": "Specificity" },
+    "novelty": { "weight": 0.15, "label": "Novelty" },
+    "universality": { "weight": 0.10, "label": "Universality" },
+    "actionability": { "weight": 0.10, "label": "Actionability" }
+  },
+  "calibration_entries": [
+    {
+      "date": "2026-03-06",
+      "session": 1,
+      "entries": [
+        {"q": "If someone followed you around for a week without you knowing, what would surprise them most about your routine?", "archetype": "mirror", "score": 3, "feedback": "too generic"},
+        {"q": "Would you rather be the most interesting person at every party but nobody remembers you the next day, or be forgettable in person but everyone talks about you when you're gone?", "archetype": "false_binary", "score": 3, "feedback": "too clever, thought experiment not conversation starter"},
+        {"q": "What's something you stopped doing that you secretly miss?", "archetype": "vulnerability_door", "score": 3, "feedback": "vague"},
+        {"q": "What's the most expensive thing you own that you never use?", "archetype": "time_machine", "score": 6, "feedback": "specific + slightly uncomfortable = traction"},
+        {"q": "What's the last lie you told that you got away with?", "archetype": "specificity_trap", "score": 4, "feedback": "too hard to pull from open memory"},
+        {"q": "What's something everyone pretends to enjoy but secretly hates?", "archetype": "provocation", "score": 6, "feedback": "shared grievances spark conversation"},
+        {"q": "What's the most ridiculous hill you'd die on at a dinner party?", "archetype": "absurd_angle", "score": 2, "feedback": "has no soul, Reddit prompt not real conversation"},
+        {"q": "When's the last time you changed your mind about someone?", "archetype": "depth_charge", "score": 3, "feedback": "too hard to recall with open memory"},
+        {"q": "What's a weird thing that immediately makes you trust someone?", "archetype": "magnet", "score": 2, "feedback": "no direction, needs more complexity"},
+        {"q": "What's a personality trait you find attractive that you'd never admit out loud at work?", "archetype": "provocation", "score": null, "feedback": "unscored"}
+      ],
+      "avg_score": 3.6,
+      "lessons_learned": [
+        "Specificity beats openness — concrete objects/numbers > abstract feelings",
+        "Questions requiring memory recall ('last time you...') score low — too much mental search",
+        "Shared grievance/observation questions score higher than personal introspection",
+        "Slight discomfort is good, deep vulnerability from a stranger is not",
+        "Reddit-style prompts ('hill you'd die on') feel performative, not connective",
+        "The bar test is real: would you actually ask this to someone you just met?"
+      ]
+    }
+  ],
+  "weight_history": [
+    { "date": "2026-03-06", "weights": [0.25, 0.20, 0.20, 0.15, 0.10, 0.10], "note": "Initial defaults" }
+  ]
+}

@@ -903,8 +903,10 @@ async def get_archetypes():
 
 
 @app.post("/generate", response_model=GenerateResponse)
-async def generate(req: GenerateRequest, x_api_key: str | None = Header(None)):
-    record = validate_api_key(x_api_key)
+async def generate(req: GenerateRequest, request: Request):
+    # Free for everyone — no API key required
+    client = request.client.host if request.client else "unknown"
+    check_rate_limit(client)
 
     if req.archetype != "auto" and req.archetype not in ARCHETYPE_MAP:
         raise HTTPException(400, f"Unknown archetype: {req.archetype}. Valid: {list(ARCHETYPE_MAP.keys())}")
@@ -943,8 +945,10 @@ async def generate(req: GenerateRequest, x_api_key: str | None = Header(None)):
 
 
 @app.post("/score", response_model=ScoreResponse)
-async def score(req: ScoreRequest, x_api_key: str | None = Header(None)):
-    record = validate_api_key(x_api_key)
+async def score(req: ScoreRequest, request: Request):
+    # Free for everyone — no API key required
+    client = request.client.host if request.client else "unknown"
+    check_rate_limit(client)
     prompt = build_scoring_prompt(req.question)
     return ScoreResponse(question=req.question, scoring_prompt=prompt, dimensions=SCORING_DIMENSIONS)
 

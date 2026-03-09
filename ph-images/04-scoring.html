@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0a0a0f; color:#e0e0e0; font-family:-apple-system,system-ui,sans-serif; padding:60px; width:1270px; }
+h1 { font-size:36px; text-align:center; margin-bottom:8px; color:#fff; }
+.sub { text-align:center; color:#888; font-size:16px; margin-bottom:48px; }
+.container { display:flex; gap:40px; justify-content:center; }
+.question-box { background:#14141f; border:1px solid #2a2a3a; border-radius:16px; padding:36px; flex:1; max-width:500px; }
+.label { color:#c084fc; font-size:12px; text-transform:uppercase; letter-spacing:2px; margin-bottom:12px; }
+.question { font-size:24px; color:#fff; line-height:1.4; margin-bottom:24px; font-weight:600; }
+.score-box { background:#14141f; border:1px solid #2a2a3a; border-radius:16px; padding:36px; flex:1; max-width:500px; }
+.dim { display:flex; align-items:center; margin-bottom:16px; }
+.dim-name { width:160px; font-size:14px; color:#aaa; }
+.dim-bar-bg { flex:1; height:24px; background:#1a1a2e; border-radius:12px; overflow:hidden; position:relative; }
+.dim-bar { height:100%; border-radius:12px; }
+.dim-score { width:50px; text-align:right; font-size:16px; font-weight:700; color:#fff; margin-left:12px; }
+.composite { text-align:center; margin-top:24px; padding-top:24px; border-top:1px solid #2a2a3a; }
+.composite-score { font-size:64px; font-weight:800; color:#22c55e; }
+.composite-label { font-size:14px; color:#888; margin-top:4px; }
+.band { display:inline-block; background:#22c55e22; color:#22c55e; padding:6px 16px; border-radius:20px; font-size:14px; font-weight:600; margin-top:8px; }
+</style>
+</head>
+<body>
+<h1>POST /score</h1>
+<p class="sub">6-dimension quality scoring for any question</p>
+<div class="container">
+  <div class="question-box">
+    <div class="label">Input Question</div>
+    <div class="question">"What's the most expensive thing you own that you never use?"</div>
+    <div style="color:#666;font-size:13px;line-height:1.6;">
+      <strong style="color:#aaa;">Archetype detected:</strong> Specificity Trap<br>
+      <strong style="color:#aaa;">Improvement:</strong> Add a time constraint — "...in the last year" forces recency and sharper recall
+    </div>
+  </div>
+  <div class="score-box">
+    <div class="label">Quality Scores</div>
+    <div class="dim">
+      <div class="dim-name">Surprise (25%)</div>
+      <div class="dim-bar-bg"><div class="dim-bar" style="width:70%;background:linear-gradient(90deg,#c084fc,#a855f7);"></div></div>
+      <div class="dim-score">7</div>
+    </div>
+    <div class="dim">
+      <div class="dim-name">Specificity (20%)</div>
+      <div class="dim-bar-bg"><div class="dim-bar" style="width:80%;background:linear-gradient(90deg,#c084fc,#a855f7);"></div></div>
+      <div class="dim-score">8</div>
+    </div>
+    <div class="dim">
+      <div class="dim-name">Conversation Fuel (20%)</div>
+      <div class="dim-bar-bg"><div class="dim-bar" style="width:80%;background:linear-gradient(90deg,#c084fc,#a855f7);"></div></div>
+      <div class="dim-score">8</div>
+    </div>
+    <div class="dim">
+      <div class="dim-name">Self-Revelation (15%)</div>
+      <div class="dim-bar-bg"><div class="dim-bar" style="width:70%;background:linear-gradient(90deg,#c084fc,#a855f7);"></div></div>
+      <div class="dim-score">7</div>
+    </div>
+    <div class="dim">
+      <div class="dim-name">Fun Factor (10%)</div>
+      <div class="dim-bar-bg"><div class="dim-bar" style="width:60%;background:linear-gradient(90deg,#c084fc,#a855f7);"></div></div>
+      <div class="dim-score">6</div>
+    </div>
+    <div class="dim">
+      <div class="dim-name">Universality (10%)</div>
+      <div class="dim-bar-bg"><div class="dim-bar" style="width:90%;background:linear-gradient(90deg,#c084fc,#a855f7);"></div></div>
+      <div class="dim-score">9</div>
+    </div>
+    <div class="composite">
+      <div class="composite-score">7.4</div>
+      <div class="composite-label">Weighted Composite</div>
+      <div class="band">✓ Good — needs a twist to be publish-worthy</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
