@@ -408,9 +408,9 @@ async def rate_limit_middleware(request: Request, call_next):
 # ---------------------------------------------------------------------------
 
 class GenerateRequest(BaseModel):
-    context: str = Field("rapport", description="Use case context", enum=CONTEXTS)
+    context: str = Field("rapport", description=f"Use case context. Valid: {CONTEXTS}")
     about: str = Field(..., description="What you're trying to learn about", min_length=1, max_length=500)
-    depth: str = Field("medium", description="Question depth", enum=DEPTHS)
+    depth: str = Field("medium", description=f"Question depth. Valid: {DEPTHS}")
     archetype: str = Field("auto", description="Specific archetype or 'auto'")
     count: int = Field(3, ge=1, le=10, description="Number of questions to generate")
     avoid: list[str] = Field(default_factory=list, description="Topics to avoid")
@@ -912,43 +912,49 @@ async def generate(req: GenerateRequest, request: Request):
     client = request.client.host if request.client else "unknown"
     check_rate_limit(client)
 
-    if req.archetype != "auto" and req.archetype not in ARCHETYPE_MAP:
-        raise HTTPException(400, f"Unknown archetype: {req.archetype}. Valid: {list(ARCHETYPE_MAP.keys())}")
-    if req.context not in CONTEXTS:
-        raise HTTPException(400, f"Unknown context: {req.context}. Valid: {CONTEXTS}")
+    try:
+        if req.archetype != "auto" and req.archetype not in ARCHETYPE_MAP:
+            raise HTTPException(400, f"Unknown archetype: {req.archetype}. Valid: {list(ARCHETYPE_MAP.keys())}")
+        if req.context not in CONTEXTS:
+            raise HTTPException(400, f"Unknown context: {req.context}. Valid: {CONTEXTS}")
 
-    questions = []
-    used_archetypes = set()
-    for _ in range(req.count):
-        arch = req.archetype if req.archetype != "auto" else select_archetype(req.context)
-        if req.archetype == "auto" and req.count <= len(ARCHETYPE_MAP):
-            attempts = 0
-            while arch in used_archetypes and attempts < 10:
-                arch = select_archetype(req.context)
-                attempts += 1
-        used_archetypes.add(arch)
+        questions = []
+        used_archetypes = set()
+        for _ in range(req.count):
+            arch = req.archetype if req.archetype != "auto" else select_archetype(req.context)
+            if req.archetype == "auto" and req.count <= len(ARCHETYPE_MAP):
+                attempts = 0
+                while arch in used_archetypes and attempts < 10:
+                    arch = select_archetype(req.context)
+                    attempts += 1
+            used_archetypes.add(arch)
 
-        prompt = build_generation_prompt(req.context, req.about, req.depth, arch, req.avoid)
-        info = ARCHETYPE_MAP[arch]
+            prompt = build_generation_prompt(req.context, req.about, req.depth, arch, req.avoid)
+            info = ARCHETYPE_MAP[arch]
 
-        example = None
-        if _corpus:
-            example = random.choice(_corpus)
+            example = None
+            if _corpus:
+                example = random.choice(_corpus)
 
-        questions.append(
-            GeneratedQuestion(
-                archetype=arch,
-                archetype_name=info["name"],
-                archetype_emoji=info["emoji"],
-                generation_prompt=prompt,
-                example_from_corpus=example,
+            questions.append(
+                GeneratedQuestion(
+                    archetype=arch,
+                    archetype_name=info["name"],
+                    archetype_emoji=info["emoji"],
+                    generation_prompt=prompt,
+                    example_from_corpus=example,
+                )
             )
-        )
 
-    global _generate_call_count
-    _generate_call_count += 1
-    promo = BOOK_PROMO if _generate_call_count % PROMO_EVERY_N == 0 else None
-    return GenerateResponse(questions=questions, context=req.context, depth=req.depth, count=req.count, promo=promo)
+        global _generate_call_count
+        _generate_call_count += 1
+        promo = BOOK_PROMO if _generate_call_count % PROMO_EVERY_N == 0 else None
+        return GenerateResponse(questions=questions, context=req.context, depth=req.depth, count=req.count, promo=promo)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Generate endpoint error")
+        raise HTTPException(500, f"Generation failed: {str(e)}")
 
 
 @app.post("/score", response_model=ScoreResponse)
