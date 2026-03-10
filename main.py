@@ -466,18 +466,12 @@ def select_archetype(context: str) -> str:
 
 
 ARCHETYPE_PROMPTS = {
-    "reframe": "Generate a question that reframes '{about}' through an unexpected metaphor. The question should make the answerer see something familiar in a completely new way.",
-    "specificity_trap": "Generate a question that asks for a weirdly specific number related to '{about}'. The precision should force honesty and reveal personality.",
-    "false_binary": "Generate a 'Would you rather' style question about '{about}' where both options are genuinely appealing but choosing one reveals something deep about values.",
-    "mirror": "Generate a question about '{about}' that makes the answerer see themselves from the outside.",
-    "thought_experiment": "Generate an absurd but engaging hypothetical scenario related to '{about}'. It should seem playful but actually reveal how someone thinks.",
-    "time_machine": "Generate a question that uses time or memory as a lens on '{about}'.",
-    "absurd_escalation": "Generate a question about '{about}' that starts completely normal but escalates to something absurdly meaningful.",
-    "vulnerability_door": "Generate a gentle, quiet question about '{about}' that opens a door to real emotional territory.",
-    "identity_sort": "Generate a question that forces self-categorization related to '{about}'. Use unexpected categories.",
-    "explain_it": "Generate a question that asks someone to explain something common related to '{about}' that most people can't actually articulate well.",
-    "world_builder": "Generate a question about '{about}' that invites the answerer to design their ideal version of something.",
-    "chain": "Generate a series of 3-4 quick questions about '{about}' that build on each other with rhythm.",
+    "the_specific": "Generate a question that asks for a weirdly specific object, number, or detail related to '{about}'. The precision should force honesty and trigger instant recall.",
+    "the_shared_nerve": "Generate a question about '{about}' that surfaces something everyone secretly thinks but nobody says out loud. Instant bonding through shared frustration or guilty pleasure.",
+    "the_fork": "Generate a 'Would you rather' style question about '{about}' where both options are genuinely appealing but choosing one reveals something deep about values.",
+    "the_flip": "Generate a question that reframes '{about}' through an unexpected angle or metaphor. Take something familiar and make the answerer see it in a completely new way.",
+    "the_dare": "Generate a slightly uncomfortable question about '{about}' that requires a tiny act of courage to answer honestly. Not therapy — just one degree past the comfort zone.",
+    "the_build": "Generate a question about '{about}' that invites the answerer to design or create their ideal version of something. What they include reveals what they're missing.",
 }
 
 
