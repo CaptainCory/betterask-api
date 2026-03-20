@@ -1022,6 +1022,75 @@ function copyCode() {
 }
 </script>
 
+<!-- ═══ FLOATING QUESTION MARKS ═══ -->
+<div id="floating-questions" style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;"></div>
+
+<style>
+    .float-q {
+        position: absolute;
+        font-size: 1.5rem;
+        opacity: 0.06;
+        animation: floatUp linear infinite;
+        pointer-events: none;
+        user-select: none;
+    }
+    .float-q.bright {
+        opacity: 0.12;
+        font-size: 2rem;
+    }
+    @keyframes floatUp {
+        0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: var(--peak-opacity, 0.06);
+        }
+        90% {
+            opacity: var(--peak-opacity, 0.06);
+        }
+        100% {
+            transform: translateY(-100px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    @keyframes sway {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(30px); }
+    }
+</style>
+
+<script>
+(function() {
+    const container = document.getElementById('floating-questions');
+    const marks = ['?', '❓', '❔', '⁉️', '?', '?', '?'];
+    const colors = ['rgba(120,200,255,0.5)', 'rgba(167,139,250,0.4)', 'rgba(74,222,128,0.3)', 'rgba(251,191,36,0.3)', 'rgba(248,113,113,0.3)'];
+    
+    function spawnMark() {
+        const el = document.createElement('span');
+        el.className = 'float-q' + (Math.random() > 0.85 ? ' bright' : '');
+        el.textContent = marks[Math.floor(Math.random() * marks.length)];
+        el.style.left = (Math.random() * 100) + '%';
+        el.style.color = colors[Math.floor(Math.random() * colors.length)];
+        el.style.animationDuration = (15 + Math.random() * 25) + 's';
+        el.style.animationDelay = (Math.random() * 2) + 's';
+        el.style.setProperty('--peak-opacity', Math.random() > 0.85 ? '0.12' : '0.06');
+        el.style.filter = 'blur(' + (Math.random() > 0.7 ? '1px' : '0px') + ')';
+        container.appendChild(el);
+        
+        setTimeout(() => el.remove(), 42000);
+    }
+    
+    // Initial burst
+    for (let i = 0; i < 12; i++) {
+        setTimeout(spawnMark, i * 800);
+    }
+    
+    // Steady stream
+    setInterval(spawnMark, 3000);
+})();
+</script>
+
 <!-- ═══ FLOATING BOOK LINK ═══ -->
 <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" id="floating-book" style="
     position: fixed;
