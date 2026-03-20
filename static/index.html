@@ -9,20 +9,22 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0A0A0F;
-            --bg-elevated: #12121A;
-            --bg-card: #16161F;
-            --border: rgba(255, 255, 255, 0.06);
-            --border-active: rgba(120, 200, 255, 0.25);
-            --text: #E8E8F0;
-            --text-dim: rgba(232, 232, 240, 0.45);
-            --text-muted: rgba(232, 232, 240, 0.25);
-            --accent: #78C8FF;
-            --accent-dim: rgba(120, 200, 255, 0.15);
-            --green: #4ADE80;
-            --amber: #FBBF24;
-            --red: #F87171;
-            --purple: #A78BFA;
+            --bg: #1A1A2E;
+            --bg-elevated: #222240;
+            --bg-card: #2A2A4A;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(0, 172, 230, 0.35);
+            --text: #F5F5F5;
+            --text-dim: rgba(245, 245, 245, 0.55);
+            --text-muted: rgba(245, 245, 245, 0.3);
+            --accent: #00ACE6;
+            --accent-dim: rgba(0, 172, 230, 0.15);
+            --green: #00ACE6;
+            --amber: #FF8C42;
+            --red: #FF8C42;
+            --purple: #00ACE6;
+            --cerulean: #00ACE6;
+            --tangerine: #FF8C42;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,8 +44,8 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(120, 200, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(120, 200, 255, 0.03) 1px, transparent 1px);
+                linear-gradient(rgba(0, 172, 230, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 172, 230, 0.04) 1px, transparent 1px);
             background-size: 60px 60px;
             pointer-events: none;
             z-index: 0;
@@ -62,7 +64,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(10, 10, 15, 0.85);
+            background: rgba(26, 26, 46, 0.9);
         }
 
         .logo {
@@ -106,7 +108,7 @@
             color: var(--accent);
             background: var(--accent-dim);
             padding: 0.4rem 1.2rem;
-            border: 1px solid rgba(120, 200, 255, 0.15);
+            border: 1px solid rgba(0, 172, 230, 0.15);
             margin-bottom: 2.5rem;
         }
 
@@ -447,7 +449,7 @@
             font-family: 'Space Grotesk', sans-serif;
             font-size: 3rem;
             font-weight: 700;
-            color: rgba(120, 200, 255, 0.1);
+            color: rgba(0, 172, 230, 0.1);
             line-height: 1;
             margin-bottom: 1rem;
         }
@@ -1028,35 +1030,32 @@ function copyCode() {
 <style>
     .float-q {
         position: absolute;
-        font-size: 1.5rem;
-        opacity: 0.06;
+        font-size: 2rem;
+        opacity: 0;
         animation: floatUp linear infinite;
         pointer-events: none;
         user-select: none;
+        text-shadow: 0 0 10px currentColor;
     }
     .float-q.bright {
-        opacity: 0.12;
-        font-size: 2rem;
+        font-size: 2.8rem;
+        text-shadow: 0 0 20px currentColor;
     }
     @keyframes floatUp {
         0% {
-            transform: translateY(100vh) rotate(0deg);
+            transform: translateY(100vh) rotate(0deg) scale(0.8);
             opacity: 0;
         }
-        10% {
-            opacity: var(--peak-opacity, 0.06);
+        8% {
+            opacity: var(--peak-opacity, 0.15);
         }
-        90% {
-            opacity: var(--peak-opacity, 0.06);
+        85% {
+            opacity: var(--peak-opacity, 0.15);
         }
         100% {
-            transform: translateY(-100px) rotate(360deg);
+            transform: translateY(-120px) rotate(360deg) scale(1.1);
             opacity: 0;
         }
-    }
-    @keyframes sway {
-        0%, 100% { transform: translateX(0); }
-        50% { transform: translateX(30px); }
     }
 </style>
 
@@ -1064,7 +1063,7 @@ function copyCode() {
 (function() {
     const container = document.getElementById('floating-questions');
     const marks = ['?', '❓', '❔', '⁉️', '?', '?', '?'];
-    const colors = ['rgba(120,200,255,0.5)', 'rgba(167,139,250,0.4)', 'rgba(74,222,128,0.3)', 'rgba(251,191,36,0.3)', 'rgba(248,113,113,0.3)'];
+    const colors = ['rgba(0,172,230,0.7)', 'rgba(255,140,66,0.6)', 'rgba(245,245,245,0.4)', 'rgba(0,172,230,0.5)', 'rgba(255,140,66,0.4)'];
     
     function spawnMark() {
         const el = document.createElement('span');
@@ -1074,7 +1073,7 @@ function copyCode() {
         el.style.color = colors[Math.floor(Math.random() * colors.length)];
         el.style.animationDuration = (15 + Math.random() * 25) + 's';
         el.style.animationDelay = (Math.random() * 2) + 's';
-        el.style.setProperty('--peak-opacity', Math.random() > 0.85 ? '0.12' : '0.06');
+        el.style.setProperty('--peak-opacity', Math.random() > 0.8 ? '0.25' : '0.15');
         el.style.filter = 'blur(' + (Math.random() > 0.7 ? '1px' : '0px') + ')';
         container.appendChild(el);
         
@@ -1123,7 +1122,7 @@ function copyCode() {
     #floating-book:hover {
         border-color: var(--accent);
         transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(120, 200, 255, 0.15);
+        box-shadow: 0 6px 25px rgba(0, 172, 230, 0.15);
     }
     @media (max-width: 600px) {
         #floating-book {
