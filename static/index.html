@@ -1023,5 +1023,49 @@ function copyCode() {
 }
 </script>
 
+<!-- ═══ FLOATING BOOK LINK ═══ -->
+<a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" id="floating-book" style="
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    padding: 0.7rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    z-index: 999;
+    backdrop-filter: blur(20px);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    max-width: 320px;
+">
+    <span style="font-size: 1.8rem; line-height: 1;">📕</span>
+    <div>
+        <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent);">END SMALL TALK</div>
+        <div style="color: var(--text-dim); font-size: 0.7rem;">The book behind the engine — 607 questions on Amazon</div>
+    </div>
+</a>
+
+<style>
+    #floating-book:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(120, 200, 255, 0.15);
+    }
+    @media (max-width: 600px) {
+        #floating-book {
+            bottom: 0.8rem;
+            right: 0.8rem;
+            left: 0.8rem;
+            max-width: none;
+        }
+    }
+</style>
+
 </body>
 </html>
