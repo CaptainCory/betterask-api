@@ -48,13 +48,16 @@ logger = logging.getLogger("betterask")
 # ---------------------------------------------------------------------------
 
 TIERS = {
-    "free": {"name": "Free", "price": 0, "calls_per_day": 1_000, "stripe_product_id": None},
-    "builder": {"name": "Builder", "price": 9, "calls_per_day": 3_000, "stripe_product_id": os.getenv("STRIPE_BUILDER_PRODUCT_ID", "")},
-    "metered": {"name": "Pay-as-you-go", "price_per_call": 0.01, "calls_per_day": None, "stripe_product_id": os.getenv("STRIPE_METERED_PRODUCT_ID", "")},
+    "free": {"name": "Free", "price": 0, "calls_per_day": 100, "stripe_product_id": None},
+    "pro": {"name": "Pro", "price": 29, "calls_per_day": 5_000, "stripe_product_id": os.getenv("STRIPE_PRO_PRODUCT_ID", "")},
+    "scale": {"name": "Scale", "price_per_call": 0.005, "calls_per_day": None, "stripe_product_id": os.getenv("STRIPE_SCALE_PRODUCT_ID", "")},
+    # Legacy tier aliases for backward compat
+    "builder": {"name": "Pro", "price": 29, "calls_per_day": 5_000, "stripe_product_id": os.getenv("STRIPE_PRO_PRODUCT_ID", "")},
+    "metered": {"name": "Scale", "price_per_call": 0.005, "calls_per_day": None, "stripe_product_id": os.getenv("STRIPE_SCALE_PRODUCT_ID", "")},
 }
 
 # Per-call rate for metered billing (cents)
-METERED_RATE = 0.01
+METERED_RATE = 0.005
 
 # Reverse lookup: stripe product -> tier
 PRODUCT_TO_TIER = {v["stripe_product_id"]: k for k, v in TIERS.items() if v["stripe_product_id"]}
