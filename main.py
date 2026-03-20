@@ -4,6 +4,7 @@ Stop asking "How can I help you?" — BetterAsk.
 """
 
 import hashlib
+import json
 import logging
 import os
 import random
@@ -89,6 +90,7 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 question TEXT NOT NULL UNIQUE,
                 archetype TEXT,
+                vectors TEXT,
                 source TEXT DEFAULT 'corpus',
                 tags TEXT,
                 added_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -97,6 +99,12 @@ def init_db():
                 active INTEGER NOT NULL DEFAULT 1
             )
         """)
+        
+        # Add vectors column to existing tables (safe migration)
+        try:
+            conn.execute("ALTER TABLE questions ADD COLUMN vectors TEXT")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
         conn.execute("CREATE INDEX IF NOT EXISTS idx_questions_archetype ON questions(archetype)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_questions_source ON questions(source)")
         conn.commit()
@@ -172,67 +180,171 @@ def upgrade_keys_for_subscription(subscription_id: str, new_tier: str):
     logger.info("Upgraded subscription %s to tier %s", subscription_id, new_tier)
 
 # ---------------------------------------------------------------------------
-# Data (archetypes, contexts, etc.)
+# Data (vectors, contexts, etc.)
 # ---------------------------------------------------------------------------
 
-ARCHETYPES = [
+VECTORS = [
     {
-        "id": "the_specific",
-        "name": "The Specific",
-        "emoji": "🎯",
-        "description": "Concrete object, number, or detail that triggers instant recall. No mental filing cabinet required — the answer is right there.",
-        "pattern": "Ask about a specific, tangible thing in their life",
-        "example": "What's the most expensive thing you own that you never use?",
-        "signal": "Values, relationship with possessions, honesty",
+        "id": "specificity",
+        "name": "Specificity",
+        "emoji": "🔢",
+        "one_liner": "How many?",
+        "prompt_template": "Ask for a precise, concrete number or detail related to '{about}'. The precision forces honesty and reveals personality. No vague answers allowed."
     },
     {
-        "id": "the_shared_nerve",
-        "name": "The Shared Nerve",
-        "emoji": "⚡",
-        "description": "Something everyone secretly thinks but nobody says out loud. Instant bonding through shared frustration or guilty pleasure.",
-        "pattern": "Surface a universal unspoken truth",
-        "example": "What does everyone pretend to enjoy but secretly hates?",
-        "signal": "Authenticity, social awareness, willingness to break script",
+        "id": "name_an_example",
+        "name": "Name an Example",
+        "emoji": "📌",
+        "one_liner": "Like what?",
+        "prompt_template": "Ask the person to name a specific, concrete example from their life related to '{about}'. The example proves lived experience — no hiding behind abstractions."
     },
     {
-        "id": "the_fork",
-        "name": "The Fork",
-        "emoji": "🍴",
-        "description": "Two real options — your pick reveals your wiring. No wrong answer, just signal. Both sides are genuinely defensible.",
-        "pattern": "[Option A] or [Option B] — both appealing, choice reveals values",
-        "example": "Would you rather have a big house in Wyoming or 1,000 sq ft overlooking Central Park?",
-        "signal": "Core values, priorities, what they optimize for",
+        "id": "absurdity",
+        "name": "Absurdity",
+        "emoji": "🤪",
+        "one_liner": "Wait, seriously?",
+        "prompt_template": "Create an absurd or ridiculous scenario related to '{about}' that disarms defenses through humor. The silliness is a trojan horse for genuine self-revelation."
     },
     {
-        "id": "the_flip",
-        "name": "The Flip",
+        "id": "self_assessment",
+        "name": "Self-Assessment",
+        "emoji": "🪞",
+        "one_liner": "How honest are you being?",
+        "prompt_template": "Force the person to evaluate themselves honestly in relation to '{about}'. The question should make self-deception uncomfortable."
+    },
+    {
+        "id": "hypothetical",
+        "name": "Hypothetical",
+        "emoji": "💭",
+        "one_liner": "What if?",
+        "prompt_template": "Create an imaginative scenario about '{about}' that feels safe to answer but is secretly revealing. The hypothetical removes real-world stakes so truth can slip through."
+    },
+    {
+        "id": "perspective_shift",
+        "name": "Perspective Shift",
+        "emoji": "👁️",
+        "one_liner": "Seen from where?",
+        "prompt_template": "Force the person to see '{about}' from a completely different vantage point — another person's eyes, another time period, another culture, or their own life viewed from the outside."
+    },
+    {
+        "id": "time",
+        "name": "Time",
+        "emoji": "⏰",
+        "one_liner": "When? How long? What changed?",
+        "prompt_template": "Use time as a lens on '{about}' — past vs present, time loops, aging, urgency, or the gap between who you were and who you are. Time reveals what we'd rather not see."
+    },
+    {
+        "id": "comparison",
+        "name": "Comparison",
+        "emoji": "⚖️",
+        "one_liner": "Which one wins?",
+        "prompt_template": "Force a ranking or comparison related to '{about}'. The act of choosing one thing over another reveals hidden priorities the person might not consciously know they have."
+    },
+    {
+        "id": "emotion",
+        "name": "Emotion",
+        "emoji": "💗",
+        "one_liner": "What did that feel like?",
+        "prompt_template": "Open emotional space around '{about}'. The question should gently invite feeling — not demand vulnerability, but make it safe to go there."
+    },
+    {
+        "id": "subversion",
+        "name": "Subversion",
         "emoji": "🔄",
-        "description": "Familiar thing seen from an angle you've never considered. A reframe that makes the mundane suddenly interesting.",
-        "pattern": "Take [ordinary thing] and view it through [unexpected lens]",
-        "example": "If your job was a crime scene, what's the evidence?",
-        "signal": "Creative thinking, how they see their own world",
+        "one_liner": "But what if it's actually…",
+        "prompt_template": "Flip expectations about '{about}'. Take something the person assumes is true and reframe it so they see it completely differently. The twist IS the question."
     },
     {
-        "id": "the_dare",
-        "name": "The Dare",
-        "emoji": "🔥",
-        "description": "Slightly uncomfortable. Requires a tiny act of courage to answer honestly. Not therapy — just one degree past the comfort zone.",
-        "pattern": "Ask something that takes a small risk to answer truthfully",
-        "example": "What's a personality trait you find attractive that you'd never admit at work?",
-        "signal": "Emotional courage, self-awareness, trust level",
+        "id": "sensory_imagination",
+        "name": "Sensory/Imagination",
+        "emoji": "🎨",
+        "one_liner": "What does it look/smell/sound like?",
+        "prompt_template": "Ground '{about}' in physical, embodied experience — sights, sounds, smells, textures. Pull the person out of their head and into their body."
     },
     {
-        "id": "the_build",
-        "name": "The Build",
-        "emoji": "🏗️",
-        "description": "Design or create something — what you include reveals what you're missing. Aspirational without being cheesy.",
-        "pattern": "Invite them to design their ideal [thing]",
-        "example": "Design your perfect Sunday. Go.",
-        "signal": "Aspirations, unmet needs, imagination, what's missing in their life",
+        "id": "identity",
+        "name": "Identity",
+        "emoji": "🏷️",
+        "one_liner": "Who are you in this?",
+        "prompt_template": "Touch on who the person IS (not what they do) in relation to '{about}'. Force self-categorization using unexpected categories."
+    },
+    {
+        "id": "false_binary",
+        "name": "False Binary",
+        "emoji": "⚡",
+        "one_liner": "This or that?",
+        "prompt_template": "Present two defensible options related to '{about}' where there's no right answer. The choice reveals values, not knowledge. Both options must be genuinely appealing."
+    },
+    {
+        "id": "metaphor",
+        "name": "Metaphor",
+        "emoji": "🎭",
+        "one_liner": "What are you LIKE?",
+        "prompt_template": "Make the person translate '{about}' into a completely different domain — their life as a soup, their mind as a building, their career as weather. The translation IS the revelation."
+    },
+    {
+        "id": "confirmation_trap",
+        "name": "Confirmation Trap",
+        "emoji": "🧪",
+        "one_liner": "Ever tried to prove yourself wrong?",
+        "prompt_template": "Challenge a belief related to '{about}' that the person has never stress-tested. Ask them to argue against themselves. Intellectual honesty over comfort."
+    },
+    {
+        "id": "permission",
+        "name": "Permission",
+        "emoji": "🔓",
+        "one_liner": "You can say it here.",
+        "prompt_template": "Open the locked drawer around '{about}'. Give the person license to say something socially dangerous, taboo, or usually off-limits. The question itself creates the safe space."
+    },
+    {
+        "id": "other_eyes",
+        "name": "Other Eyes",
+        "emoji": "👥",
+        "one_liner": "What would they say about you?",
+        "prompt_template": "Introduce another person's perspective on '{about}'. How does someone else experience you? The gap between self-image and how you land on others is where the truth lives."
+    },
+    {
+        "id": "contradiction",
+        "name": "Contradiction",
+        "emoji": "⚔️",
+        "one_liner": "Then why don't you?",
+        "prompt_template": "Expose the gap between what the person says and what they do regarding '{about}'. Hold both truths side by side and ask them to look at the daylight between them."
+    },
+    {
+        "id": "trajectory",
+        "name": "Trajectory",
+        "emoji": "📈",
+        "one_liner": "Which direction are you moving?",
+        "prompt_template": "Ask about the slope, not the snapshot, of '{about}'. Are they accelerating, decelerating, or plateauing? A trendline reveals more than a data point."
+    },
+    {
+        "id": "confession",
+        "name": "Confession",
+        "emoji": "🗝️",
+        "one_liner": "What are you hiding, even from yourself?",
+        "prompt_template": "Pull something hidden into daylight about '{about}'. The question's job is to extract what the person knows but hasn't said — maybe even to themselves."
+    },
+    {
+        "id": "scale",
+        "name": "Scale",
+        "emoji": "📊",
+        "one_liner": "Add it all up — now how does it feel?",
+        "prompt_template": "Force the person to aggregate their entire life experience of '{about}' into a single quantity. The cumulative total shocks — it reveals unconscious patterns through sheer volume."
     },
 ]
 
-ARCHETYPE_MAP = {a["id"]: a for a in ARCHETYPES}
+VECTOR_MAP = {v["id"]: v for v in VECTORS}
+
+# Legacy archetype support for backward compatibility
+ARCHETYPE_TO_VECTOR_MAPPING = {
+    "the_specific": ["specificity", "name_an_example"],
+    "the_shared_nerve": ["permission", "other_eyes"],
+    "the_fork": ["false_binary", "comparison"],
+    "the_flip": ["perspective_shift", "subversion"],
+    "the_dare": ["confession", "self_assessment"],
+    "the_build": ["hypothetical", "identity"],
+    "auto": ["auto"]
+}
 
 CONTEXTS = ["onboarding", "discovery", "coaching", "rapport", "assessment", "content", "interview"]
 DEPTHS = ["light", "medium", "deep"]
@@ -253,14 +365,14 @@ CONTEXT_GUIDANCE = {
     "interview": "Structured conversation to learn about experience or perspective.",
 }
 
-CONTEXT_ARCHETYPE_WEIGHTS = {
-    "onboarding": {"the_specific": 3, "the_fork": 3, "the_flip": 2, "the_build": 2},
-    "discovery": {"the_flip": 3, "the_fork": 3, "the_build": 2, "the_specific": 2},
-    "coaching": {"the_dare": 3, "the_build": 3, "the_flip": 2, "the_specific": 2},
-    "rapport": {"the_shared_nerve": 3, "the_specific": 3, "the_flip": 2, "the_fork": 2},
-    "assessment": {"the_flip": 3, "the_fork": 3, "the_dare": 2, "the_specific": 2},
-    "content": {"the_shared_nerve": 3, "the_specific": 2, "the_fork": 2, "the_flip": 2},
-    "interview": {"the_dare": 2, "the_build": 3, "the_flip": 2, "the_specific": 2},
+CONTEXT_VECTOR_WEIGHTS = {
+    "onboarding": {"specificity": 3, "name_an_example": 3, "false_binary": 3, "comparison": 2, "perspective_shift": 2, "identity": 2},
+    "discovery": {"perspective_shift": 3, "subversion": 3, "false_binary": 3, "comparison": 2, "hypothetical": 2, "identity": 2},
+    "coaching": {"confession": 3, "self_assessment": 3, "hypothetical": 3, "identity": 2, "perspective_shift": 2, "contradiction": 2},
+    "rapport": {"permission": 3, "other_eyes": 3, "specificity": 3, "name_an_example": 2, "perspective_shift": 2, "false_binary": 2},
+    "assessment": {"perspective_shift": 3, "subversion": 3, "false_binary": 3, "comparison": 2, "confession": 2, "self_assessment": 2},
+    "content": {"permission": 3, "other_eyes": 3, "specificity": 2, "false_binary": 2, "comparison": 2, "perspective_shift": 2},
+    "interview": {"confession": 2, "self_assessment": 2, "hypothetical": 3, "identity": 3, "perspective_shift": 2, "contradiction": 2},
 }
 
 SCORING_DIMENSIONS = {
@@ -319,7 +431,7 @@ def load_corpus():
 _request_log: dict[str, list[float]] = {}
 _generate_call_count: int = 0
 PROMO_EVERY_N = int(os.getenv("PROMO_EVERY_N", "6"))
-BOOK_PROMO = "📖 These questions come from END SMALL TALK by Cory Stout — endsmalltalknow.com"
+BOOK_PROMO = "📖 These questions use the 21 Vectors from END SMALL TALK by Cory Stout — endsmalltalknow.com"
 
 
 def check_rate_limit(client_ip: str):
@@ -372,9 +484,9 @@ app = FastAPI(
     title="BetterAsk API",
     description=(
         "Question Intelligence API powered by END SMALL TALK methodology. "
-        "12 proven archetypes that extract real signal from humans."
+        "21 vectors that combine to create multi-dimensional questions that extract real signal from humans."
     ),
-    version="1.1.0",
+    version="2.0.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -411,17 +523,22 @@ class GenerateRequest(BaseModel):
     context: str = Field("rapport", description=f"Use case context. Valid: {CONTEXTS}")
     about: str = Field(..., description="What you're trying to learn about", min_length=1, max_length=500)
     depth: str = Field("medium", description=f"Question depth. Valid: {DEPTHS}")
-    archetype: str = Field("auto", description="Specific archetype or 'auto'")
+    vectors: str = Field("auto", description="Comma-separated vector names or 'auto'")
+    archetype: str = Field(None, description="[Legacy] Specific archetype or 'auto' - use vectors instead")
     count: int = Field(3, ge=1, le=10, description="Number of questions to generate")
     avoid: list[str] = Field(default_factory=list, description="Topics to avoid")
 
 
 class GeneratedQuestion(BaseModel):
-    archetype: str
-    archetype_name: str
-    archetype_emoji: str
+    vectors: list[str]
+    vector_names: list[str]
+    vector_emojis: list[str] 
     generation_prompt: str
     example_from_corpus: Optional[str] = None
+    # Legacy fields for backward compatibility
+    archetype: Optional[str] = None
+    archetype_name: Optional[str] = None
+    archetype_emoji: Optional[str] = None
 
 
 class GenerateResponse(BaseModel):
@@ -440,7 +557,12 @@ class ScoreResponse(BaseModel):
     question: str
     scoring_prompt: str
     dimensions: dict
+    vector_density: Optional[int] = None  # 1=functional, 2=good, 3=great, 4-5=hall of fame
 
+
+class VectorResponse(BaseModel):
+    vectors: list[dict]
+    total: int
 
 class ArchetypeResponse(BaseModel):
     archetypes: list[dict]
@@ -457,53 +579,72 @@ class SubscribeRequest(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def select_archetype(context: str) -> str:
-    weights = CONTEXT_ARCHETYPE_WEIGHTS.get(context, {})
+def select_vectors(context: str, requested: str = "auto", min_vectors: int = 2, max_vectors: int = 4) -> list[str]:
+    """Select vectors for question generation."""
+    if requested != "auto":
+        # Comma-separated vector names provided
+        selected = [v.strip() for v in requested.split(",") if v.strip() in VECTOR_MAP]
+        return selected if selected else random.sample(list(VECTOR_MAP.keys()), min_vectors)
+    
+    # Auto-select based on context weights
+    weights = CONTEXT_VECTOR_WEIGHTS.get(context, {})
     pool = []
-    for a in ARCHETYPE_MAP:
-        pool.extend([a] * weights.get(a, 1))
-    return random.choice(pool)
+    for vector_id, weight in weights.items():
+        pool.extend([vector_id] * weight)
+    
+    # If no weights defined for context, use all vectors equally
+    if not pool:
+        pool = list(VECTOR_MAP.keys())
+    
+    # Select random number of vectors (min_vectors to max_vectors)
+    num_vectors = random.randint(min_vectors, max_vectors)
+    return random.sample(list(set(pool)), min(num_vectors, len(set(pool))))
 
 
-ARCHETYPE_PROMPTS = {
-    "the_specific": "Generate a question that asks for a weirdly specific object, number, or detail related to '{about}'. The precision should force honesty and trigger instant recall.",
-    "the_shared_nerve": "Generate a question about '{about}' that surfaces something everyone secretly thinks but nobody says out loud. Instant bonding through shared frustration or guilty pleasure.",
-    "the_fork": "Generate a 'Would you rather' style question about '{about}' where both options are genuinely appealing but choosing one reveals something deep about values.",
-    "the_flip": "Generate a question that reframes '{about}' through an unexpected angle or metaphor. Take something familiar and make the answerer see it in a completely new way.",
-    "the_dare": "Generate a slightly uncomfortable question about '{about}' that requires a tiny act of courage to answer honestly. Not therapy — just one degree past the comfort zone.",
-    "the_build": "Generate a question about '{about}' that invites the answerer to design or create their ideal version of something. What they include reveals what they're missing.",
-}
+def map_archetype_to_vectors(archetype: str) -> list[str]:
+    """Convert legacy archetype to equivalent vectors."""
+    return ARCHETYPE_TO_VECTOR_MAPPING.get(archetype, ["specificity", "name_an_example"])
 
 
-def build_generation_prompt(context: str, about: str, depth: str, archetype: str, avoid: list[str]) -> str:
-    arch_prompt = ARCHETYPE_PROMPTS[archetype].format(about=about)
+def build_generation_prompt(context: str, about: str, depth: str, vectors: list[str], avoid: list[str]) -> str:
+    """Build an LLM prompt from vector combination."""
+    vector_instructions = []
+    vector_names = []
+    for v in vectors:
+        vec = VECTOR_MAP[v]
+        vector_names.append(vec["name"])
+        vector_instructions.append(f"- {vec['prompt_template'].format(about=about)}")
+    
     depth_note = DEPTH_GUIDANCE[depth]
     ctx_note = CONTEXT_GUIDANCE.get(context, "")
     avoid_note = f"\nAVOID these topics: {', '.join(avoid)}" if avoid else ""
 
     return f"""Generate ONE question using the EST (End Small Talk) methodology.
 
-ARCHETYPE: {archetype.replace('_', ' ').title()}
-{arch_prompt}
+VECTORS TO COMBINE: {', '.join(vector_names)}
+
+{chr(10).join(vector_instructions)}
 
 CONTEXT: {ctx_note}
 DEPTH: {depth_note}
 {avoid_note}
 
 RULES:
-- Never academic — everyday language only
-- Humor is a trojan horse for depth
-- Reference real, current things (2026 era)
+- Never academic or jargon-heavy. Use everyday language.
+- Humor is a trojan horse for depth.
+- Reference real, current things (2026 era).
 - Concrete > abstract. Specific > vague.
-- Include a natural follow-up question
-- The question presents; it never judges
+- Include a natural follow-up question.
+- The question presents; it never judges.
 - Test: Would you want to answer this at a bar? If no, rewrite.
+- Test: Could this start a 20-minute conversation? If no, sharpen.
+- The question must activate ALL listed vectors simultaneously.
 
 OUTPUT FORMAT (JSON):
 {{
   "question": "The main question",
   "follow_up": "A natural follow-up question",
-  "archetype": "{archetype}",
+  "vectors": {json.dumps(vector_names)},
   "signal": "What this question reveals about the answerer",
   "depth": "{depth}"
 }}"""
@@ -526,6 +667,12 @@ Composite = (Surprise × 0.25) + (Specificity × 0.20) + (Conversation × 0.20) 
 
 Quality bands: 8-10 publish-worthy | 6-7 good | 4-5 generic | 1-3 delete
 
+Vector Density Levels:
+1 = Functional (basic question that works)
+2 = Good (solid question with clear signal)
+3 = Great (multi-layered, thought-provoking)
+4-5 = Hall of Fame (unforgettable, shareable, transformative)
+
 OUTPUT FORMAT (JSON):
 {{
   "question": "{question}",
@@ -539,7 +686,8 @@ OUTPUT FORMAT (JSON):
   }},
   "composite": <weighted average>,
   "band": "<publish-worthy|good|generic|delete>",
-  "archetype_detected": "<which of the 12 archetypes>",
+  "vector_density": <1-5>,
+  "vectors_detected": ["<list of active vectors in this question>"],
   "improvement_suggestion": "<how to make it better>",
   "reasoning": "<brief explanation>"
 }}"""
@@ -770,7 +918,8 @@ def require_admin(key: str | None):
 class AddQuestionsRequest(BaseModel):
     questions: list[str]
     source: str = "manual"
-    archetype: str | None = None
+    vectors: str | None = None  # Comma-separated vector names
+    archetype: str | None = None  # Legacy support
 
 
 @app.post("/admin/questions")
@@ -787,9 +936,14 @@ async def add_questions(
             if not q:
                 continue
             try:
+                # Convert legacy archetype to vectors if needed
+                vectors = req.vectors
+                if not vectors and req.archetype:
+                    vectors = ",".join(map_archetype_to_vectors(req.archetype))
+                
                 conn.execute(
-                    "INSERT OR IGNORE INTO questions (question, archetype, source) VALUES (?, ?, ?)",
-                    (q, req.archetype, req.source),
+                    "INSERT OR IGNORE INTO questions (question, archetype, vectors, source) VALUES (?, ?, ?, ?)",
+                    (q, req.archetype, vectors, req.source),
                 )
                 added += 1
             except Exception:
@@ -804,18 +958,22 @@ async def add_questions(
 async def list_questions(
     x_admin_key: str | None = Header(None),
     source: str | None = None,
-    archetype: str | None = None,
+    vectors: str | None = None,
+    archetype: str | None = None,  # Legacy support
     limit: int = 50,
     offset: int = 0,
 ):
     """List questions from the database with optional filters."""
     require_admin(x_admin_key)
-    query = "SELECT id, question, archetype, source, score_composite, added_at FROM questions WHERE active=1"
+    query = "SELECT id, question, archetype, vectors, source, score_composite, added_at FROM questions WHERE active=1"
     params = []
     if source:
         query += " AND source=?"
         params.append(source)
-    if archetype:
+    if vectors:
+        query += " AND vectors LIKE ?"
+        params.append(f"%{vectors}%")
+    elif archetype:
         query += " AND archetype=?"
         params.append(archetype)
     query += " ORDER BY id DESC LIMIT ? OFFSET ?"
@@ -892,12 +1050,28 @@ async def admin_stats(x_admin_key: str | None = Header(None)):
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "corpus_size": len(_corpus), "version": "1.2.1"}
+    return {"status": "healthy", "corpus_size": len(_corpus), "vectors": len(VECTORS), "version": "2.0.0"}
+
+
+@app.get("/vectors", response_model=VectorResponse)
+async def get_vectors():
+    return {"vectors": VECTORS, "total": len(VECTORS)}
 
 
 @app.get("/archetypes", response_model=ArchetypeResponse)
 async def get_archetypes():
-    return {"archetypes": ARCHETYPES, "total": len(ARCHETYPES)}
+    """Legacy endpoint - use /vectors instead"""
+    # Convert vectors to archetype-like format for backward compatibility
+    legacy_archetypes = []
+    for vector in VECTORS[:6]:  # Return first 6 for compatibility
+        legacy_archetypes.append({
+            "id": vector["id"],
+            "name": vector["name"],
+            "emoji": vector["emoji"],
+            "description": vector["one_liner"],
+            "pattern": vector["prompt_template"][:100] + "...",
+        })
+    return {"archetypes": legacy_archetypes, "total": len(legacy_archetypes)}
 
 
 @app.post("/generate", response_model=GenerateResponse)
@@ -907,38 +1081,57 @@ async def generate(req: GenerateRequest, request: Request):
     check_rate_limit(client)
 
     try:
-        if req.archetype != "auto" and req.archetype not in ARCHETYPE_MAP:
-            raise HTTPException(400, f"Unknown archetype: {req.archetype}. Valid: {list(ARCHETYPE_MAP.keys())}")
         if req.context not in CONTEXTS:
             raise HTTPException(400, f"Unknown context: {req.context}. Valid: {CONTEXTS}")
 
-        questions = []
-        used_archetypes = set()
-        for _ in range(req.count):
-            arch = req.archetype if req.archetype != "auto" else select_archetype(req.context)
-            if req.archetype == "auto" and req.count <= len(ARCHETYPE_MAP):
-                attempts = 0
-                while arch in used_archetypes and attempts < 10:
-                    arch = select_archetype(req.context)
-                    attempts += 1
-            used_archetypes.add(arch)
+        # Handle legacy archetype parameter
+        if req.archetype and req.vectors == "auto":
+            if req.archetype in ARCHETYPE_TO_VECTOR_MAPPING:
+                req.vectors = ",".join(ARCHETYPE_TO_VECTOR_MAPPING[req.archetype])
+            else:
+                raise HTTPException(400, f"Unknown archetype: {req.archetype}. Use 'vectors' parameter instead.")
 
-            prompt = build_generation_prompt(req.context, req.about, req.depth, arch, req.avoid)
-            info = ARCHETYPE_MAP[arch]
+        questions = []
+        used_vector_sets = set()
+        
+        for _ in range(req.count):
+            # Select vectors for this question
+            vectors = select_vectors(req.context, req.vectors)
+            
+            # Avoid duplicate vector combinations when possible
+            vector_signature = tuple(sorted(vectors))
+            if req.count <= 10 and vector_signature in used_vector_sets:
+                attempts = 0
+                while vector_signature in used_vector_sets and attempts < 5:
+                    vectors = select_vectors(req.context, req.vectors)
+                    vector_signature = tuple(sorted(vectors))
+                    attempts += 1
+            used_vector_sets.add(vector_signature)
+
+            prompt = build_generation_prompt(req.context, req.about, req.depth, vectors, req.avoid)
+            vector_infos = [VECTOR_MAP[v] for v in vectors]
+            vector_names = [v["name"] for v in vector_infos]
+            vector_emojis = [v["emoji"] for v in vector_infos]
 
             example = None
             if _corpus:
                 example = random.choice(_corpus)
 
-            questions.append(
-                GeneratedQuestion(
-                    archetype=arch,
-                    archetype_name=info["name"],
-                    archetype_emoji=info["emoji"],
-                    generation_prompt=prompt,
-                    example_from_corpus=example,
-                )
+            question = GeneratedQuestion(
+                vectors=vectors,
+                vector_names=vector_names,
+                vector_emojis=vector_emojis,
+                generation_prompt=prompt,
+                example_from_corpus=example,
             )
+            
+            # Add legacy fields for backward compatibility
+            if len(vectors) > 0:
+                question.archetype = vectors[0]  # Use first vector as archetype
+                question.archetype_name = vector_infos[0]["name"]
+                question.archetype_emoji = vector_infos[0]["emoji"]
+
+            questions.append(question)
 
         global _generate_call_count
         _generate_call_count += 1
@@ -957,7 +1150,8 @@ async def score(req: ScoreRequest, request: Request):
     client = request.client.host if request.client else "unknown"
     check_rate_limit(client)
     prompt = build_scoring_prompt(req.question)
-    return ScoreResponse(question=req.question, scoring_prompt=prompt, dimensions=SCORING_DIMENSIONS)
+    # Vector density is calculated by the LLM based on the scoring prompt
+    return ScoreResponse(question=req.question, scoring_prompt=prompt, dimensions=SCORING_DIMENSIONS, vector_density=None)
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -1,0 +1,22 @@
+{
+  "calibration_set": [
+    {"id": 1, "question": "If your phone's screen time report was projected on a billboard outside your apartment, what would you change first?", "archetype": "mirror", "rating": 3, "notes": null},
+    {"id": 2, "question": "How many people in your life right now would you trust to pack your suitcase for a two-week trip without telling you where you're going?", "archetype": "specificity_trap", "rating": 2, "notes": null},
+    {"id": 3, "question": "You get to add one mandatory class to every high school in America. What are you teaching?", "archetype": "world_builder", "rating": 8, "notes": null},
+    {"id": 4, "question": "What's the last thing you changed your mind about that had a serious consequence?", "archetype": "vulnerability_door", "rating": 8, "notes": "Cory rewrite. Original: 'that actually cost you something'"},
+    {"id": 5, "question": "If your last Google search was published as a newspaper headline, how embarrassed are you on a scale of 1-10?", "archetype": "mirror", "rating": 5, "notes": null},
+    {"id": 6, "question": "What one thing will you completely guard against AI changing?", "archetype": "reframe", "rating": 9, "notes": "Cory rewrite. Original AI version was passive preference; this has fight/defense energy"},
+    {"id": 7, "question": "What's something you pretend to understand that you definitely don't?", "archetype": "vulnerability_door", "rating": 8, "notes": "Examines meta-beliefs, invites asking if you could be wrong"},
+    {"id": 8, "question": "What's the most expensive thing you own that makes you zero dollars?", "archetype": "specificity_trap", "rating": 8, "notes": "Rich Dad/Poor Dad tension — vanity vs necessity"},
+    {"id": 9, "question": "What's something you keep buying on Amazon that you should probably make by hand?", "archetype": "mirror", "rating": 8, "notes": "Cory rewrite. Original: 'mass-producing in your life'. Amazon = concrete noun"},
+    {"id": 10, "question": "If AI could perfectly replicate your taste in music, would you let it build every playlist, or does the searching matter?", "archetype": "false_binary", "rating": 3, "notes": "Just doesn't land"},
+    {"id": 11, "question": "What's the last thing you built with your hands that you were proud of?", "archetype": "vulnerability_door", "rating": 9, "notes": "Human, shares a story, asks what is usually not asked"},
+    {"id": 12, "question": "What rule do you have for yourself that nobody taught you?", "archetype": "identity_sort", "rating": 9, "notes": "Nature vs nurture — the point at which a person took life into their own hands"}
+  ],
+  "patterns_observed": {
+    "high_scoring": "Ask what's never asked. Invite stories. Touch identity/agency. Force self-examination. Have tension/stakes. Multi-layered answers possible.",
+    "low_scoring": "Observation exercises. Hypothetical preferences. Too passive. No stakes.",
+    "skip_triggers": "Require digging through vast memory — deep not cavernous.",
+    "rewrite_upgrades": "Adding consequence, specificity, or a concrete noun (Amazon > mass-producing, serious consequence > cost you something, guard against > would you protect)"
+  }
+}

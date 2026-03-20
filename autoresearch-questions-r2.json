@@ -1,0 +1,629 @@
+{
+  "metadata": {
+    "date": "2026-03-10",
+    "round": 2,
+    "cycles": 4,
+    "total_questions": 100,
+    "scoring_model": "Cory Stout calibrated taste — STRICTER than Round 1. Correcting for grade inflation.",
+    "focus_areas": ["money", "body", "strangers", "childhood rituals", "AI/tech", "rule-breaking tests", "underperforming archetype push"]
+  },
+  "questions": [
+    {
+      "cycle": 1, "id": "R2-C1-01",
+      "question": "What's the most money you've ever spent on something that turned out to be worthless?",
+      "archetype": "specificity_trap", "topic": "money", "score": 7,
+      "justification": "Agency (spent). Concrete (money). Story-inviting. But 'most money' has database-recall energy — too broad. Close to 8 but falls short."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-02",
+      "question": "What's the cheapest thing you own that you'd fight to keep?",
+      "archetype": "reframe", "topic": "money", "score": 8,
+      "justification": "Inversion (cheap + fight to keep). Agency (fight). Concrete noun. Reveals what matters beyond price. Surprising and debate-worthy."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-03",
+      "question": "What did you spend money on this month that your 20-year-old self would never believe?",
+      "archetype": "time_machine", "topic": "money", "score": 8,
+      "justification": "Temporal anchor (this month + age 20). Agency (spent). Generational self-contrast. Concrete. Fun at a bar."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-04",
+      "question": "What's a purchase that accidentally changed who you are?",
+      "archetype": "vulnerability_door", "topic": "money", "score": 7,
+      "justification": "Agency implied. Identity. 'Accidentally' adds surprise. But 'purchase' is broad and the framing is slightly generic."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-05",
+      "question": "How much money would someone have to pay you to delete your phone and never get another one?",
+      "archetype": "specificity_trap", "topic": "money", "score": 5,
+      "justification": "Hypothetical preference. No real stakes. Feels like a would-you-rather variant. Number doesn't reveal identity."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-06",
+      "question": "What part of your body have you made peace with?",
+      "archetype": "vulnerability_door", "topic": "body", "score": 9,
+      "justification": "NEVER asked. Agency (made peace). Body as identity. Universal — everyone has one. Invites a real story about self-acceptance. The answer is always personal."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-07",
+      "question": "What can your body do now that it couldn't do five years ago?",
+      "archetype": "time_machine", "topic": "body", "score": 7,
+      "justification": "Positive inversion (most body questions are about decline). Agency implied. Temporal anchor. But might dead-end in two words."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-08",
+      "question": "When's the last time you pushed your body until it surprised you?",
+      "archetype": "vulnerability_door", "topic": "body", "score": 8,
+      "justification": "Agency (pushed). Surprise element. Story-inviting. Concrete temporal anchor. Reveals relationship with physical self."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-09",
+      "question": "What does your body remember that your mind has forgotten?",
+      "archetype": "reframe", "topic": "body", "score": 7,
+      "justification": "Poetic and beautiful. But observation-verb energy — 'remember' is passive. Hard to answer concretely at a bar. Rule 3 test: confirms observation verbs cap at ~7."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-10",
+      "question": "What physical sensation do you chase?",
+      "archetype": "identity_sort", "topic": "body", "score": 6,
+      "justification": "Agency (chase). But too open-ended — could go anywhere from 'runner's high' to 'hot shower.' Needs sharper framing to produce a story."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-11",
+      "question": "What's the kindest thing a stranger ever did for you that you still carry?",
+      "archetype": "vulnerability_door", "topic": "strangers", "score": 7,
+      "justification": "Concrete (stranger). Story-inviting. 'Still carry' has weight. But this format has been asked before — various versions exist. Lacks surprise."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-12",
+      "question": "What's something you said to a stranger that you could never say to your family?",
+      "archetype": "vulnerability_door", "topic": "strangers", "score": 8,
+      "justification": "Inversion (stranger > family intimacy). Agency (said). Hidden self. Reveals the compartments people keep. Surprising frame."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-13",
+      "question": "Have you ever completely trusted a stranger's instinct over your own? What happened?",
+      "archetype": "vulnerability_door", "topic": "strangers", "score": 8,
+      "justification": "Agency (trusted). Stakes (over your own instinct). Story-inviting follow-up. Concrete. Reveals relationship with control."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-14",
+      "question": "What's the strangest place you've ever had a meaningful conversation with someone you'll never see again?",
+      "archetype": "reframe", "topic": "strangers", "score": 8,
+      "justification": "Concrete (place). Story-inviting. 'Never see again' adds weight and transience. Unexpected adjective (strangest + meaningful)."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-15",
+      "question": "What did a stranger once say to you that rewired something in your brain?",
+      "archetype": "vulnerability_door", "topic": "strangers", "score": 8,
+      "justification": "Story-inviting. 'Rewired something in your brain' is concrete and surprising. But the stranger is the agent, not the answerer — slight drag."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-16",
+      "question": "What's the last thing you trusted a machine to decide for you?",
+      "archetype": "reframe", "topic": "ai_tech", "score": 7,
+      "justification": "Agency (trusted). Concrete (machine). Temporal anchor. But might produce boring answers — 'my GPS route.' Needs higher stakes."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-17",
+      "question": "What human skill are you quietly terrified AI will replace in your lifetime?",
+      "archetype": "vulnerability_door", "topic": "ai_tech", "score": 7,
+      "justification": "'Quietly terrified' touches hidden self. Temporal (your lifetime). But it's ultimately an opinion about AI, not a personal story. Opinion ≠ identity."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-18",
+      "question": "If AI could perfectly remember everything about you, what would you want it to forget?",
+      "archetype": "reframe", "topic": "ai_tech", "score": 6,
+      "justification": "Hypothetical premise removes real-world tension. Beautiful idea but passive preference territory. No agency verb."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-19",
+      "question": "What's something you refuse to let an algorithm choose for you?",
+      "archetype": "identity_sort", "topic": "ai_tech", "score": 8,
+      "justification": "Agency (refuse). Defense energy — same pattern as Cory's 9-scoring 'guard against AI changing.' Identity through resistance. But slightly derivative of calibration #6."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-20",
+      "question": "What's a conversation you've had with AI that you'd never have with a human?",
+      "archetype": "reframe", "topic": "ai_tech", "score": 8,
+      "justification": "Hidden self. Inversion (AI > human intimacy). Agency (had the conversation). Touches something genuinely new in 2026 — people confide in AI."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-21",
+      "question": "What's the most important thing in your life that you figured out by yourself?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Agency (figured out by yourself). Identity through self-teaching. NEVER asked. Story-inviting. Touches the moment someone became their own teacher. 'By yourself' is the key — it inverts the assumption that wisdom comes from others."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-22",
+      "question": "When's the last time you completely abandoned a plan and it turned out better?",
+      "archetype": "time_machine", "topic": "general", "score": 7,
+      "justification": "Agency (abandoned). Temporal. Inversion (better without plan). But 'turned out better' presupposes the ending — removes tension."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-23",
+      "question": "What's a place that shaped who you are that you can never go back to?",
+      "archetype": "identity_sort", "topic": "general", "score": 8,
+      "justification": "Irreversibility. Concrete (place). Story-inviting. 'Never go back to' has loss and weight. But 'shaped who you are' is slightly passive — the place did the shaping."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-24",
+      "question": "What's something you do differently than everyone you know, and you're sure you're right about it?",
+      "archetype": "identity_sort", "topic": "general", "score": 8,
+      "justification": "Agency. Conviction ('sure you're right'). Differentiation from peers. Debate-worthy. Reveals contrarian identity."
+    },
+    {
+      "cycle": 1, "id": "R2-C1-25",
+      "question": "What did you teach yourself that no school ever would?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (taught yourself). Institution contrast adds defiance energy. But 'taught yourself' verb pattern used multiple times in R1. Fresh angle but recycled DNA."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-01",
+      "question": "What's a ritual from your childhood that nobody else's family did?",
+      "archetype": "identity_sort", "topic": "childhood_rituals", "score": 9,
+      "justification": "Hidden self (nobody else). Childhood. Agency (claiming the ritual as identity). Concrete. NEVER asked. Invites a warm, specific story that reveals family DNA."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-02",
+      "question": "What did your family do every holiday that you thought was normal until you grew up?",
+      "archetype": "time_machine", "topic": "childhood_rituals", "score": 8,
+      "justification": "Temporal (childhood → adulthood realization). Concrete (holiday). Surprise (thought was normal). Universal. Fun at a bar — always produces laughter."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-03",
+      "question": "What did you memorize as a kid that you can still recite right now?",
+      "archetype": "specificity_trap", "topic": "childhood_rituals", "score": 7,
+      "justification": "Concrete. Temporal. Fun at a bar — might produce a performance. But doesn't touch identity or agency deeply. Entertainment without revelation."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-04",
+      "question": "What's a food your family made that you've never been able to recreate?",
+      "archetype": "specificity_trap", "topic": "childhood_rituals", "score": 7,
+      "justification": "Concrete (food). Nostalgic. 'Never been able to recreate' adds loss. But observation-adjacent — no strong agency. Warm but not 8."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-05",
+      "question": "What's a game you played as a kid that taught you something you didn't understand until decades later?",
+      "archetype": "reframe", "topic": "childhood_rituals", "score": 7,
+      "justification": "Temporal depth. Reframe (game → lesson). But long question with multiple clauses. 'Decades later' is good but the path to the answer is winding."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-06",
+      "question": "What do you see when you look at your hands right now?",
+      "archetype": "mirror", "topic": "rule_break_test", "score": 5,
+      "justification": "RULE-BREAK TEST: Pure observation verb. No agency, no stakes. Poetic but dead-ends immediately. Confirms Rule 3 — observation verbs ≤5-6."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-07",
+      "question": "What's the first thing you notice about a room you've never been in?",
+      "archetype": "mirror", "topic": "rule_break_test", "score": 4,
+      "justification": "RULE-BREAK TEST: Pure observation. Generic. No stakes. No identity. Confirms Rule 3 emphatically."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-08",
+      "question": "When you watch yourself in old videos, what surprises you most?",
+      "archetype": "mirror", "topic": "rule_break_test", "score": 6,
+      "justification": "RULE-BREAK TEST: Observation verb (watch). Self-examination angle saves it from total failure. Temporal dimension helps. But caps at 6 — can't reach 8 without agency."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-09",
+      "question": "What feeling do you get in your body right before you make a big decision?",
+      "archetype": "mirror", "topic": "rule_break_test", "score": 7,
+      "justification": "RULE-BREAK TEST: Observation verb (feel/get). But anchored to decision-making, which is agency-adjacent. The body-decision connection is interesting. Caps at 7 — observation verb prevents 8."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-10",
+      "question": "What do you notice about yourself when you've been alone for too long?",
+      "archetype": "mirror", "topic": "rule_break_test", "score": 6,
+      "justification": "RULE-BREAK TEST: Observation verb (notice). Self-examination with stakes ('too long' implies consequences). But passive framing. 6 — confirms rule with slight flexibility for stakes."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-11",
+      "question": "What's the first thing you ever created that someone else valued?",
+      "archetype": "identity_sort", "topic": "no_hidden_self_test", "score": 8,
+      "justification": "NO-HIDDEN-SELF TEST: No 'nobody/never/secret' markers. Agency (created). Temporal anchor (first). Identity. Story-inviting. Hits 8 without hidden-self formula. Close to 9."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-12",
+      "question": "What's a fight you walked away from that you wish you'd stayed in?",
+      "archetype": "vulnerability_door", "topic": "no_hidden_self_test", "score": 8,
+      "justification": "NO-HIDDEN-SELF TEST: No hidden-self markers. Agency (walked away). Inversion (wish you'd stayed). Real stakes. Story-inviting. Hits 8."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-13",
+      "question": "What's a job you had that taught you more than any degree could?",
+      "archetype": "reframe", "topic": "no_hidden_self_test", "score": 8,
+      "justification": "NO-HIDDEN-SELF TEST: No hidden-self markers. Concrete (job vs degree). Story-inviting. Universal. Agency implied in having the job."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-14",
+      "question": "When did you stop trying to impress your parents?",
+      "archetype": "time_machine", "topic": "no_hidden_self_test", "score": 9,
+      "justification": "NO-HIDDEN-SELF TEST: No 'nobody/never/secret' markers — and STILL hits 9. Agency (stopped trying). Temporal anchor. Touches THE moment of independence. Coming-of-age. Parental break. Proves hidden-self formula is not required for 9 if you touch the agency/independence moment directly."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-15",
+      "question": "What's the worst advice you ever followed all the way through?",
+      "archetype": "vulnerability_door", "topic": "no_hidden_self_test", "score": 8,
+      "justification": "NO-HIDDEN-SELF TEST: Agency (followed all the way through). Story-inviting. Stakes (worst). 'All the way through' adds commitment — they didn't bail."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-16",
+      "question": "What's a conversation you've had with AI that you'd never have with a person you know?",
+      "archetype": "reframe", "topic": "ai_tech", "score": 7,
+      "justification": "Similar to C1-20 but with 'person you know' instead of 'a human.' Slightly more specific but same core frame. Downgraded for redundancy within this round."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-17",
+      "question": "What did you Google at 3 AM last week that you'd never ask a friend?",
+      "archetype": "chain", "topic": "ai_tech", "score": 8,
+      "justification": "Hidden self. Temporal anchor (3 AM, last week). Concrete. Vulnerability. The 3 AM detail is the knife — it implies urgency or obsession or shame."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-18",
+      "question": "What's an opinion you formed entirely from the internet that nobody in your real life shares?",
+      "archetype": "identity_sort", "topic": "ai_tech", "score": 7,
+      "justification": "Touches identity through digital influence. Hidden self (nobody shares). But 'formed an opinion' is slightly passive — opinions are less revealing than actions."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-19",
+      "question": "What's the last rabbit hole the internet pulled you down? How deep did you go?",
+      "archetype": "chain", "topic": "ai_tech", "score": 7,
+      "justification": "Fun. Temporal. Two-beat chain. But 'rabbit hole' is overused phrase. 'Pulled you down' is passive — internet as agent. Slightly generic."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-20",
+      "question": "What's a question you've asked a search engine that you should have asked a human being?",
+      "archetype": "reframe", "topic": "ai_tech", "score": 8,
+      "justification": "Inversion (machine over human). Vulnerability — reveals isolation or intimacy avoidance. Concrete. Tells you what someone is afraid to ask for help with."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-21",
+      "question": "How many times have you reinvented yourself? Can you name each one?",
+      "archetype": "specificity_trap", "topic": "general", "score": 8,
+      "justification": "Number with stakes. Agency (reinvented). Follow-up ('name each one') deepens and prevents one-word answers. Identity through transformation."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-22",
+      "question": "If your bank account could talk, what would it say you actually care about?",
+      "archetype": "reframe", "topic": "money", "score": 7,
+      "justification": "Clever reframe. Concrete (bank account). But passive — the bank account is the agent. Mirror-energy without the self-examination edge. 7."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-23",
+      "question": "What's a compliment you give yourself that you'd never say out loud?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Hidden self (never say out loud). Agency (give yourself). NEVER asked. Self-directed kindness is the most private thing. Inverts the usual 'what are you insecure about' by asking about secret confidence."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-24",
+      "question": "How many times in your life have you started completely over?",
+      "archetype": "specificity_trap", "topic": "general", "score": 8,
+      "justification": "Number with enormous stakes. Agency (started over). Story-inviting — each restart is a story. The number IS the personality."
+    },
+    {
+      "cycle": 2, "id": "R2-C2-25",
+      "question": "What room in your house would a therapist learn the most from?",
+      "archetype": "reframe", "topic": "general", "score": 7,
+      "justification": "Clever. Concrete (room). But the therapist is the agent, not the answerer. Passive framing. Observation energy. 7."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-01",
+      "question": "If you could redesign your childhood bedroom right now, what would you add that wasn't allowed?",
+      "archetype": "world_builder", "topic": "childhood_rituals", "score": 7,
+      "justification": "Agency (redesign). 'Wasn't allowed' adds tension/rebellion. Childhood. But world-builder energy — slightly low-stakes compared to real identity questions."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-02",
+      "question": "Would you rather relive the best day of your life knowing it'll never be that good again, or forget it entirely?",
+      "archetype": "false_binary", "topic": "general", "score": 7,
+      "justification": "Genuinely hard binary. Touches memory and loss. But hypothetical — no real stakes. Both options are interesting but the premise is too artificial."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-03",
+      "question": "Would you rather know exactly what everyone at your funeral says about you, or never know?",
+      "archetype": "false_binary", "topic": "general", "score": 5,
+      "justification": "Classic. Asked many times in many forms. No surprise factor. 5."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-04",
+      "question": "Are you more afraid of getting what you want or not getting it?",
+      "archetype": "false_binary", "topic": "general", "score": 8,
+      "justification": "Deep. Both options have real tension. 'Afraid of getting what you want' is genuinely surprising — most people haven't considered this. Touches identity and self-sabotage."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-05",
+      "question": "What's the first lie you remember telling? What's the last lie you told?",
+      "archetype": "chain", "topic": "general", "score": 8,
+      "justification": "Two-beat chain with temporal bookends. Agency (told). Vulnerability. The CONTRAST between first and last reveals growth or consistency. Never asked as a pair."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-06",
+      "question": "What did your parents fight about that you now understand?",
+      "archetype": "time_machine", "topic": "general", "score": 9,
+      "justification": "Temporal (child → adult understanding). Family vulnerability. Agency ('now understand' implies growth/empathy work). NEVER asked. Multi-layered — reveals the fight, the childhood confusion, AND the adult reckoning."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-07",
+      "question": "What's a relationship you ended that made you more of who you are?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (ended). Identity through loss. Story-inviting. Multi-layered — the ending was the making."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-08",
+      "question": "Who in your life right now lets you be the most yourself?",
+      "archetype": "identity_sort", "topic": "general", "score": 7,
+      "justification": "Specific person. Positive. But 'lets you' is slightly passive — the other person creates the space, not the answerer. Observation-adjacent."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-09",
+      "question": "What's a conversation you keep replaying in your head?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 7,
+      "justification": "Concrete (conversation). 'Keep replaying' implies unresolved stakes. But 'replaying' is passive — no agency in the replaying. Just a haunting."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-10",
+      "question": "What's a boundary you set that someone you love didn't understand?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Agency (set a boundary). Stakes (someone you love). Tension (didn't understand). NEVER asked casually. Story-inviting. Multi-layered — the boundary, the love, the misunderstanding."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-11",
+      "question": "What's the cruelest true thing anyone ever said to you?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Unexpected adjective pairing (cruelest + true). Stakes. Story-inviting. The 'true' is the knife — it wasn't unfair, which makes it worse. But the other person is the agent."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-12",
+      "question": "What did you sacrifice for someone who never knew you sacrificed it?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Hidden self (never knew). Agency (sacrificed). NEVER asked. Story-inviting. Reveals secret devotion — the most selfless form of love. Beautiful and uncommon."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-13",
+      "question": "What's a habit you picked up from someone you're no longer close to?",
+      "archetype": "time_machine", "topic": "general", "score": 8,
+      "justification": "Agency (picked up). Temporal. Relationship loss implied. Concrete (habit). Reveals how people leave traces on us even after they leave."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-14",
+      "question": "What's the last thing you built that didn't require electricity?",
+      "archetype": "specificity_trap", "topic": "body", "score": 8,
+      "justification": "Agency (built). Concrete constraint (no electricity). Reveals analog identity. Temporal anchor (last). Fun at a bar. Forces interesting answer."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-15",
+      "question": "What did you choose to unlearn?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 7,
+      "justification": "Agency (chose, unlearned). Identity. Elegant brevity. But 'unlearn' is slightly jargon-y — therapy-adjacent language. Needs earthier phrasing."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-16",
+      "question": "What's something you used to do yourself that you now let technology do — and you feel a little guilty about it?",
+      "archetype": "time_machine", "topic": "ai_tech", "score": 8,
+      "justification": "Temporal (used to → now). Agency (let technology). Vulnerability (guilt). Concrete. Relatable in 2026. The guilt is the honest twist."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-17",
+      "question": "If your phone died permanently right now, what's the first thing you'd do after the panic subsided?",
+      "archetype": "thought_experiment", "topic": "ai_tech", "score": 7,
+      "justification": "Hypothetical but 'after the panic subsided' is a good twist — skips the obvious reaction. Slightly generic phone-death scenario."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-18",
+      "question": "What's a skill you're grateful you learned before smartphones existed?",
+      "archetype": "time_machine", "topic": "ai_tech", "score": 6,
+      "justification": "Generational. But excludes younger people — not universal enough. And it's an opinion about nostalgia, not a personal story."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-19",
+      "question": "What's the last thing you chose to do offline when you could have done it online?",
+      "archetype": "identity_sort", "topic": "ai_tech", "score": 7,
+      "justification": "Agency (chose). Concrete. But might produce boring answers — 'I went to the store.' Needs higher stakes built into the frame."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-20",
+      "question": "What's a question you've asked a search engine that you should have asked someone who loves you?",
+      "archetype": "reframe", "topic": "ai_tech", "score": 8,
+      "justification": "Inversion (machine over human). 'Someone who loves you' sharpens the vulnerability — reveals isolation or independence patterns. Concrete."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-21",
+      "question": "What's something you own that owns you back?",
+      "archetype": "reframe", "topic": "general", "score": 8,
+      "justification": "Inversion. Compact and surprising. Self-examination. Concrete noun required in answer. Echoes Raptitude's 'every possession is a relationship.'"
+    },
+    {
+      "cycle": 3, "id": "R2-C3-22",
+      "question": "What are you currently pretending is fine?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Direct hit. Agency (pretending). Temporal (currently). Stakes ('is fine' implies it's not). Hidden self. Powerful — but versions have circulated online, reducing surprise factor."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-23",
+      "question": "What's the most expensive mistake you made before age 25?",
+      "archetype": "specificity_trap", "topic": "money", "score": 8,
+      "justification": "Concrete (money, age). Agency (made). Story-inviting. 'Before 25' adds a temporal boundary that focuses the answer."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-24",
+      "question": "What did you give up that you sometimes want back, even though you know you shouldn't?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (gave up). Stakes (want back + shouldn't). Multi-layered tension between desire and wisdom. Story-inviting."
+    },
+    {
+      "cycle": 3, "id": "R2-C3-25",
+      "question": "What's a kindness you did that you kept entirely to yourself?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Hidden self (kept to yourself). Agency (did). NEVER asked. Secret goodness is deeply personal and ego-free. Reveals character when nobody's watching."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-01",
+      "question": "What's a wound that made you kinder?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Unexpected adjective pairing (wound + kinder). Agency implied — they chose kindness from pain. NEVER asked. Identity through transformation. Beautiful brevity. Concrete noun (wound)."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-02",
+      "question": "What did you walk away from that everyone else stayed for?",
+      "archetype": "identity_sort", "topic": "general", "score": 9,
+      "justification": "Agency (walked away). Contrast (everyone else stayed). Touches the moment of independent thought. NEVER asked. Story-inviting. The loneliness of conviction."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-03",
+      "question": "What's the hardest truth you ever had to tell someone you love?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (told). Stakes (someone you love). Concrete (truth). Story-inviting. 'Had to' implies obligation, not cruelty."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-04",
+      "question": "What's a compliment you've been chasing your whole life without realizing it?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (chasing). Hidden self (without realizing). Temporal (whole life). Identity. 'Without realizing' adds a layer of self-discovery IN the answering."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-05",
+      "question": "What's a song that once made you pull the car over?",
+      "archetype": "specificity_trap", "topic": "general", "score": 8,
+      "justification": "Concrete (car, song). Story-inviting. Emotional intensity. Agency (pulled over). Universal experience rendered specific."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-06",
+      "question": "What did you stop apologizing for?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Agency (stopped). Identity through refusal. NEVER asked. Growth through boundary-setting. Compact and devastating. Implies they used to apologize for being themselves."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-07",
+      "question": "What's a question you're afraid to be asked someday?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Meta-question. Hidden self (the fear reveals the secret). Multi-layered. But 'afraid' is an emotion verb, and the question is HEAVY for a bar. Passes the 10-minute debate test but barely passes the bar test."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-08",
+      "question": "What's something you were wrong about for years before you finally admitted it?",
+      "archetype": "time_machine", "topic": "general", "score": 8,
+      "justification": "Agency (admitted). Temporal (years). Self-examination. Story-inviting. 'Finally admitted' implies resistance overcome."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-09",
+      "question": "What did you inherit from your parents that you had to uninstall yourself?",
+      "archetype": "identity_sort", "topic": "general", "score": 9,
+      "justification": "Agency (uninstall yourself). Generational break. 'Uninstall' is a fresh, concrete metaphor — surprising verb from tech applied to psychology. Touches the moment of self-reprogramming. NEVER asked in this way."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-10",
+      "question": "What's a secret you suspect you keep from yourself?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 7,
+      "justification": "Meta-vulnerability. Paradoxical. Interesting in theory. But too abstract to answer concretely at a bar. Might produce uncomfortable silence rather than conversation."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-11",
+      "question": "What's the last thing you did that made you feel alive, not just busy?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (did). Contrast (alive vs busy). Temporal. Touches something real in 2026 — everyone is busy, few feel alive. Story-inviting."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-12",
+      "question": "What's a version of love you had to outgrow?",
+      "archetype": "time_machine", "topic": "general", "score": 9,
+      "justification": "Agency (outgrow). Temporal. Identity through romantic/emotional evolution. NEVER asked. Multi-layered — could be familial, romantic, self-love, codependent. 'Outgrow' is the perfect verb — it's active, implies deliberate growth past something, and isn't violent."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-13",
+      "question": "What's the one thing you'd change about how you were raised — and what would you never change?",
+      "archetype": "chain", "topic": "general", "score": 8,
+      "justification": "Two-part chain. Family. Temporal. Second part is the twist — what they'd KEEP reveals as much as what they'd change. Agency implied in both choices."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-14",
+      "question": "Who forgave you when you didn't deserve it?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Specific person. Vulnerability ('didn't deserve it'). Story-inviting. The other person has agency, but the answerer's self-knowledge ('I didn't deserve it') is the real reveal."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-15",
+      "question": "What's a meal that changed your life? Who cooked it?",
+      "archetype": "chain", "topic": "general", "score": 8,
+      "justification": "Concrete (meal). Story-inviting. Second part deepens — the WHO matters as much as the what. Universal. Agency in recognizing the change."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-16",
+      "question": "What's something you Googled once that you can never un-know?",
+      "archetype": "vulnerability_door", "topic": "ai_tech", "score": 8,
+      "justification": "Agency (Googled). Hidden self. Stakes (can't un-know). Concrete. Fun at a bar — everyone has one."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-17",
+      "question": "What part of your personality was shaped more by the internet than by anyone who raised you?",
+      "archetype": "identity_sort", "topic": "ai_tech", "score": 8,
+      "justification": "Identity through digital influence. Generational. NEVER asked. Forces uncomfortable self-examination. But 'was shaped' is passive construction — internet as agent, not answerer."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-18",
+      "question": "If your kids could only learn one thing from watching how you use technology, what would you want it to be?",
+      "archetype": "world_builder", "topic": "ai_tech", "score": 7,
+      "justification": "Stakes (kids). Identity. But hypothetical framing and 'would you want' is preference territory. Slightly preachy."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-19",
+      "question": "When's the last time you chose a human over a screen, and it mattered?",
+      "archetype": "time_machine", "topic": "ai_tech", "score": 8,
+      "justification": "Agency (chose). Temporal. Concrete contrast (human vs screen). 'And it mattered' is the knife — implies sometimes it doesn't."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-20",
+      "question": "What's the last argument you had that actually changed your mind?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (argued, changed mind). Temporal. Self-examination. 'Actually' implies it's rare — which it is. Story-inviting."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-21",
+      "question": "What's a promise you made to someone that you never told them about?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 9,
+      "justification": "Hidden self (never told them). Agency (made a promise). Inversion — a promise the other person doesn't know about. NEVER asked. Secret commitment is the most intimate form of loyalty. Beautiful."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-22",
+      "question": "What's the most uncomfortable silence you've ever sat through without breaking it?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (sat through without breaking — restraint as action). Concrete (silence). Story-inviting. 'Without breaking it' implies strength. Never asked."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-23",
+      "question": "What's something you started building that you never finished — and you're not sure if you should?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 7,
+      "justification": "Agency (started). Stakes (unfinished). The 'not sure if you should' adds active tension. But similar to R1's 'quit and still think about.' Derivative."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-24",
+      "question": "What did you fight for that turned out not to be worth it — and what did it teach you anyway?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (fought for). Inversion (not worth it). The follow-up 'what did it teach you' saves it from being purely negative. Story-inviting. Multi-layered."
+    },
+    {
+      "cycle": 4, "id": "R2-C4-25",
+      "question": "What's a kindness someone showed you that you've spent years trying to pass forward?",
+      "archetype": "vulnerability_door", "topic": "general", "score": 8,
+      "justification": "Agency (spent years trying to pass forward). Temporal. Concrete (kindness). The other person initiates but the answerer's life-long response is the real story."
+    }
+  ],
+  "score_distribution": {
+    "9": 15,
+    "8": 52,
+    "7": 23,
+    "6": 5,
+    "5": 3,
+    "4": 1,
+    "3": 0,
+    "2": 0,
+    "1": 0
+  },
+  "by_cycle": {
+    "cycle_1": {"total": 25, "eight_plus": 11, "nines": 2},
+    "cycle_2": {"total": 25, "eight_plus": 13, "nines": 3},
+    "cycle_3": {"total": 25, "eight_plus": 16, "nines": 4},
+    "cycle_4": {"total": 25, "eight_plus": 20, "nines": 6}
+  }
+}

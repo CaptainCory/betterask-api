@@ -1,0 +1,427 @@
+{
+  "metadata": {
+    "date": "2026-03-10",
+    "cycles": 4,
+    "total_questions": 100,
+    "scoring_model": "Cory Stout calibrated taste (not generic quality)"
+  },
+  "questions": [
+    {
+      "cycle": 1, "id": "C1-01", "question": "What's a hill you'll die on that none of your friends agree with?",
+      "archetype": "identity_sort", "score": 8, "justification": "Forces self-examination, reveals identity, has social stakes via friend disagreement."
+    },
+    {
+      "cycle": 1, "id": "C1-02", "question": "What's the hardest phone call you've ever had to make?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Never asked. Concrete noun (phone call). Agency (had to make). Invites a deeply personal story."
+    },
+    {
+      "cycle": 1, "id": "C1-03", "question": "If your daily routine was a restaurant menu, what would the chef's special be?",
+      "archetype": "reframe", "score": 4, "justification": "Clever but passive observation. No stakes. Doesn't touch identity or agency."
+    },
+    {
+      "cycle": 1, "id": "C1-04", "question": "How many times have you moved in your life, and which move changed you the most?",
+      "archetype": "specificity_trap", "score": 6, "justification": "Second part has depth but first part is database-recall. Borderline cavernous."
+    },
+    {
+      "cycle": 1, "id": "C1-05", "question": "What's the oldest thing in your closet that you refuse to throw away?",
+      "archetype": "mirror", "score": 8, "justification": "Concrete noun. Reveals identity through attachment. 'Refuse' implies agency/defense."
+    },
+    {
+      "cycle": 1, "id": "C1-06", "question": "Would you rather know the exact date of your death or never know?",
+      "archetype": "false_binary", "score": 5, "justification": "Classic thought experiment asked a million times. No surprise factor."
+    },
+    {
+      "cycle": 1, "id": "C1-07", "question": "If you could put one sentence on every bathroom mirror in America, what would it say?",
+      "archetype": "world_builder", "score": 7, "justification": "Concrete setting, reveals values, but slightly generic world-builder. Needs a twist."
+    },
+    {
+      "cycle": 1, "id": "C1-08", "question": "What's a version of yourself from 10 years ago that would be shocked by who you are now?",
+      "archetype": "time_machine", "score": 8, "justification": "Self-examination, touches identity change, multi-layered — what shocks them could be good or bad."
+    },
+    {
+      "cycle": 1, "id": "C1-09", "question": "If you had to teach a one-hour class tomorrow on any topic with no prep, what would you teach?",
+      "archetype": "thought_experiment", "score": 7, "justification": "Similar to the 8-scoring mandatory class but less stakes. 'No prep' adds pressure but 'any topic' is too open."
+    },
+    {
+      "cycle": 1, "id": "C1-10", "question": "What's something you quit that you still think about?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Never asked. Agency (they quit). 'Still think about' implies unresolved stakes. Haunting."
+    },
+    {
+      "cycle": 1, "id": "C1-11", "question": "Describing it like a heist movie, how did you get your current job?",
+      "archetype": "reframe", "score": 7, "justification": "Fun reframe but the metaphor might force too much. Slightly try-hard."
+    },
+    {
+      "cycle": 1, "id": "C1-12", "question": "Are you the person who leaves the party early or the one who turns off the lights?",
+      "archetype": "identity_sort", "score": 7, "justification": "Good identity sort, concrete, but slightly binary without depth. Missing a third option."
+    },
+    {
+      "cycle": 1, "id": "C1-13", "question": "How many books are within arm's reach of where you sleep?",
+      "archetype": "specificity_trap", "score": 7, "justification": "Good specificity trap, reveals priorities, but might dead-end without conversation fuel beyond the number."
+    },
+    {
+      "cycle": 1, "id": "C1-14", "question": "What would your ex say is the most annoying thing about you?",
+      "archetype": "mirror", "score": 8, "justification": "Forces self-examination from specific person's perspective. Vulnerability. Multi-layered."
+    },
+    {
+      "cycle": 1, "id": "C1-15", "question": "What's your go-to karaoke song? Now: could you sing it right now, no music, and commit?",
+      "archetype": "absurd_escalation", "score": 6, "justification": "Fun escalation but more performance than revelation. Doesn't touch identity deeply."
+    },
+    {
+      "cycle": 1, "id": "C1-16", "question": "Would you rather be the best player on a losing team or the worst player on a championship team?",
+      "archetype": "false_binary", "score": 7, "justification": "Good tension, reveals values, but asked before in various forms. Lacks surprise."
+    },
+    {
+      "cycle": 1, "id": "C1-17", "question": "What's a promise you made to yourself that you actually kept?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Agency. 'Actually kept' implies most people break self-promises — tension. Touches identity."
+    },
+    {
+      "cycle": 1, "id": "C1-18", "question": "If you had to open a shop on your block, what would you sell?",
+      "archetype": "world_builder", "score": 7, "justification": "Good world-builder, concrete, but more whimsical than revealing."
+    },
+    {
+      "cycle": 1, "id": "C1-19", "question": "What's a piece of advice you ignored that turned out to be right?",
+      "archetype": "time_machine", "score": 8, "justification": "Story-inviting. Self-examination. Stakes (they were wrong). Concrete."
+    },
+    {
+      "cycle": 1, "id": "C1-20", "question": "What's the last thing you did for the first time? When was it?",
+      "archetype": "chain", "score": 8, "justification": "Time machine + agency. Reveals how adventurous/stagnant someone is. 'When' adds a second punch."
+    },
+    {
+      "cycle": 1, "id": "C1-21", "question": "If every lie you've ever told turned your skin slightly blue, how blue would you be right now?",
+      "archetype": "thought_experiment", "score": 6, "justification": "Fun but answer is just a shade of blue. Not much conversation fuel without follow-up."
+    },
+    {
+      "cycle": 1, "id": "C1-22", "question": "If your bank account was a Yelp review, what would the one-star complaint be?",
+      "archetype": "reframe", "score": 6, "justification": "Clever reframe but financial questions make people defensive. Stakes aren't personal enough."
+    },
+    {
+      "cycle": 1, "id": "C1-23", "question": "Do you fight for things or let things find you?",
+      "archetype": "identity_sort", "score": 8, "justification": "Touches agency directly. Multi-layered — different answers for different domains. Simple to answer, deep to debate."
+    },
+    {
+      "cycle": 1, "id": "C1-24", "question": "What's the last thing you made that didn't work?",
+      "archetype": "vulnerability_door", "score": 7, "justification": "Good vulnerability but 'made' is slightly vague. Close to 9-scoring 'built with hands' but inverted."
+    },
+    {
+      "cycle": 1, "id": "C1-25", "question": "To the best of your ability, explain why you chose the city you live in — like you're defending it in court.",
+      "archetype": "explain_it_test", "score": 8, "justification": "Explain-it test + reframe. 'Defending in court' adds stakes. Reveals values through location choice."
+    },
+    {
+      "cycle": 2, "id": "C2-01", "question": "What's the last fight you had that you're glad you had?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Agency (fought). Surprise (glad about a fight). Invites a STORY. Multi-layered — what made it worth it?"
+    },
+    {
+      "cycle": 2, "id": "C2-02", "question": "What's a belief you held at 20 that you've completely abandoned?",
+      "archetype": "identity_sort", "score": 8, "justification": "Self-examination. Time anchor (20). 'Completely abandoned' has conviction. Reveals growth."
+    },
+    {
+      "cycle": 2, "id": "C2-03", "question": "When's the last time you apologized and actually meant every word?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Agency. 'Actually meant every word' implies most apologies are partial — tension."
+    },
+    {
+      "cycle": 2, "id": "C2-04", "question": "What's the last compliment someone gave you that you didn't believe?",
+      "archetype": "mirror", "score": 8, "justification": "Vulnerability. The gap between how others see you and how you see yourself. Surprising angle."
+    },
+    {
+      "cycle": 2, "id": "C2-05", "question": "What's one thing you do that your parents never did?",
+      "archetype": "identity_sort", "score": 9, "justification": "Generational break. Agency. Touches the moment someone chose their own path. Never asked."
+    },
+    {
+      "cycle": 2, "id": "C2-06", "question": "What's the last risk you took that your friends thought was stupid?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Agency. Social stakes. Story-inviting. Friend judgment adds concrete tension."
+    },
+    {
+      "cycle": 2, "id": "C2-07", "question": "If you could go back and watch yourself handle one specific conversation, which one?",
+      "archetype": "time_machine", "score": 8, "justification": "Implies regret or pride. Specific (one conversation). Self-examination."
+    },
+    {
+      "cycle": 2, "id": "C2-08", "question": "What's the most important thing in your life that you never talk about at dinner parties?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Hidden self. Public/private contrast. Asks what's never discussed. Real weight."
+    },
+    {
+      "cycle": 2, "id": "C2-09", "question": "Are you building something right now or recovering from something?",
+      "archetype": "false_binary", "score": 8, "justification": "Deep self-sorting. Both answers reveal current life chapter. Simple to answer, deep to unpack."
+    },
+    {
+      "cycle": 2, "id": "C2-10", "question": "What's a skill you taught yourself that nobody knows you have?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Agency (taught yourself). Secret identity element. Concrete. Never asked at parties."
+    },
+    {
+      "cycle": 2, "id": "C2-11", "question": "What rule do you break on purpose and feel fine about?",
+      "archetype": "identity_sort", "score": 8, "justification": "Mirror of 9-scoring 'rule nobody taught you.' Agency. Reveals values through transgression."
+    },
+    {
+      "cycle": 2, "id": "C2-12", "question": "If you had to live in one room for a year, what three objects are in it?",
+      "archetype": "world_builder", "score": 7, "justification": "Good world-builder but constraint feels too artificial. Desert island variant."
+    },
+    {
+      "cycle": 2, "id": "C2-13", "question": "What do your hands look like right now? What do they say about your week?",
+      "archetype": "mirror", "score": 7, "justification": "Beautifully concrete but might dead-end. First part is observation, not agency."
+    },
+    {
+      "cycle": 2, "id": "C2-14", "question": "What's something you used to judge people for that you now do yourself?",
+      "archetype": "time_machine", "score": 9, "justification": "Self-examination at its finest. Hypocrisy as self-knowledge. Vulnerability + growth."
+    },
+    {
+      "cycle": 2, "id": "C2-15", "question": "How many people have you cut out of your life on purpose?",
+      "archetype": "specificity_trap", "score": 8, "justification": "Specificity trap with real stakes. Number IS the personality reveal. 'On purpose' = agency."
+    },
+    {
+      "cycle": 2, "id": "C2-16", "question": "What's the last thing you started over from scratch?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Agency. Implies failure and courage. Story-inviting. 'From scratch' is concrete."
+    },
+    {
+      "cycle": 2, "id": "C2-17", "question": "If your inner monologue was broadcast to everyone in this room for 10 seconds, what would they hear?",
+      "archetype": "thought_experiment", "score": 7, "justification": "Fun but answer is too performative — people will pick something witty rather than honest."
+    },
+    {
+      "cycle": 2, "id": "C2-18", "question": "What's the most expensive lesson you've learned for free?",
+      "archetype": "reframe", "score": 8, "justification": "Great reframe. Implies pain without asking for it. 'Expensive + free' = tension. Multi-layered."
+    },
+    {
+      "cycle": 2, "id": "C2-19", "question": "Are you the same person when nobody's watching?",
+      "archetype": "identity_sort", "score": 7, "justification": "Touches identity but too philosophical — feels like a fortune cookie. Needs more specificity."
+    },
+    {
+      "cycle": 2, "id": "C2-20", "question": "Would you rather be deeply understood by one person or widely admired by thousands?",
+      "archetype": "false_binary", "score": 6, "justification": "Good binary but asked before. 'Right' answer is too obvious. Lacks surprise."
+    },
+    {
+      "cycle": 2, "id": "C2-21", "question": "What's something you rebuilt after it broke?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Agency. Could be literal or metaphorical. Story-inviting. Rebuilding implies loss + determination."
+    },
+    {
+      "cycle": 2, "id": "C2-22", "question": "What's the last thing you Googled? Now — what were you actually looking for?",
+      "archetype": "chain", "score": 8, "justification": "Chain that deepens. Second question is the real one — separates surface from need. Surprising."
+    },
+    {
+      "cycle": 2, "id": "C2-23", "question": "If your apartment burned down tonight, what would you realize you didn't need?",
+      "archetype": "mirror", "score": 8, "justification": "Inversion of classic 'what would you save.' Reveals attachment patterns."
+    },
+    {
+      "cycle": 2, "id": "C2-24", "question": "If you had to write one sentence that your kid reads on their 18th birthday, what would it say?",
+      "archetype": "thought_experiment", "score": 7, "justification": "Emotional but too Hallmark. 'One sentence' format done before. Invites performance over honesty."
+    },
+    {
+      "cycle": 2, "id": "C2-25", "question": "What's the last promise you broke to yourself?",
+      "archetype": "identity_sort", "score": 8, "justification": "Agency. Vulnerability. Self-examination. 'Last' anchors it. Companion to 'promise you kept.'"
+    },
+    {
+      "cycle": 3, "id": "C3-01", "question": "What's something you're proud of that you'd never put on a resume?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Hidden self. Agency (proud of). Concrete anchor (resume). Inversion of social performance."
+    },
+    {
+      "cycle": 3, "id": "C3-02", "question": "What's a part of your personality that only shows up under pressure?",
+      "archetype": "identity_sort", "score": 8, "justification": "Self-examination. Hidden self. Implies self-knowledge under stress. Specific."
+    },
+    {
+      "cycle": 3, "id": "C3-03", "question": "What did you stop pretending to enjoy, and when?",
+      "archetype": "time_machine", "score": 9, "justification": "Agency (stopped pretending). Two temporal anchors. 'When' demands a specific story."
+    },
+    {
+      "cycle": 3, "id": "C3-04", "question": "What's the most valuable thing you own that you couldn't sell?",
+      "archetype": "reframe", "score": 8, "justification": "Reframe of value. Concrete noun. Tension between monetary and personal value."
+    },
+    {
+      "cycle": 3, "id": "C3-05", "question": "What's something that went completely wrong that you'd do again?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Inversion. Agency. Multi-layered — why do it again? Reveals values through failure."
+    },
+    {
+      "cycle": 3, "id": "C3-06", "question": "What would your 15-year-old self be disappointed about? What would they be amazed by?",
+      "archetype": "mirror", "score": 8, "justification": "Two temporal anchors. Dual question reveals different things. Concrete age."
+    },
+    {
+      "cycle": 3, "id": "C3-07", "question": "What's something you chose that nobody in your family would have chosen?",
+      "archetype": "identity_sort", "score": 9, "justification": "Agency. Generational break. 'Nobody' = never-asked territory. Identity through contrast."
+    },
+    {
+      "cycle": 3, "id": "C3-08", "question": "Is the version of you at work the real you, or the version of you at 2 AM?",
+      "archetype": "false_binary", "score": 7, "justification": "Clever binary with good anchors but feels slightly try-hard. Too neat."
+    },
+    {
+      "cycle": 3, "id": "C3-09", "question": "What's a scar you're glad you have?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Inversion (glad about a scar). Concrete noun. Literal or metaphorical. Beautiful."
+    },
+    {
+      "cycle": 3, "id": "C3-10", "question": "How many of your current friendships would survive if you moved to another country tomorrow?",
+      "archetype": "specificity_trap", "score": 8, "justification": "Specificity trap with real stakes. Number reveals depth of connections. 'Tomorrow' adds urgency."
+    },
+    {
+      "cycle": 3, "id": "C3-11", "question": "What's the best thing that happened to you because you were in the wrong place?",
+      "archetype": "reframe", "score": 8, "justification": "Inversion. Agency implied. Story-inviting. Surprise element."
+    },
+    {
+      "cycle": 3, "id": "C3-12", "question": "When did you first realize you were different from your parents?",
+      "archetype": "identity_sort", "score": 9, "justification": "Generational. Specific temporal anchor ('first realize'). Coming-of-age story. Agency."
+    },
+    {
+      "cycle": 3, "id": "C3-13", "question": "What's something you keep choosing even though it's harder?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Repeated agency. Implies easier path exists. Reveals values through sacrifice."
+    },
+    {
+      "cycle": 3, "id": "C3-14", "question": "What's something you believed last year that embarrasses you now?",
+      "archetype": "time_machine", "score": 8, "justification": "Temporal change. Self-examination. 'Last year' is close enough to sting."
+    },
+    {
+      "cycle": 3, "id": "C3-15", "question": "What's the last thing you did that scared you? Would you do it again? Right now?",
+      "archetype": "chain", "score": 8, "justification": "Three-beat chain with escalation. Agency. 'Right now' third beat adds present-tense pressure."
+    },
+    {
+      "cycle": 3, "id": "C3-16", "question": "If you had one year with no obligations and no money worries, what would you build?",
+      "archetype": "world_builder", "score": 7, "justification": "'Build' verb is strong but 'no money worries' removes too much real-world tension."
+    },
+    {
+      "cycle": 3, "id": "C3-17", "question": "What's the loneliest decision you've ever made?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "'Loneliest' before 'decision' is surprising. Agency. Vulnerability. Never asked. Multi-layered."
+    },
+    {
+      "cycle": 3, "id": "C3-18", "question": "What does your browser history say about you that your Instagram doesn't?",
+      "archetype": "mirror", "score": 7, "justification": "Clever contrast but similar energy to screen-time-billboard (scored 3). Too techy."
+    },
+    {
+      "cycle": 3, "id": "C3-19", "question": "Are you living the life you chose or the life that chose you?",
+      "archetype": "identity_sort", "score": 7, "justification": "Touches agency directly but too abstract. Feels like a bumper sticker."
+    },
+    {
+      "cycle": 3, "id": "C3-20", "question": "If everyone you've ever wronged was in the next room, who would you talk to first?",
+      "archetype": "thought_experiment", "score": 8, "justification": "Real stakes. Forces prioritization of wrongs. Specific (one person). Vulnerability."
+    },
+    {
+      "cycle": 3, "id": "C3-21", "question": "What's something nobody asked you about that you wish they had?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Literally asks what's never asked. Hidden self. Meta-question that opens any door."
+    },
+    {
+      "cycle": 3, "id": "C3-22", "question": "What's the hardest thing you do that looks easy from the outside?",
+      "archetype": "reframe", "score": 8, "justification": "Hidden self. Inversion. Agency. Reveals effort behind the surface."
+    },
+    {
+      "cycle": 3, "id": "C3-23", "question": "Would you rather know what everyone thinks of you or never know?",
+      "archetype": "false_binary", "score": 5, "justification": "Classic binary, asked many times. No surprise."
+    },
+    {
+      "cycle": 3, "id": "C3-24", "question": "What's a tradition you started for yourself?",
+      "archetype": "identity_sort", "score": 9, "justification": "Agency (started). Identity. Concrete. Reveals what they value enough to ritualize."
+    },
+    {
+      "cycle": 3, "id": "C3-25", "question": "What's the last thing you said no to that you wanted to say yes to?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Agency. Tension between desire and discipline. 'Last' anchors it. Story-inviting."
+    },
+    {
+      "cycle": 4, "id": "C4-01", "question": "What's the quietest rebellion you've ever staged?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Unexpected adjective + noun. Agency. Hidden self. 'Rebellion' = agency, 'quietest' = nobody saw."
+    },
+    {
+      "cycle": 4, "id": "C4-02", "question": "What's a ritual you do before something important that nobody knows about?",
+      "archetype": "identity_sort", "score": 9, "justification": "Self-imposed structure. Hidden self. Concrete ('before something important'). Agency."
+    },
+    {
+      "cycle": 4, "id": "C4-03", "question": "What's the strangest thing you've ever been grateful for?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Unexpected adjective + gratitude. Inversion. Slightly less story-inviting than top 9s."
+    },
+    {
+      "cycle": 4, "id": "C4-04", "question": "What would your best friend say you're in denial about?",
+      "archetype": "mirror", "score": 9, "justification": "Specific person (best friend). Stakes (denial). Uncomfortable self-examination."
+    },
+    {
+      "cycle": 4, "id": "C4-05", "question": "What's a line you drew for yourself that you've never crossed?",
+      "archetype": "identity_sort", "score": 9, "justification": "Self-imposed rule. 'Never crossed' implies temptation. Identity through restraint."
+    },
+    {
+      "cycle": 4, "id": "C4-06", "question": "What's the last thing you forgave yourself for?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Inversion (self-forgiveness, not forgiving others). Agency. Temporal anchor. Rarely asked."
+    },
+    {
+      "cycle": 4, "id": "C4-07", "question": "When's the last time you completely changed your mind in real time — mid-conversation?",
+      "archetype": "time_machine", "score": 8, "justification": "Specific setting (conversation). Agency. Implies intellectual honesty. 'In real time' is concrete."
+    },
+    {
+      "cycle": 4, "id": "C4-08", "question": "What's the most important conversation you've ever had in a car?",
+      "archetype": "reframe", "score": 9, "justification": "Unexpected setting (car). Concrete noun. Universally relatable. Intimacy, movement, transition."
+    },
+    {
+      "cycle": 4, "id": "C4-09", "question": "What's something you do every day that you chose — not inherited, not required?",
+      "archetype": "identity_sort", "score": 8, "justification": "Self-imposed structure. Agency. 'Not inherited, not required' sharpens the question."
+    },
+    {
+      "cycle": 4, "id": "C4-10", "question": "What's a failure you've never told anyone about?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Hidden self. Vulnerability. 'Never told anyone' is powerful but might be TOO vulnerable for a bar."
+    },
+    {
+      "cycle": 4, "id": "C4-11", "question": "What would your mother say is your best quality that you don't see in yourself?",
+      "archetype": "mirror", "score": 9, "justification": "Specific person (mother). Inversion (quality you DON'T see). Emotional depth. Multi-layered."
+    },
+    {
+      "cycle": 4, "id": "C4-12", "question": "Are you more afraid of being forgotten or being misremembered?",
+      "archetype": "false_binary", "score": 8, "justification": "Both options are scary. No 'right' answer. Touches legacy and identity. Surprise."
+    },
+    {
+      "cycle": 4, "id": "C4-13", "question": "What's the bravest thing you've done that nobody saw?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Unexpected adjective pairing. Hidden self. Agency. Inversion (unwitnessed bravery). Story-inviting."
+    },
+    {
+      "cycle": 4, "id": "C4-14", "question": "What's the smallest thing that completely changed your trajectory?",
+      "archetype": "reframe", "score": 8, "justification": "Inversion (small cause → big effect). Story-inviting. Reveals how they think about fate vs. agency."
+    },
+    {
+      "cycle": 4, "id": "C4-15", "question": "What's a version of success you used to want that would horrify you now?",
+      "archetype": "identity_sort", "score": 9, "justification": "Two temporal anchors. Inversion (wanted → horrified). Reveals growth through rejection. Never asked."
+    },
+    {
+      "cycle": 4, "id": "C4-16", "question": "What's something you used to do every day that you silently miss?",
+      "archetype": "time_machine", "score": 8, "justification": "Temporal change. 'Silently' implies hidden self. Vulnerability. 'Every day' is concrete."
+    },
+    {
+      "cycle": 4, "id": "C4-17", "question": "What's the last door you walked through that you couldn't walk back through?",
+      "archetype": "vulnerability_door", "score": 9, "justification": "Metaphor works literally and figuratively. Irreversible agency. Story-inviting. Poetic but concrete."
+    },
+    {
+      "cycle": 4, "id": "C4-18", "question": "Who's the last stranger that changed your day? What did they do? Did you tell them?",
+      "archetype": "chain", "score": 8, "justification": "Three-beat chain. Concrete. Third beat is the knife twist — implies most people don't acknowledge kindness."
+    },
+    {
+      "cycle": 4, "id": "C4-19", "question": "How many people in your life have ever seen you completely fall apart?",
+      "archetype": "specificity_trap", "score": 8, "justification": "Specificity trap with vulnerability stakes. Number IS the personality reveal. 'Completely fall apart' has weight."
+    },
+    {
+      "cycle": 4, "id": "C4-20", "question": "What's something you protect that most people don't even think about?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Hidden self. Agency (protect). Slightly abstract — needs the answerer to make it concrete."
+    },
+    {
+      "cycle": 4, "id": "C4-21", "question": "When did you first feel like an adult — not by age, but by decision?",
+      "archetype": "identity_sort", "score": 9, "justification": "Reframe of common question. 'By decision' forces agency. Coming-of-age story. The parenthetical removes the boring answer."
+    },
+    {
+      "cycle": 4, "id": "C4-22", "question": "What's the most dangerous thing you do that's completely legal?",
+      "archetype": "reframe", "score": 8, "justification": "Inversion (dangerous + legal). Fun. Reveals risk tolerance. Concrete. Sparks debate."
+    },
+    {
+      "cycle": 4, "id": "C4-23", "question": "What's a goodbye you weren't ready for?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Vulnerability. Story-inviting. Concrete (a specific goodbye). Elegant simplicity."
+    },
+    {
+      "cycle": 4, "id": "C4-24", "question": "If you had to carve one sentence into the wall of your childhood bedroom, what would it say?",
+      "archetype": "world_builder", "score": 7, "justification": "Emotional. But 'one sentence' format done before within this set. Slightly derivative."
+    },
+    {
+      "cycle": 4, "id": "C4-25", "question": "What's the last thing you chose to do the hard way?",
+      "archetype": "vulnerability_door", "score": 8, "justification": "Agency ('chose' is explicit). 'The hard way' implies easier path existed. Reveals values through effort."
+    }
+  ],
+  "score_distribution": {
+    "9": 30,
+    "8": 44,
+    "7": 17,
+    "6": 5,
+    "5": 3,
+    "4": 1,
+    "3": 0,
+    "2": 0,
+    "1": 0
+  },
+  "by_cycle": {
+    "cycle_1": {"total": 25, "eight_plus": 11, "nines": 3},
+    "cycle_2": {"total": 25, "eight_plus": 19, "nines": 6},
+    "cycle_3": {"total": 25, "eight_plus": 20, "nines": 10},
+    "cycle_4": {"total": 25, "eight_plus": 24, "nines": 11}
+  }
+}
