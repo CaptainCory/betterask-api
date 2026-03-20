@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BetterAsk — Your AI asks lazy questions. Fix that.</title>
-    <meta name="description" content="Send what you know about a person. Get the perfect question. That's it. One API call. Zero config. 21 vectors under the hood.">
+    <title>BetterAsk — Agents don't know what they don't know.</title>
+    <meta name="description" content="The human understanding layer for AI agents. BetterAsk detects gaps in your agent's understanding and returns the perfect question to fill them. One API call. Zero config.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -597,6 +597,8 @@
             .before-after { grid-template-columns: 1fr; }
             .before-after-side.bad { border-right: none; border-bottom: 1px solid var(--border); }
             footer { flex-direction: column; text-align: center; }
+            /* Life domains responsive */
+            .vectors section:first-of-type > div:last-child { grid-template-columns: 1fr !important; }
         }
 
         @media (max-width: 500px) {
@@ -610,6 +612,19 @@
         @media (max-width: 1100px) and (min-width: 769px) {
             .vector-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* Life domains responsive */
+        @media (max-width: 900px) {
+            section[style*="grid-template-columns: repeat(4, 1fr)"] > div {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 500px) {
+            section[style*="grid-template-columns: repeat(4, 1fr)"] > div {
+                grid-template-columns: 1fr !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -618,20 +633,20 @@
     <div class="logo">betterask<span>.dev</span></div>
     <div class="nav-links">
         <a href="#how-it-works">how it works</a>
-        <a href="#vectors">vectors</a>
+        <a href="#the-21">the 21</a>
         <a href="#api">api</a>
-        <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank">📖 the book</a>
+        <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank">📖 book</a>
     </div>
 </nav>
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
-    <div class="hero-tag">your AI asks lazy questions. fix that.</div>
+    <div class="hero-tag">the human understanding layer for AI agents</div>
 
-    <h1>50 Cent had<br><span class="dim">21 Questions.</span><br>We have 21 Vectors.</h1>
+    <h1>Agents don't know<br><span class="dim">what they don't know.</span></h1>
 
     <p class="hero-sub">
-        Your AI is <strong>dying</strong> to know you better. BetterAsk gives it the questions to actually do it. <strong>One call. Zero config.</strong>
+        BetterAsk detects the gaps in your agent's understanding of its human — and returns the perfect question to fill them. <strong>One API call. Zero config.</strong> The human never sees it.
     </p>
 
     <div class="code-block">
@@ -641,57 +656,81 @@
         </div>
         <pre class="code-body" id="code-block"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/ask</span> <span class="c-flag">\</span>
   <span class="c-flag">-d</span> <span class="c-string">'{
-    "memory": "Sarah is 32, just moved to Austin, works in design, mentioned feeling stuck last week",
-    "history": ["What brought you to Austin?", "How's the new job going?"]
+    "known": {
+      "name": "Sarah",
+      "career": "UX designer",
+      "location": "Austin",
+      "recent_context": "mentioned feeling stuck last week"
+    },
+    "agent_role": "personal assistant",
+    "history": ["What brought you to Austin?"]
   }'</span>
 
 <span class="c-comment">// → 200 OK</span>
 {
-  <span class="c-key">"question"</span>: <span class="c-string">"If you repeated last Tuesday 365 times, where would you be a year from now?"</span>,
+  <span class="c-key">"question"</span>: <span class="c-string">"If you repeated last Tuesday 365 times, where would you be?"</span>,
+  <span class="c-key">"gap_targeted"</span>: <span class="c-string">"Daily Routines"</span>,
   <span class="c-key">"vectors"</span>: [<span class="c-string">"trajectory"</span>, <span class="c-string">"time"</span>, <span class="c-string">"self_assessment"</span>],
   <span class="c-key">"density"</span>: <span class="c-num">3</span>,
-  <span class="c-key">"why"</span>: <span class="c-string">"Career stagnation detected. Previous questions stayed surface — going deeper."</span>
+  <span class="c-key">"why"</span>: <span class="c-string">"Agent has no visibility into daily habits."</span>,
+  <span class="c-key">"what_to_listen_for"</span>: <span class="c-string">"Whether the answer reveals satisfaction or restlessness."</span>,
+  <span class="c-key">"gaps_detected"</span>: [<span class="c-string">"Daily Routines"</span>, <span class="c-string">"Financial Reality"</span>, <span class="c-string">"Inner Life"</span>, <span class="c-string">"Fun & Play"</span>]
 }</pre>
     </div>
-    <div class="hero-hint"><span>●</span> Zero config — the AI picks the vectors for you</div>
+    <div class="hero-hint"><span>●</span> Zero config — the brain picks the vectors, depth, and gap automatically</div>
 </section>
 
 <!-- ═══ PROBLEM ═══ -->
 <section class="problem">
     <div class="section-tag">// the problem</div>
-    <h2>Bad questions in.<br>Empty answers out.</h2>
+    <h2>Your agent executes tasks.<br>But does it understand its human?</h2>
 
     <p>
-        Your app asks <em>"What are you looking for?"</em> and gets <em>"I don't know."</em> That's not a user problem — it's a question problem. You already know things about your user. BetterAsk turns that knowledge into the perfect next question.
+        Most agents know what their human <em>ASKED</em> for. Few know what their human <em>NEEDS</em>. BetterAsk maps the blind spots — career, relationships, health, routines, growth, meaning — and fills them one question at a time. The human just has a great conversation. The agent gets smarter.
     </p>
 
-    <div class="before-after">
-        <div class="before-after-side bad">
-            <div class="before-after-label">BEFORE</div>
-            <div class="qa-pair">
-                <div class="qa-q">"How can I help you?"</div>
-                <div class="qa-a">"I don't know, something cool."</div>
+    <!-- DEMO SECTION -->
+    <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 3rem 2.5rem; margin: 3rem 0; text-align: center;">
+        <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; margin-bottom: 2.5rem; color: var(--accent);">Gap Detection in Action</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align: left;">
+            <div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); margin-bottom: 1rem; letter-spacing: 0.1em;">WHAT THE AGENT KNOWS:</div>
+                <div style="background: var(--bg-card); padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.7;">
+                    name: "Marcus"<br>
+                    age: 28<br>
+                    job: "Software engineer"<br>
+                    location: "Seattle"<br>
+                    recent: "complained about work stress"
+                </div>
+                
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); margin: 2rem 0 1rem; letter-spacing: 0.1em;">QUESTION RETURNED:</div>
+                <div style="background: var(--accent-dim); border: 1px solid rgba(0, 172, 230, 0.3); padding: 1.5rem; font-size: 1rem; color: var(--text);">
+                    "What does a perfect Tuesday look like for you — from wake-up to sleep?"
+                </div>
             </div>
-            <div class="result-note">→ Dead end. Zero signal.</div>
-        </div>
-        <div class="before-after-side good">
-            <div class="before-after-label">AFTER (with BetterAsk)</div>
-            <div class="qa-pair">
-                <div class="qa-q">"If you could only keep 3 apps on your phone, which survive?"</div>
-                <div class="qa-a">"Oh wow... definitely Spotify, probably Maps, and... actually, maybe just my camera app? I document everything..."</div>
+            
+            <div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--tangerine); margin-bottom: 1rem; letter-spacing: 0.1em;">GAPS DETECTED:</div>
+                <div style="background: var(--bg-card); padding: 1.5rem;">
+                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Daily Routines</div>
+                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Health & Body</div>
+                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Fun & Play</div>
+                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Inner Life & Meaning</div>
+                </div>
+                
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--tangerine); margin: 2rem 0 1rem; letter-spacing: 0.1em;">WHAT TO LISTEN FOR:</div>
+                <div style="background: rgba(255, 140, 66, 0.1); border: 1px solid rgba(255, 140, 66, 0.3); padding: 1.5rem; font-size: 0.9rem; color: var(--text-dim); font-style: italic;">
+                    "Whether Marcus describes structure or chaos, self-care or neglect, joy or just survival."
+                </div>
             </div>
-            <div class="result-note">→ 15 minutes of genuine conversation</div>
         </div>
     </div>
-
-    <p>
-        The difference? BetterAsk analyzed what you knew (user values convenience, creativity, memory) and selected vectors that would hit: <em>specificity</em>, <em>identity</em>, and <em>forced choice</em>. You never had to pick them.
-    </p>
 
     <a href="https://endsmalltalknow.com" target="_blank" class="book-link">
         <span style="font-size:1.5rem;">📕</span>
         <div>
-            <div class="title">END SMALL TALK</div>
+            <div class="title">Built on 607 questions from END SMALL TALK</div>
             <div class="sub">by Cory Stout — the research behind the engine</div>
         </div>
     </a>
@@ -700,25 +739,99 @@
 <!-- ═══ HOW IT WORKS ═══ -->
 <section class="how" id="how-it-works">
     <div class="section-tag">// how it works</div>
-    <h2>Send what you know.<br>Get the perfect question.<br>That's it.</h2>
+    <h2>How it works</h2>
 
-    <p class="how-sub">
-        The Elon principle: any user input is a design failure the AI should have anticipated. You don't pick vectors. You don't configure depth. You send context and get a question that makes people think.
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; max-width: 1000px; margin: 3rem auto 0; text-align: center;">
+        
+        <!-- Card 1 -->
+        <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 1.5rem; opacity: 0.8;">📤</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Agent sends context</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Everything the agent knows — structured or freeform. Name, career, interests, recent conversations. Whatever it has.</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 1.5rem; opacity: 0.8;">🔍</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">BetterAsk finds the gaps</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">12 life domains scanned. What's missing? Daily routines? Financial reality? Inner life? The engine detects what's conspicuously absent.</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
+            <div style="font-size: 2.5rem; margin-bottom: 1.5rem; opacity: 0.8;">🎯</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Agent gets the perfect question + coaching</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">A question from 607 battle-tested options. Plus: which gap it targets, which vectors it uses, and what to listen for in the answer.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ LIFE DOMAINS ═══ -->
+<section style="padding: 6rem 4rem; border-top: 1px solid var(--border); text-align: center;">
+    <div class="section-tag">// 12 life domains</div>
+    <h2>12 Life Domains. The map of a human.</h2>
+    <p style="color: var(--text-dim); font-size: 1.05rem; max-width: 700px; margin: 0 auto 4rem; line-height: 1.8;">
+        BetterAsk scans what the agent knows and identifies which domains are blind spots. High-priority gaps get filled first.
     </p>
-
-    <div class="one-step">1</div>
-    <div class="step-big">One API Call</div>
-    <div class="step-desc">
-        Send what you know about the person and what's already been asked. The engine analyzes the context, selects the right combination of vectors, and returns the perfect next question. Zero decisions required.
+    
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; max-width: 1200px; margin: 0 auto; background: var(--border);">
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Daily Routines</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Habits, schedules, patterns</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Career Direction</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Work, ambitions, trajectory</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Relationship Quality</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Partnerships, connections</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Family Dynamics</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Parents, siblings, children</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Financial Reality</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Money, security, goals</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Health & Body</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Physical wellness, energy</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Social Life</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Friends, community, belonging</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Inner Life & Meaning</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Values, purpose, spirituality</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Creative Expression</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Art, hobbies, making things</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Growth Edge</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Learning, challenges, evolution</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Fun & Play</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Joy, laughter, spontaneity</div>
+        </div>
+        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Past & Wounds</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">History, healing, closure</div>
+        </div>
     </div>
 </section>
 
 <!-- ═══ VECTORS ═══ -->
-<section class="vectors" id="vectors">
+<section class="vectors" id="the-21">
     <div class="section-tag">// the 21 vectors</div>
-    <h2>21 Vectors. Under the hood.<br>You never touch them.</h2>
+    <h2>21 Vectors. The invisible engine.</h2>
     <p class="vectors-sub">
-        The engine analyzes what you know about a person, what's already been asked, and <em>automatically selects</em> the perfect combination of vectors. You just send context and get a question. This is the invisible intelligence:
+        Every question uses a combination of these patterns. The agent never picks them — the brain selects the right mix based on context, gaps, and conversation depth.
     </p>
 
     <div class="vector-grid">
@@ -885,11 +998,11 @@
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2rem; text-align: center;">
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 1rem;">FREE</div>
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1;">$0</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">forever</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">100 questions/day</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ 100 questions/day</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Enough to prototype your agent</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ All 21 vectors</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ /ask endpoint</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Gap detection</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim);">✓ No credit card</div>
             </div>
         </div>
@@ -899,11 +1012,11 @@
             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--cerulean, #00ACE6); color: #000; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 1rem;">MOST POPULAR</div>
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--cerulean, #00ACE6); margin-bottom: 1rem;">PRO</div>
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1;">$29</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">/month</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">5,000 questions/day</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ 5,000 questions/day</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ For agents in production</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Priority response</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Memory + history context</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Agent coaching included</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Question analytics</div>
             </div>
         </div>
@@ -912,10 +1025,10 @@
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2rem; text-align: center;">
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--tangerine, #FF8C42); margin-bottom: 1rem;">SCALE</div>
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; color: var(--text); line-height: 1;">$0.005</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">/question after 5k</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">/question</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Unlimited questions</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Everything in Pro</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ For agents serving thousands of humans</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Volume discounts</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Dedicated support</div>
             </div>
@@ -925,9 +1038,9 @@
     <div style="text-align: center; margin-top: 2rem;">
         <div class="book-promo">
             <div class="book-promo-icon">📖</div>
-            <div class="book-promo-title">Want the full 607?</div>
+            <div class="book-promo-title">Built on 607 questions from END SMALL TALK</div>
             <p class="book-promo-desc">
-                Powered by <strong style="color:var(--text);">END SMALL TALK</strong> by Cory Stout — the book that kills boring conversations forever.
+                by Cory Stout — the research behind the engine.
             </p>
             <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" class="btn btn-fill">Get the Book →</a>
         </div>
