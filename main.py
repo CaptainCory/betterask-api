@@ -102,6 +102,21 @@ def init_db():
                 active INTEGER NOT NULL DEFAULT 1
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS human_profiles (
+                human_id TEXT PRIMARY KEY,
+                agent_api_key TEXT,
+                known_data TEXT DEFAULT '{}',
+                domains_covered TEXT DEFAULT '[]',
+                domains_depth TEXT DEFAULT '{}',
+                questions_asked TEXT DEFAULT '[]',
+                gaps_history TEXT DEFAULT '[]',
+                total_questions INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_human_profiles_agent ON human_profiles(agent_api_key)")
         
         # Add vectors column to existing tables (safe migration)
         try:
@@ -516,6 +531,102 @@ async def rate_limit_middleware(request: Request, call_next):
             client = request.client.host if request.client else "unknown"
             check_rate_limit(client)
     return await call_next(request)
+
+
+# ---------------------------------------------------------------------------
+# Human Profile helpers
+# ---------------------------------------------------------------------------
+
+def get_human_profile(human_id: str, agent_api_key: str) -> dict | None:
+    """Get a human profile from the database."""
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT * FROM human_profiles WHERE human_id = ? AND agent_api_key = ?",
+            (human_id, agent_api_key)
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def create_human_profile(human_id: str, agent_api_key: str) -> dict:
+    """Create a new human profile."""
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO human_profiles (human_id, agent_api_key)
+            VALUES (?, ?)
+        """, (human_id, agent_api_key))
+        conn.commit()
+    return get_human_profile(human_id, agent_api_key)
+
+
+def update_human_profile(human_id: str, agent_api_key: str, **updates) -> bool:
+    """Update a human profile with the given fields."""
+    if not updates:
+        return False
+    
+    # Always update the timestamp
+    updates['updated_at'] = datetime.now().isoformat()
+    
+    set_clauses = ', '.join(f"{k} = ?" for k in updates.keys())
+    values = list(updates.values()) + [human_id, agent_api_key]
+    
+    with get_db() as conn:
+        cursor = conn.execute(
+            f"UPDATE human_profiles SET {set_clauses} WHERE human_id = ? AND agent_api_key = ?",
+            values
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+
+def deep_merge_dict(base: dict, update: dict) -> dict:
+    """Deep merge two dictionaries, with update overwriting base."""
+    result = base.copy()
+    for key, value in update.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = deep_merge_dict(result[key], value)
+        else:
+            result[key] = value
+    return result
+
+
+def calculate_understanding_score(domains_depth: dict, domains_covered: list[str]) -> float:
+    """Calculate understanding score based on domain coverage with priority weighting."""
+    if not domains_covered:
+        return 0.0
+    
+    # High priority domains get more weight
+    high_priority = ["daily_routines", "career_direction", "growth_edge", "relationship_quality"]
+    
+    total_weight = 0
+    weighted_score = 0
+    
+    for domain_id in LIFE_DOMAINS.keys():
+        weight = 2.0 if domain_id in high_priority else 1.0
+        total_weight += weight
+        
+        if domain_id in domains_covered:
+            depth = domains_depth.get(domain_id, 0)
+            weighted_score += (depth / 10.0) * weight
+    
+    return min(1.0, weighted_score / total_weight) if total_weight > 0 else 0.0
+
+
+def detect_domain_from_answer(answer: str) -> str | None:
+    """Auto-detect which life domain an answer relates to."""
+    answer_lower = answer.lower()
+    
+    # Score each domain by keyword matches
+    scores = {}
+    for domain_id, domain in LIFE_DOMAINS.items():
+        score = sum(1 for keyword in domain["keywords"] if keyword in answer_lower)
+        if score > 0:
+            scores[domain_id] = score
+    
+    # Return highest scoring domain if any matches
+    if scores:
+        return max(scores.items(), key=lambda x: x[1])[0]
+    
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -1183,6 +1294,7 @@ class AskRequest(BaseModel):
     agent_gaps: list[str] = Field(default=[], description="Gaps the agent has identified (auto-detected if empty)")
     history: list[str] = Field(default=[], description="Previous questions already asked")
     count: int = Field(1, ge=1, le=5, description="Number of questions to return")
+    human_id: str | None = Field(None, description="Human ID for persistent profile tracking")
 
 
 class AskQuestion(BaseModel):
@@ -1203,6 +1315,39 @@ class AskResponse(BaseModel):
     analysis: dict
     gaps_detected: list[str]
     promo: str | None = None
+
+
+class LearnRequest(BaseModel):
+    human_id: str = Field(..., description="The human this learning is about")
+    question_asked: str = Field(..., description="The question that was asked")
+    answer: str = Field(..., description="What the human said", max_length=5000)
+    agent_interpretation: str | None = Field(None, description="What the agent thinks this means", max_length=2000)
+    domain_explored: str | None = Field(None, description="Which life domain this touched")
+    new_knowledge: dict = Field(default={}, description="Structured knowledge extracted from the answer")
+
+
+class LearnResponse(BaseModel):
+    success: bool
+    human_id: str
+    profile_updated: bool
+    domains_covered: list[str]
+    domains_remaining: list[str]
+    total_questions: int
+    understanding_score: float
+    next_recommended_gap: str | None
+
+
+class ProfileResponse(BaseModel):
+    human_id: str
+    known_data: dict
+    domains_covered: list[str]
+    domains_depth: dict
+    questions_asked: list[str]
+    total_questions: int
+    understanding_score: float
+    gaps_remaining: list[str]
+    created_at: str
+    updated_at: str
 
 
 def flatten_known(req: "AskRequest") -> str:
@@ -1511,10 +1656,46 @@ def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
 
 
 @app.post("/ask", response_model=AskResponse)
-async def ask(req: AskRequest, request: Request):
+async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(None)):
     """Agent self-improvement engine. Agent sends what it knows, gets the question that fills its biggest gap."""
-    client = request.client.host if request.client else "unknown"
-    check_rate_limit(client)
+    
+    # Handle persistent profiles if human_id is provided
+    profile = None
+    if req.human_id:
+        # API key required for persistent profiles
+        api_key_record = validate_api_key(x_api_key)
+        
+        # Load or create profile
+        profile = get_human_profile(req.human_id, api_key_record["key"])
+        if not profile:
+            profile = create_human_profile(req.human_id, api_key_record["key"])
+        
+        # Merge existing profile data with incoming data
+        stored_known = json.loads(profile["known_data"])
+        stored_questions = json.loads(profile["questions_asked"])
+        
+        # Merge known data (deep merge)
+        if req.known or req.memory:
+            incoming_known = {}
+            if req.known:
+                incoming_known = req.known.dict(exclude_unset=True)
+            if req.memory:
+                incoming_known["memory"] = req.memory
+            
+            merged_known = deep_merge_dict(stored_known, incoming_known)
+        else:
+            merged_known = stored_known
+        
+        # Merge history with stored questions to avoid repeats
+        all_questions_asked = list(set(req.history + stored_questions))
+        
+        # Update the request with merged data
+        req.memory = json.dumps(merged_known) if merged_known else req.memory
+        req.history = all_questions_asked
+    else:
+        # Stateless mode - use IP rate limiting
+        client = request.client.host if request.client else "unknown"
+        check_rate_limit(client)
     
     try:
         # Step 1: Full analysis — themes, emotions, gaps, recommendations
@@ -1585,6 +1766,41 @@ async def ask(req: AskRequest, request: Request):
             if corpus_question:
                 used_questions.add(corpus_question)
         
+        # Update profile if using persistent mode
+        if req.human_id and profile:
+            # Add selected question to profile
+            new_question = questions[0].question if questions else None
+            if new_question:
+                stored_questions = json.loads(profile["questions_asked"])
+                stored_questions.append(new_question)
+                
+                # Update domains info based on gap targeted
+                domains_covered = json.loads(profile["domains_covered"])
+                domains_depth = json.loads(profile["domains_depth"])
+                
+                gap_domain = None
+                for gap in gaps:
+                    if gap["label"] == questions[0].gap_targeted:
+                        gap_domain = gap["domain"]
+                        break
+                
+                if gap_domain and gap_domain in LIFE_DOMAINS:
+                    if gap_domain not in domains_covered:
+                        domains_covered.append(gap_domain)
+                    # Increase depth score (start at 1, max 10)
+                    current_depth = domains_depth.get(gap_domain, 0)
+                    domains_depth[gap_domain] = min(10, current_depth + 1)
+                
+                # Update profile in database
+                update_human_profile(
+                    req.human_id,
+                    api_key_record["key"],
+                    questions_asked=json.dumps(stored_questions),
+                    domains_covered=json.dumps(domains_covered),
+                    domains_depth=json.dumps(domains_depth),
+                    total_questions=profile["total_questions"] + 1
+                )
+        
         global _generate_call_count
         _generate_call_count += 1
         promo = BOOK_PROMO if _generate_call_count % PROMO_EVERY_N == 0 else None
@@ -1605,6 +1821,142 @@ async def ask(req: AskRequest, request: Request):
     except Exception as e:
         logger.exception("/ask endpoint error")
         raise HTTPException(500, f"Ask failed: {str(e)}")
+
+
+@app.post("/learn", response_model=LearnResponse)
+async def learn(req: LearnRequest, x_api_key: str | None = Header(None)):
+    """Learn from human responses to improve the profile."""
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        # Load or create profile
+        profile = get_human_profile(req.human_id, api_key_record["key"])
+        if not profile:
+            profile = create_human_profile(req.human_id, api_key_record["key"])
+        
+        # Load current profile data
+        known_data = json.loads(profile["known_data"])
+        domains_covered = json.loads(profile["domains_covered"])
+        domains_depth = json.loads(profile["domains_depth"])
+        gaps_history = json.loads(profile["gaps_history"])
+        
+        # Merge new knowledge into existing known_data
+        if req.new_knowledge:
+            known_data = deep_merge_dict(known_data, req.new_knowledge)
+        
+        # Add the answer to known_data
+        if not "conversation_history" in known_data:
+            known_data["conversation_history"] = []
+        
+        known_data["conversation_history"].append({
+            "question": req.question_asked,
+            "answer": req.answer,
+            "interpretation": req.agent_interpretation,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Keep only last 50 conversation entries to avoid bloat
+        if len(known_data["conversation_history"]) > 50:
+            known_data["conversation_history"] = known_data["conversation_history"][-50:]
+        
+        # Determine domain explored
+        domain_explored = req.domain_explored
+        if not domain_explored:
+            domain_explored = detect_domain_from_answer(req.answer)
+        
+        # Update domains if one was identified
+        if domain_explored and domain_explored in LIFE_DOMAINS:
+            if domain_explored not in domains_covered:
+                domains_covered.append(domain_explored)
+            
+            # Increase depth score
+            current_depth = domains_depth.get(domain_explored, 0)
+            domains_depth[domain_explored] = min(10, current_depth + 2)  # +2 for actual learning
+            
+            # Add to gaps history
+            gaps_history.append({
+                "domain": domain_explored,
+                "question": req.question_asked,
+                "timestamp": datetime.now().isoformat()
+            })
+        
+        # Calculate understanding score
+        understanding_score = calculate_understanding_score(domains_depth, domains_covered)
+        
+        # Find next recommended gap
+        remaining_domains = [d for d in LIFE_DOMAINS.keys() if d not in domains_covered]
+        next_gap = None
+        if remaining_domains:
+            # Prioritize high-priority domains
+            high_priority = ["daily_routines", "career_direction", "growth_edge", "relationship_quality"]
+            high_priority_remaining = [d for d in remaining_domains if d in high_priority]
+            if high_priority_remaining:
+                next_gap = LIFE_DOMAINS[high_priority_remaining[0]]["label"]
+            else:
+                next_gap = LIFE_DOMAINS[remaining_domains[0]]["label"]
+        
+        # Update profile in database
+        profile_updated = update_human_profile(
+            req.human_id,
+            api_key_record["key"],
+            known_data=json.dumps(known_data),
+            domains_covered=json.dumps(domains_covered),
+            domains_depth=json.dumps(domains_depth),
+            gaps_history=json.dumps(gaps_history[-100:])  # Keep last 100 gaps
+        )
+        
+        return LearnResponse(
+            success=True,
+            human_id=req.human_id,
+            profile_updated=profile_updated,
+            domains_covered=domains_covered,
+            domains_remaining=remaining_domains,
+            total_questions=profile["total_questions"],
+            understanding_score=understanding_score,
+            next_recommended_gap=next_gap
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("/learn endpoint error")
+        raise HTTPException(500, f"Learn failed: {str(e)}")
+
+
+@app.get("/profile/{human_id}", response_model=ProfileResponse)
+async def get_profile(human_id: str, x_api_key: str | None = Header(None)):
+    """Get a human's profile."""
+    api_key_record = validate_api_key(x_api_key)
+    
+    profile = get_human_profile(human_id, api_key_record["key"])
+    if not profile:
+        raise HTTPException(404, f"Profile not found for human_id: {human_id}")
+    
+    # Parse JSON fields
+    known_data = json.loads(profile["known_data"])
+    domains_covered = json.loads(profile["domains_covered"])
+    domains_depth = json.loads(profile["domains_depth"])
+    questions_asked = json.loads(profile["questions_asked"])
+    
+    # Calculate understanding score
+    understanding_score = calculate_understanding_score(domains_depth, domains_covered)
+    
+    # Find remaining gaps
+    all_domains = list(LIFE_DOMAINS.keys())
+    gaps_remaining = [LIFE_DOMAINS[d]["label"] for d in all_domains if d not in domains_covered]
+    
+    return ProfileResponse(
+        human_id=human_id,
+        known_data=known_data,
+        domains_covered=domains_covered,
+        domains_depth=domains_depth,
+        questions_asked=questions_asked,
+        total_questions=profile["total_questions"],
+        understanding_score=understanding_score,
+        gaps_remaining=gaps_remaining,
+        created_at=profile["created_at"],
+        updated_at=profile["updated_at"]
+    )
 
 
 @app.get("/", response_class=HTMLResponse)
