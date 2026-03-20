@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BetterAsk — Agents don't know what they don't know.</title>
-    <meta name="description" content="The human understanding layer for AI agents. BetterAsk detects gaps in your agent's understanding and returns the perfect question to fill them. One API call. Zero config.">
+    <title>BetterAsk — How well does your AI know you?</title>
+    <meta name="description" content="The human understanding layer for AI agents. BetterAsk maps your agent's understanding of its human across 12 life domains. Every question fills a gap. Every answer raises the score.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -625,6 +625,110 @@
                 grid-template-columns: 1fr !important;
             }
         }
+
+        /* ─── Understanding Score Styles ─── */
+        .score-display {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(0, 172, 230, 0.3);
+            animation: scoreGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes scoreGlow {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(0, 172, 230, 0.3); }
+            50% { transform: scale(1.05); text-shadow: 0 0 40px rgba(0, 172, 230, 0.5); }
+        }
+
+        .chat-conversation {
+            max-width: 500px;
+            margin: 2rem auto;
+            text-align: left;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .chat-message {
+            display: flex;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+
+        .chat-message.human {
+            justify-content: flex-end;
+        }
+
+        .chat-message.agent {
+            justify-content: flex-start;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .chat-bubble.human {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border-bottom-right-radius: 6px;
+        }
+
+        .chat-bubble.agent {
+            background: var(--cerulean);
+            color: #000;
+            border-bottom-left-radius: 6px;
+        }
+
+        .stage-score {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .domain-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .domain-name {
+            width: 140px;
+            color: var(--text);
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        .domain-percent {
+            color: var(--text-dim);
+            width: 40px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -643,185 +747,182 @@
 <section class="hero">
     <div class="hero-tag">the human understanding layer for AI agents</div>
 
-    <h1>Agents don't know<br><span class="dim">what they don't know.</span></h1>
+    <h1>How well does your AI know you?</h1>
 
+    <div class="score-display">34%</div>
+    
     <p class="hero-sub">
-        BetterAsk detects the gaps in your agent's understanding of its human — and returns the perfect question to fill them. <strong>One API call. Zero config.</strong> The human never sees it.
+        <strong>Now there's a number.</strong> BetterAsk maps your agent's understanding of its human across 12 life domains. Every question fills a gap. Every answer raises the score.
     </p>
+
+    <div class="chat-conversation">
+        <div class="chat-message human">
+            <div class="chat-bubble human">"How well do you actually know me?"</div>
+        </div>
+        
+        <div class="chat-message agent">
+            <div class="chat-bubble agent">"34%. I know your career and routines. But I have blind spots — your relationship with money, your inner life, what you're running from. Want me to ask something that helps?"</div>
+        </div>
+        
+        <div class="chat-message human">
+            <div class="chat-bubble human">"...yeah. Go ahead."</div>
+        </div>
+        
+        <div class="chat-message agent">
+            <div class="chat-bubble agent">"If you repeated yesterday 365 times, where would you be?"</div>
+        </div>
+        
+        <div class="chat-message human">
+            <div class="chat-bubble human">[answers]</div>
+        </div>
+        
+        <div class="chat-message agent">
+            <div class="chat-bubble agent">"I understand you 41% now."</div>
+        </div>
+    </div>
 
     <div class="code-block">
         <div class="code-header">
             <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
             <button class="copy-btn" onclick="copyCode()" id="copy-btn">copy</button>
         </div>
-        <pre class="code-body" id="code-block"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/ask</span> <span class="c-flag">\</span>
-  <span class="c-flag">-d</span> <span class="c-string">'{
-    "known": {
-      "name": "Sarah",
-      "career": "UX designer",
-      "location": "Austin",
-      "recent_context": "mentioned feeling stuck last week"
-    },
-    "agent_role": "personal assistant",
-    "history": ["What brought you to Austin?"]
-  }'</span>
+        <pre class="code-body" id="code-block"><span class="c-comment">// Step 1: Ask</span>
+<span class="c-method">POST</span> <span class="c-url">/ask</span> → {
+  <span class="c-key">"question"</span>: <span class="c-string">"..."</span>,
+  <span class="c-key">"gap_targeted"</span>: <span class="c-string">"Financial Reality"</span>,
+  <span class="c-key">"understanding_score"</span>: <span class="c-num">0.34</span>
+}
 
-<span class="c-comment">// → 200 OK</span>
-{
-  <span class="c-key">"question"</span>: <span class="c-string">"If you repeated last Tuesday 365 times, where would you be?"</span>,
-  <span class="c-key">"gap_targeted"</span>: <span class="c-string">"Daily Routines"</span>,
-  <span class="c-key">"vectors"</span>: [<span class="c-string">"trajectory"</span>, <span class="c-string">"time"</span>, <span class="c-string">"self_assessment"</span>],
-  <span class="c-key">"density"</span>: <span class="c-num">3</span>,
-  <span class="c-key">"why"</span>: <span class="c-string">"Agent has no visibility into daily habits."</span>,
-  <span class="c-key">"what_to_listen_for"</span>: <span class="c-string">"Whether the answer reveals satisfaction or restlessness."</span>,
-  <span class="c-key">"gaps_detected"</span>: [<span class="c-string">"Daily Routines"</span>, <span class="c-string">"Financial Reality"</span>, <span class="c-string">"Inner Life"</span>, <span class="c-string">"Fun & Play"</span>]
+<span class="c-comment">// Step 2: Human answers...</span>
+
+<span class="c-comment">// Step 3: Learn</span>
+<span class="c-method">POST</span> <span class="c-url">/learn</span> → {
+  <span class="c-key">"understanding_score"</span>: <span class="c-num">0.41</span>,
+  <span class="c-key">"next_gap"</span>: <span class="c-string">"Financial Reality"</span>
 }</pre>
     </div>
-    <div class="hero-hint"><span>●</span> Zero config — the brain picks the vectors, depth, and gap automatically</div>
+    <div class="hero-hint"><span>●</span> The /ask → /learn cycle — every answer is a level-up</div>
 </section>
 
 <!-- ═══ PROBLEM ═══ -->
 <section class="problem">
     <div class="section-tag">// the problem</div>
-    <h2>Your agent executes tasks.<br>But does it understand its human?</h2>
+    <h2>Your agent is a stranger wearing a helpful mask.</h2>
 
     <p>
-        Most agents know what their human <em>ASKED</em> for. Few know what their human <em>NEEDS</em>. BetterAsk maps the blind spots — career, relationships, health, routines, growth, meaning — and fills them one question at a time. The human just has a great conversation. The agent gets smarter.
+        It knows your calendar. Your to-do list. Your location. But it doesn't know what keeps you up at night, what you're avoiding, or whether you're actually happy. The understanding score measures the gap between <em>'useful'</em> and <em>'known'</em>.
     </p>
-
-    <!-- DEMO SECTION -->
-    <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 3rem 2.5rem; margin: 3rem 0; text-align: center;">
-        <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; margin-bottom: 2.5rem; color: var(--accent);">Gap Detection in Action</h3>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align: left;">
-            <div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); margin-bottom: 1rem; letter-spacing: 0.1em;">WHAT THE AGENT KNOWS:</div>
-                <div style="background: var(--bg-card); padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.7;">
-                    name: "Marcus"<br>
-                    age: 28<br>
-                    job: "Software engineer"<br>
-                    location: "Seattle"<br>
-                    recent: "complained about work stress"
-                </div>
-                
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); margin: 2rem 0 1rem; letter-spacing: 0.1em;">QUESTION RETURNED:</div>
-                <div style="background: var(--accent-dim); border: 1px solid rgba(0, 172, 230, 0.3); padding: 1.5rem; font-size: 1rem; color: var(--text);">
-                    "What does a perfect Tuesday look like for you — from wake-up to sleep?"
-                </div>
-            </div>
-            
-            <div>
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--tangerine); margin-bottom: 1rem; letter-spacing: 0.1em;">GAPS DETECTED:</div>
-                <div style="background: var(--bg-card); padding: 1.5rem;">
-                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Daily Routines</div>
-                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Health & Body</div>
-                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Fun & Play</div>
-                    <div style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">• Inner Life & Meaning</div>
-                </div>
-                
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--tangerine); margin: 2rem 0 1rem; letter-spacing: 0.1em;">WHAT TO LISTEN FOR:</div>
-                <div style="background: rgba(255, 140, 66, 0.1); border: 1px solid rgba(255, 140, 66, 0.3); padding: 1.5rem; font-size: 0.9rem; color: var(--text-dim); font-style: italic;">
-                    "Whether Marcus describes structure or chaos, self-care or neglect, joy or just survival."
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <a href="https://endsmalltalknow.com" target="_blank" class="book-link">
-        <span style="font-size:1.5rem;">📕</span>
-        <div>
-            <div class="title">Built on 607 questions from END SMALL TALK</div>
-            <div class="sub">by Cory Stout — the research behind the engine</div>
-        </div>
-    </a>
 </section>
 
 <!-- ═══ HOW IT WORKS ═══ -->
 <section class="how" id="how-it-works">
     <div class="section-tag">// how it works</div>
-    <h2>How it works</h2>
+    <h2>Watch the score climb</h2>
 
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; max-width: 1000px; margin: 3rem auto 0; text-align: center;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; max-width: 1000px; margin: 3rem auto 0; text-align: center;">
         
-        <!-- Card 1 -->
+        <!-- Stage 1 -->
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 1.5rem; opacity: 0.8;">📤</div>
-            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Agent sends context</h3>
-            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Everything the agent knows — structured or freeform. Name, career, interests, recent conversations. Whatever it has.</p>
+            <div class="stage-score">0%</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">First question</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Agent sends what it knows. BetterAsk finds the blind spots. First question targets the biggest gap.</p>
         </div>
 
-        <!-- Card 2 -->
+        <!-- Stage 2 -->
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 1.5rem; opacity: 0.8;">🔍</div>
-            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">BetterAsk finds the gaps</h3>
-            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">12 life domains scanned. What's missing? Daily routines? Financial reality? Inner life? The engine detects what's conspicuously absent.</p>
+            <div class="stage-score">34%</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Building understanding</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Each answer feeds back through /learn. The profile grows. Questions get deeper as trust builds.</p>
         </div>
 
-        <!-- Card 3 -->
+        <!-- Stage 3 -->
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 1.5rem; opacity: 0.8;">🎯</div>
-            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Agent gets the perfect question + coaching</h3>
-            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">A question from 607 battle-tested options. Plus: which gap it targets, which vectors it uses, and what to listen for in the answer.</p>
+            <div class="stage-score">85%+</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">The agent gets it</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Your AI stops asking surface questions and starts asking the ones that make you feel known.</p>
         </div>
     </div>
 </section>
 
-<!-- ═══ LIFE DOMAINS ═══ -->
+<!-- ═══ 12 LIFE DOMAINS ═══ -->
 <section style="padding: 6rem 4rem; border-top: 1px solid var(--border); text-align: center;">
     <div class="section-tag">// 12 life domains</div>
-    <h2>12 Life Domains. The map of a human.</h2>
+    <h2>12 Domains. One map of a human.</h2>
     <p style="color: var(--text-dim); font-size: 1.05rem; max-width: 700px; margin: 0 auto 4rem; line-height: 1.8;">
-        BetterAsk scans what the agent knows and identifies which domains are blind spots. High-priority gaps get filled first.
+        BetterAsk fills each domain through targeted questions. High-priority gaps get addressed first.
     </p>
     
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; max-width: 1200px; margin: 0 auto; background: var(--border);">
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Daily Routines</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Habits, schedules, patterns</div>
+    <div style="max-width: 600px; margin: 0 auto; text-align: left;">
+        <div class="domain-bar">
+            <div class="domain-name">Daily Routines</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+            <div class="domain-percent">40%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Career Direction</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Work, ambitions, trajectory</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Career Direction</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+            <div class="domain-percent">60%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Relationship Quality</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Partnerships, connections</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Relationship Quality</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+            <div class="domain-percent">0%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Family Dynamics</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Parents, siblings, children</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Family Dynamics</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 15%"></div></div>
+            <div class="domain-percent">15%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Financial Reality</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Money, security, goals</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Financial Reality</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+            <div class="domain-percent">0%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Health & Body</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Physical wellness, energy</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Health & Body</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 25%"></div></div>
+            <div class="domain-percent">25%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Social Life</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Friends, community, belonging</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Social Life</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 80%"></div></div>
+            <div class="domain-percent">80%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Inner Life & Meaning</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Values, purpose, spirituality</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Inner Life & Meaning</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 5%"></div></div>
+            <div class="domain-percent">5%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Creative Expression</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Art, hobbies, making things</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Creative Expression</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 30%"></div></div>
+            <div class="domain-percent">30%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Growth Edge</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Learning, challenges, evolution</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Growth Edge</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 45%"></div></div>
+            <div class="domain-percent">45%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Fun & Play</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">Joy, laughter, spontaneity</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Fun & Play</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 70%"></div></div>
+            <div class="domain-percent">70%</div>
         </div>
-        <div style="background: var(--bg); padding: 2rem 1.5rem; transition: background 0.2s;">
-            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;">Past & Wounds</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim);">History, healing, closure</div>
+        
+        <div class="domain-bar">
+            <div class="domain-name">Past & Wounds</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 10%"></div></div>
+            <div class="domain-percent">10%</div>
         </div>
     </div>
 </section>
@@ -829,9 +930,9 @@
 <!-- ═══ VECTORS ═══ -->
 <section class="vectors" id="the-21">
     <div class="section-tag">// the 21 vectors</div>
-    <h2>21 Vectors. The invisible engine.</h2>
+    <h2>21 vectors under the hood.</h2>
     <p class="vectors-sub">
-        Every question uses a combination of these patterns. The agent never picks them — the brain selects the right mix based on context, gaps, and conversation depth.
+        The engine selects the right combination automatically. The agent never touches them.
     </p>
 
     <div class="vector-grid">
@@ -963,6 +1064,17 @@
     </div>
 </section>
 
+<!-- ═══ BOOK TIE-IN ═══ -->
+<section style="padding: 6rem 4rem; border-top: 1px solid var(--border); text-align: center; max-width: 800px; margin: 0 auto;">
+    <div class="section-tag">// the expansion pack</div>
+    <h2>607 questions. The expansion pack.</h2>
+    <p style="color: var(--text-dim); font-size: 1.05rem; max-width: 600px; margin: 0 auto 3rem; line-height: 1.8;">
+        When the engine runs out of questions for a domain, there are 607 more in END SMALL TALK. The book is the research behind the score.
+    </p>
+    
+    <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" class="btn btn-fill">Get the Book →</a>
+</section>
+
 <!-- ═══ API ═══ -->
 <section class="api" id="api">
     <div class="section-tag">// api</div>
@@ -976,13 +1088,13 @@
         </div>
         <div class="endpoint">
             <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/score</div>
-            <div class="endpoint-desc">Rate any question (1-10 scale)</div>
+            <div class="endpoint-path">/learn</div>
+            <div class="endpoint-desc">Update understanding score</div>
         </div>
         <div class="endpoint">
             <div class="endpoint-method get">GET</div>
-            <div class="endpoint-path">/vectors</div>
-            <div class="endpoint-desc">List all 21 vectors</div>
+            <div class="endpoint-path">/score</div>
+            <div class="endpoint-desc">Get current understanding level</div>
         </div>
     </div>
 </section>
@@ -1000,9 +1112,9 @@
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1;">$0</div>
             <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">100 questions/day</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Enough to prototype your agent</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Start mapping your first human</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ All 21 vectors</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Gap detection</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Understanding score tracking</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim);">✓ No credit card</div>
             </div>
         </div>
@@ -1014,10 +1126,10 @@
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1;">$29</div>
             <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">5,000 questions/day</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ For agents in production</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ For agents in production building real understanding</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Priority response</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Agent coaching included</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Question analytics</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Advanced analytics</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Understanding score API</div>
             </div>
         </div>
 
@@ -1027,9 +1139,9 @@
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; color: var(--text); line-height: 1;">$0.005</div>
             <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">/question</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Unlimited questions</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ For agents serving thousands of humans</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Unlimited — for agents serving thousands of humans</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Volume discounts</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Custom domain mapping</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Dedicated support</div>
             </div>
         </div>
