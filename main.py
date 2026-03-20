@@ -118,6 +118,27 @@ def init_db():
         """)
         conn.execute("CREATE INDEX IF NOT EXISTS idx_human_profiles_agent ON human_profiles(agent_api_key)")
         
+        # Question performance tracking table (BUILD 1)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS question_performance (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                question_text TEXT NOT NULL,
+                question_source TEXT DEFAULT 'corpus',  -- 'corpus' or 'generated'
+                gap_targeted TEXT,
+                vectors_used TEXT DEFAULT '[]',         -- JSON array
+                understanding_delta FLOAT DEFAULT 0,    -- how much score moved
+                answer_depth TEXT DEFAULT 'unknown',    -- 'shallow' | 'medium' | 'deep' | 'transformative'
+                domain_explored TEXT,
+                conversation_depth INTEGER DEFAULT 0,   -- how many questions deep in the conversation
+                human_context_summary TEXT,             -- anonymized summary of what was known about human
+                agent_role TEXT DEFAULT 'personal assistant',
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_qp_question ON question_performance(question_text)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_qp_gap ON question_performance(gap_targeted)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_qp_delta ON question_performance(understanding_delta)")
+        
         # Add vectors column to existing tables (safe migration)
         try:
             conn.execute("ALTER TABLE questions ADD COLUMN vectors TEXT")
@@ -1308,6 +1329,7 @@ class AskQuestion(BaseModel):
     what_to_listen_for: str
     source: str  # "corpus" or "generated"
     generation_prompt: str | None = None
+    personalized_prompt: str | None = None  # BUILD 2: Context-aware generation prompt
 
 
 class AskResponse(BaseModel):
@@ -1326,6 +1348,120 @@ class LearnRequest(BaseModel):
     new_knowledge: dict = Field(default={}, description="Structured knowledge extracted from the answer")
 
 
+def get_question_performance_stats(question_text: str, gap: str) -> dict:
+    """Get empirical performance data for a question."""
+    with get_db() as conn:
+        # Overall stats
+        row = conn.execute("""
+            SELECT 
+                COUNT(*) as times_asked,
+                AVG(understanding_delta) as avg_delta,
+                AVG(CASE WHEN answer_depth='transformative' THEN 4 
+                         WHEN answer_depth='deep' THEN 3 
+                         WHEN answer_depth='medium' THEN 2 
+                         ELSE 1 END) as avg_depth_score
+            FROM question_performance 
+            WHERE question_text = ?
+        """, (question_text,)).fetchone()
+        
+        # Gap-specific stats
+        gap_row = conn.execute("""
+            SELECT AVG(understanding_delta) as gap_delta, COUNT(*) as gap_count
+            FROM question_performance
+            WHERE question_text = ? AND gap_targeted = ?
+        """, (question_text, gap)).fetchone()
+        
+        return {
+            "times_asked": row[0] if row else 0,
+            "avg_delta": row[1] if row and row[1] else 0,
+            "avg_depth_score": row[2] if row and row[2] else 0,
+            "gap_specific_delta": gap_row[0] if gap_row and gap_row[0] else 0,
+            "gap_specific_count": gap_row[1] if gap_row else 0,
+        }
+
+
+def classify_answer_depth(answer: str, agent_interpretation: str | None = None) -> str:
+    """Classify the depth of a human's answer."""
+    answer_len = len(answer.strip())
+    
+    # Check for transformative indicators in agent interpretation
+    if agent_interpretation:
+        interpretation_lower = agent_interpretation.lower()
+        if any(word in interpretation_lower for word in ["revelatory", "breakthrough", "transformative", "profound", "life-changing"]):
+            return "transformative"
+    
+    # Classify by length and content
+    if answer_len >= 500:
+        return "transformative"
+    elif answer_len >= 200:
+        return "deep"
+    elif answer_len >= 50 and not any(generic in answer.lower() for generic in ["fine", "good", "okay", "not much", "nothing really"]):
+        return "medium"
+    else:
+        return "shallow"
+
+
+def record_question_performance(
+    question_text: str,
+    question_source: str,
+    gap_targeted: str,
+    vectors_used: list[str],
+    understanding_delta: float,
+    answer_depth: str,
+    domain_explored: str | None,
+    conversation_depth: int,
+    human_context_summary: str,
+    agent_role: str
+):
+    """Record how well a question performed."""
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO question_performance (
+                question_text, question_source, gap_targeted, vectors_used,
+                understanding_delta, answer_depth, domain_explored,
+                conversation_depth, human_context_summary, agent_role
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            question_text, question_source, gap_targeted, json.dumps(vectors_used),
+            understanding_delta, answer_depth, domain_explored,
+            conversation_depth, human_context_summary, agent_role
+        ))
+        conn.commit()
+        
+        # BUILD 3: Auto-promote high-performing generated questions to corpus
+        if question_source == "generated":
+            promote_high_performing_questions(question_text)
+
+
+def promote_high_performing_questions(question_text: str):
+    """Check if a generated question should be promoted to the permanent corpus."""
+    with get_db() as conn:
+        # Check performance stats
+        stats = conn.execute("""
+            SELECT COUNT(*) as times_asked, AVG(understanding_delta) as avg_delta
+            FROM question_performance
+            WHERE question_text = ? AND question_source = 'generated'
+        """, (question_text,)).fetchone()
+        
+        if stats and stats[0] >= 5 and stats[1] > 0.05:
+            # Check if already in corpus
+            existing = conn.execute(
+                "SELECT id FROM questions WHERE question = ?", (question_text,)
+            ).fetchone()
+            
+            if not existing:
+                # Add to permanent corpus
+                conn.execute("""
+                    INSERT INTO questions (question, source, vectors, score_composite)
+                    VALUES (?, 'generated_promoted', '[]', ?)
+                """, (question_text, stats[1]))
+                conn.commit()
+                logger.info(f"Promoted generated question to corpus: {question_text[:50]}...")
+                
+                # Reload corpus
+                load_corpus()
+
+
 class LearnResponse(BaseModel):
     success: bool
     human_id: str
@@ -1334,6 +1470,7 @@ class LearnResponse(BaseModel):
     domains_remaining: list[str]
     total_questions: int
     understanding_score: float
+    understanding_delta: float  # BUILD 1: Add understanding_delta
     next_recommended_gap: str | None
 
 
@@ -1586,7 +1723,7 @@ def analyze_for_agent(req: "AskRequest") -> dict:
     }
 
 
-def find_corpus_match(vectors: list[str], themes: list[str], history: list[str]) -> str | None:
+def find_corpus_match(vectors: list[str], themes: list[str], history: list[str], gap_targeted: str = "") -> str | None:
     """Find the best matching question from the 607 corpus."""
     if not _corpus:
         return None
@@ -1601,7 +1738,7 @@ def find_corpus_match(vectors: list[str], themes: list[str], history: list[str])
             with open(tagged_path) as f:
                 tagged = json.load(f)
             
-            # Score each question by vector overlap
+            # Score each question by vector overlap + performance data
             candidates = []
             history_set = set(h.lower().strip() for h in history)
             
@@ -1613,12 +1750,37 @@ def find_corpus_match(vectors: list[str], themes: list[str], history: list[str])
                 if q["text"].lower().strip() in history_set:
                     continue
                 
-                overlap = len(q_vectors & requested)
+                # Vector overlap score
+                vector_overlap = len(q_vectors & requested)
+                if vector_overlap == 0:
+                    continue
+                
+                # Density score
                 density = q.get("vector_count", 0)
                 
-                if overlap > 0:
-                    score = overlap * 10 + density * 3 + random.random() * 2
-                    candidates.append((score, q))
+                # Performance score (BUILD 1)
+                perf_stats = get_question_performance_stats(q["text"], gap_targeted)
+                proven_delta = perf_stats["avg_delta"] * 100 if perf_stats["times_asked"] > 0 else 0
+                
+                # Exploration bonus for new questions
+                exploration_bonus = 2 if perf_stats["times_asked"] == 0 else 0
+                
+                # Depth appropriateness (assume medium = 5, deep questions get bonus at conversation_depth > 2)
+                depth_appropriateness = 5
+                if len(history) > 2 and "deep" in q.get("tags", []):
+                    depth_appropriateness = 7
+                
+                # BUILD 1: Updated scoring formula
+                score = (
+                    vector_overlap * 10 +
+                    density * 3 +
+                    proven_delta * 20 +
+                    depth_appropriateness * 5 +
+                    exploration_bonus +
+                    random.random() * 2
+                )
+                
+                candidates.append((score, q))
             
             if candidates:
                 candidates.sort(key=lambda x: -x[0])
@@ -1653,6 +1815,133 @@ def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
     parts.append(depth_reasons.get(analysis["depth"], ""))
     
     return " ".join(parts)
+
+
+def build_personalized_generation_prompt(
+    human_profile: dict,   # everything from the profile
+    gap: dict,             # the gap being targeted  
+    vectors: list[str],    # selected vectors
+    analysis: dict,        # full analysis output
+    top_performing_vectors: list[dict],  # what's worked best historically
+) -> str:
+    """BUILD 2: Generate a deeply personalized question prompt using ALL available context."""
+    
+    # Extract data from human profile
+    known_data = json.loads(human_profile.get("known_data", "{}"))
+    questions_asked = json.loads(human_profile.get("questions_asked", "[]"))
+    domains_covered = json.loads(human_profile.get("domains_covered", "[]"))
+    domains_depth = json.loads(human_profile.get("domains_depth", "{}"))
+    
+    # Format known data nicely
+    known_sections = []
+    if known_data:
+        for key, value in known_data.items():
+            if key == "conversation_history":
+                continue  # Handle separately
+            if value and value != {} and value != []:
+                known_sections.append(f"{key}: {value}")
+    
+    # Get conversation history
+    conversation_history = ""
+    if "conversation_history" in known_data:
+        recent_convos = known_data["conversation_history"][-5:]  # Last 5 exchanges
+        for convo in recent_convos:
+            conversation_history += f"Q: {convo.get('question', '')}\nA: {convo.get('answer', '')[:200]}...\n\n"
+    
+    # Format domains covered
+    domains_info = []
+    for domain_id in domains_covered:
+        depth = domains_depth.get(domain_id, 0)
+        domain_info = LIFE_DOMAINS.get(domain_id, {})
+        domains_info.append(f"{domain_info.get('label', domain_id)} (depth: {depth}/10)")
+    
+    # Get top performing questions for this gap
+    top_questions = []
+    gap_label = gap.get("label", "")
+    if gap_label:
+        with get_db() as conn:
+            rows = conn.execute("""
+                SELECT question_text, understanding_delta, answer_depth, times_asked
+                FROM (
+                    SELECT question_text, understanding_delta, answer_depth,
+                           COUNT(*) as times_asked,
+                           AVG(understanding_delta) as avg_delta
+                    FROM question_performance 
+                    WHERE gap_targeted = ? AND understanding_delta > 0
+                    GROUP BY question_text
+                    HAVING times_asked >= 2
+                    ORDER BY avg_delta DESC
+                    LIMIT 3
+                )
+            """, (gap_label,)).fetchall()
+            
+            for row in rows:
+                top_questions.append({
+                    "question": row[0],
+                    "avg_delta": row[3],
+                    "depth": row[2]
+                })
+    
+    # Format vector descriptions
+    vector_descriptions = []
+    for vector_id in vectors:
+        if vector_id in VECTOR_MAP:
+            vec = VECTOR_MAP[vector_id]
+            vector_descriptions.append(f"{vec['name']}: {vec['one_liner']} - {vec['prompt_template']}")
+    
+    # Build the prompt
+    prompt = f"""You are generating the perfect question for a specific human.
+
+== WHO THIS HUMAN IS ==
+{chr(10).join(known_sections) if known_sections else "Limited information available"}
+
+== WHAT'S ALREADY BEEN EXPLORED ==
+Domains covered: {', '.join(domains_info) if domains_info else 'None yet'}
+Questions asked: {len(questions_asked)} total
+Previous questions: {', '.join(questions_asked[-3:]) if questions_asked else 'None'}
+
+== RECENT CONVERSATION ==
+{conversation_history if conversation_history else 'No recent conversation history'}
+
+== THE GAP TO FILL ==
+Gap: {gap.get('label', 'Unknown')}
+Why it matters: {gap.get('question_angle', 'Unknown')}
+What we don't know: {gap.get('listen_for', 'General information about this domain')}
+
+== VECTORS TO USE ==
+{chr(10).join(vector_descriptions)}
+
+== WHAT'S WORKED BEFORE ==
+{"Top performing questions for this gap:" if top_questions else "No historical performance data for this gap yet."}
+{chr(10).join([f"'{q['question']}' (delta: {q['avg_delta']:.3f}, depth: {q['depth']})" for q in top_questions]) if top_questions else "This is an opportunity to pioneer effective questions for this gap."}
+
+== YOUR TASK ==
+Generate ONE question that:
+- Fills the {gap.get('label', 'gap')} for THIS person specifically
+- Uses {' + '.join([VECTOR_MAP[v]['name'] for v in vectors if v in VECTOR_MAP])}
+- References their actual life (their career, interests, relationships, context)
+- Feels like it was written just for them, not pulled from a generic list
+- Would make them stop and think "how did you know to ask that?"
+
+The question should feel natural in conversation — like something a close friend would ask after knowing them for years.
+
+== RULES ==
+- Everyday language, never academic
+- Concrete > abstract
+- Include a follow-up question
+- The question presents; it never judges
+- Reference specific details from their life when possible
+- Build on themes from their conversation history
+
+== OUTPUT (JSON) ==
+{{
+  "question": "...",
+  "follow_up": "...",
+  "why_this_question": "...",
+  "expected_signal": "..."
+}}"""
+
+    return prompt
 
 
 @app.post("/ask", response_model=AskResponse)
@@ -1734,7 +2023,7 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
             selected = gap_vectors[:4]
             
             # Step 3: Find best corpus match
-            corpus_question = find_corpus_match(selected, analysis["themes"], req.history + list(used_questions))
+            corpus_question = find_corpus_match(selected, analysis["themes"], req.history + list(used_questions), gap["label"])
             
             # Step 4: Build generation prompt for custom LLM question
             memory_text = analysis["memory_text"]
@@ -1749,6 +2038,18 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
             
             vector_names = [VECTOR_MAP[v]["name"] for v in selected if v in VECTOR_MAP]
             
+            # BUILD 2: Generate personalized prompt if we have enough data
+            personalized_prompt = None
+            if req.human_id and profile and profile["total_questions"] >= 2:
+                top_performing_vectors = []  # Could be enhanced to track vector performance
+                personalized_prompt = build_personalized_generation_prompt(
+                    human_profile=profile,
+                    gap=gap,
+                    vectors=selected,
+                    analysis=analysis,
+                    top_performing_vectors=top_performing_vectors
+                )
+            
             q = AskQuestion(
                 question=corpus_question or "What's something you wish people understood about you without having to explain it?",
                 follow_up=None,
@@ -1760,6 +2061,7 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                 what_to_listen_for=listen_for,
                 source="corpus" if corpus_question else "fallback",
                 generation_prompt=gen_prompt,
+                personalized_prompt=personalized_prompt,  # BUILD 2: Include personalized prompt
             )
             questions.append(q)
             gaps_targeted.append(gap["label"])
@@ -1880,8 +2182,52 @@ async def learn(req: LearnRequest, x_api_key: str | None = Header(None)):
                 "timestamp": datetime.now().isoformat()
             })
         
-        # Calculate understanding score
-        understanding_score = calculate_understanding_score(domains_depth, domains_covered)
+        # Calculate understanding score and delta (BUILD 1)
+        old_understanding_score = calculate_understanding_score(
+            json.loads(profile["domains_depth"]), 
+            json.loads(profile["domains_covered"])
+        )
+        new_understanding_score = calculate_understanding_score(domains_depth, domains_covered)
+        understanding_delta = new_understanding_score - old_understanding_score
+        
+        # Classify answer depth (BUILD 1)
+        answer_depth = classify_answer_depth(req.answer, req.agent_interpretation)
+        
+        # Create anonymized context summary (BUILD 1)
+        human_context_summary = f"domains_covered: {len(domains_covered)}, total_questions: {profile['total_questions']}, agent_role: {req.agent_interpretation[:100] if req.agent_interpretation else 'none'}"
+        
+        # Record question performance (BUILD 1)
+        # Check if this question was already captured as a generated question
+        with get_db() as conn:
+            existing_perf = conn.execute(
+                "SELECT id FROM question_performance WHERE question_text = ? AND understanding_delta = 0",
+                (req.question_asked,)
+            ).fetchone()
+            
+            if existing_perf:
+                # Update existing record with learning data
+                conn.execute("""
+                    UPDATE question_performance 
+                    SET understanding_delta = ?, answer_depth = ?, domain_explored = ?,
+                        conversation_depth = ?, human_context_summary = ?
+                    WHERE id = ?
+                """, (understanding_delta, answer_depth, domain_explored,
+                      profile["total_questions"], human_context_summary, existing_perf[0]))
+                conn.commit()
+            else:
+                # Create new record
+                record_question_performance(
+                    question_text=req.question_asked,
+                    question_source="corpus",  # Default, could be enhanced to track actual source
+                    gap_targeted=domain_explored or "unknown",
+                    vectors_used=[],  # Could be enhanced to track vectors used in the question
+                    understanding_delta=understanding_delta,
+                    answer_depth=answer_depth,
+                    domain_explored=domain_explored,
+                    conversation_depth=profile["total_questions"],
+                    human_context_summary=human_context_summary,
+                    agent_role="personal assistant"  # Could be dynamic based on request
+                )
         
         # Find next recommended gap
         remaining_domains = [d for d in LIFE_DOMAINS.keys() if d not in domains_covered]
@@ -1912,7 +2258,8 @@ async def learn(req: LearnRequest, x_api_key: str | None = Header(None)):
             domains_covered=domains_covered,
             domains_remaining=remaining_domains,
             total_questions=profile["total_questions"],
-            understanding_score=understanding_score,
+            understanding_score=new_understanding_score,
+            understanding_delta=understanding_delta,  # BUILD 1: Include delta
             next_recommended_gap=next_gap
         )
         
@@ -1957,6 +2304,106 @@ async def get_profile(human_id: str, x_api_key: str | None = Header(None)):
         created_at=profile["created_at"],
         updated_at=profile["updated_at"]
     )
+
+
+# ---------------------------------------------------------------------------
+# BUILD 3: Generated Question Capture
+# ---------------------------------------------------------------------------
+
+class CaptureRequest(BaseModel):
+    human_id: str
+    question_text: str = Field(..., description="The generated question that was actually used")
+    vectors: list[str] = Field(..., description="Vectors used in the question")
+    gap_targeted: str = Field(..., description="Gap this question targets")
+    source: str = Field("generated", description="Source of the question")
+
+
+class CaptureResponse(BaseModel):
+    success: bool
+    message: str
+
+
+@app.post("/capture", response_model=CaptureResponse)
+async def capture(req: CaptureRequest, x_api_key: str | None = Header(None)):
+    """Record a generated question so it can be tracked through /learn like corpus questions."""
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        # Record the generated question performance (with initial data)
+        record_question_performance(
+            question_text=req.question_text,
+            question_source=req.source,
+            gap_targeted=req.gap_targeted,
+            vectors_used=req.vectors,
+            understanding_delta=0,  # Will be updated when /learn is called
+            answer_depth="unknown",  # Will be updated when /learn is called
+            domain_explored=req.gap_targeted,
+            conversation_depth=0,  # Could be enhanced to track this
+            human_context_summary=f"Generated question for {req.human_id}",
+            agent_role="personal assistant"
+        )
+        
+        return CaptureResponse(
+            success=True,
+            message=f"Generated question captured and will be tracked for performance"
+        )
+        
+    except Exception as e:
+        logger.exception("/capture endpoint error")
+        raise HTTPException(500, f"Capture failed: {str(e)}")
+
+
+@app.get("/corpus/top")
+async def get_top_corpus_questions(
+    gap: str,
+    limit: int = 10,
+    x_api_key: str | None = Header(None)
+):
+    """Returns the top-performing questions for a given gap, sorted by avg_delta."""
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        with get_db() as conn:
+            rows = conn.execute("""
+                SELECT 
+                    question_text,
+                    question_source,
+                    COUNT(*) as times_asked,
+                    AVG(understanding_delta) as avg_delta,
+                    AVG(CASE WHEN answer_depth='transformative' THEN 4 
+                             WHEN answer_depth='deep' THEN 3 
+                             WHEN answer_depth='medium' THEN 2 
+                             ELSE 1 END) as avg_depth_score,
+                    MAX(created_at) as last_used
+                FROM question_performance
+                WHERE gap_targeted = ? AND understanding_delta > 0
+                GROUP BY question_text
+                HAVING times_asked >= 1
+                ORDER BY avg_delta DESC
+                LIMIT ?
+            """, (gap, limit)).fetchall()
+            
+            questions = []
+            for row in rows:
+                questions.append({
+                    "question": row[0],
+                    "source": row[1],
+                    "times_asked": row[2],
+                    "avg_delta": row[3],
+                    "avg_depth_score": row[4],
+                    "last_used": row[5],
+                    "performance_score": row[3] * row[2]  # weighted by usage
+                })
+        
+        return {
+            "gap": gap,
+            "questions": questions,
+            "total": len(questions)
+        }
+        
+    except Exception as e:
+        logger.exception("/corpus/top endpoint error")
+        raise HTTPException(500, f"Failed to get top questions: {str(e)}")
 
 
 @app.get("/", response_class=HTMLResponse)
