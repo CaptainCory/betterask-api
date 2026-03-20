@@ -1157,6 +1157,318 @@ async def score(req: ScoreRequest, request: Request):
     return ScoreResponse(question=req.question, scoring_prompt=prompt, dimensions=SCORING_DIMENSIONS, vector_density=None)
 
 
+# ---------------------------------------------------------------------------
+# /ask — The Zero-Config Brain
+# ---------------------------------------------------------------------------
+
+class AskRequest(BaseModel):
+    memory: str = Field(..., description="What you know about this person", max_length=5000)
+    history: list[str] = Field(default=[], description="Previous questions already asked", max_length=50)
+    goal: str | None = Field(None, description="Optional: what you're trying to learn (auto-detected if omitted)")
+    count: int = Field(1, ge=1, le=5, description="Number of questions to return")
+
+
+class AskQuestion(BaseModel):
+    question: str
+    follow_up: str | None = None
+    vectors: list[str]
+    vector_names: list[str]
+    density: int
+    why: str
+    source: str  # "corpus" or "generated"
+    generation_prompt: str | None = None  # included if caller wants to regenerate via LLM
+
+
+class AskResponse(BaseModel):
+    questions: list[AskQuestion]
+    analysis: dict
+    promo: str | None = None
+
+
+def analyze_memory(memory: str, history: list[str]) -> dict:
+    """Analyze memory + history to determine what vectors and topics to target."""
+    memory_lower = memory.lower()
+    history_lower = [h.lower() for h in history]
+    history_joined = " ".join(history_lower)
+    
+    # Detect themes in memory
+    themes = []
+    theme_keywords = {
+        "career": ["work", "job", "career", "boss", "office", "company", "startup", "business", "role", "promotion", "fired", "hired", "salary"],
+        "relationships": ["partner", "wife", "husband", "boyfriend", "girlfriend", "dating", "married", "divorce", "ex", "relationship", "love", "breakup"],
+        "family": ["mom", "dad", "mother", "father", "sister", "brother", "parents", "kids", "children", "family", "son", "daughter"],
+        "health": ["health", "fitness", "gym", "diet", "sleep", "anxiety", "depression", "therapy", "mental", "weight", "exercise", "sick"],
+        "creativity": ["creative", "art", "music", "writing", "design", "build", "project", "create", "maker", "content"],
+        "growth": ["stuck", "change", "growth", "improve", "learn", "goal", "dream", "ambition", "potential", "purpose"],
+        "money": ["money", "debt", "savings", "invest", "rich", "poor", "financial", "income", "budget", "afford"],
+        "identity": ["identity", "values", "believe", "personality", "introvert", "extrovert", "who am i", "purpose", "meaning"],
+        "social": ["friends", "social", "lonely", "community", "network", "party", "group", "belong"],
+        "location": ["moved", "moving", "city", "town", "home", "travel", "live in", "from", "relocated"],
+    }
+    
+    for theme, keywords in theme_keywords.items():
+        if any(kw in memory_lower for kw in keywords):
+            themes.append(theme)
+    
+    # Detect emotional signals
+    emotional_signals = []
+    emotion_keywords = {
+        "stuck": ["stuck", "stagnant", "plateau", "rut", "same", "nothing changes"],
+        "excited": ["excited", "pumped", "thrilled", "can't wait", "amazing", "new"],
+        "anxious": ["anxious", "worried", "nervous", "stressed", "overwhelmed", "scared"],
+        "nostalgic": ["remember", "used to", "back when", "miss", "childhood", "growing up"],
+        "conflicted": ["torn", "conflicted", "not sure", "both", "dilemma", "should i"],
+        "lonely": ["lonely", "alone", "isolated", "no one", "by myself", "miss people"],
+        "ambitious": ["want to", "going to", "plan to", "dream", "goal", "build", "start"],
+    }
+    
+    for signal, keywords in emotion_keywords.items():
+        if any(kw in memory_lower for kw in keywords):
+            emotional_signals.append(signal)
+    
+    # Detect what's already been covered by history
+    covered_vectors = set()
+    for h in history_lower:
+        if any(w in h for w in ["how many", "how much", "what percentage"]):
+            covered_vectors.add("specificity")
+        if any(w in h for w in ["what was", "name a", "which", "favorite"]):
+            covered_vectors.add("name_an_example")
+        if any(w in h for w in ["imagine", "what if", "would you rather"]):
+            covered_vectors.add("hypothetical")
+        if any(w in h for w in ["scale of", "1-10", "rate yourself"]):
+            covered_vectors.add("self_assessment")
+        if any(w in h for w in ["how do you feel", "what does that feel"]):
+            covered_vectors.add("emotion")
+        if any(w in h for w in ["compared to", "or", "which is more"]):
+            covered_vectors.add("comparison")
+        if any(w in h for w in ["years ago", "last time", "when did"]):
+            covered_vectors.add("time")
+    
+    # Determine best vectors based on analysis
+    recommended_vectors = []
+    
+    # If person is stuck → trajectory, contradiction, confession
+    if "stuck" in emotional_signals or "growth" in themes:
+        recommended_vectors.extend(["trajectory", "contradiction", "confession"])
+    
+    # If person is new/excited → hypothetical, identity, comparison
+    if "excited" in emotional_signals or "location" in themes:
+        recommended_vectors.extend(["hypothetical", "identity", "comparison"])
+    
+    # If emotional territory detected → emotion, permission, other_eyes
+    if any(s in emotional_signals for s in ["anxious", "lonely", "conflicted"]):
+        recommended_vectors.extend(["emotion", "permission", "other_eyes"])
+    
+    # If career/money themes → self_assessment, trajectory, scale
+    if "career" in themes or "money" in themes:
+        recommended_vectors.extend(["self_assessment", "trajectory", "scale"])
+    
+    # If relationships → other_eyes, contradiction, permission
+    if "relationships" in themes or "family" in themes:
+        recommended_vectors.extend(["other_eyes", "contradiction", "permission"])
+    
+    # If identity/meaning → identity, metaphor, confession
+    if "identity" in themes:
+        recommended_vectors.extend(["identity", "metaphor", "confession"])
+    
+    # If creativity → sensory_imagination, metaphor, subversion
+    if "creativity" in themes:
+        recommended_vectors.extend(["sensory_imagination", "metaphor", "subversion"])
+    
+    # Default: always good vectors
+    if not recommended_vectors:
+        recommended_vectors = ["specificity", "hypothetical", "self_assessment", "time", "identity"]
+    
+    # Remove already-covered vectors, prioritize fresh ones
+    fresh_vectors = [v for v in recommended_vectors if v not in covered_vectors]
+    if len(fresh_vectors) < 2:
+        fresh_vectors = recommended_vectors  # fall back if too many covered
+    
+    # Deduplicate while preserving order
+    seen = set()
+    unique_vectors = []
+    for v in fresh_vectors:
+        if v not in seen:
+            seen.add(v)
+            unique_vectors.append(v)
+    
+    # Determine depth from emotional signals
+    depth = "medium"
+    if len(history) == 0:
+        depth = "light"  # first question should be approachable
+    elif len(history) >= 3:
+        depth = "deep"  # they've been talking, go deeper
+    if any(s in emotional_signals for s in ["anxious", "lonely", "conflicted"]):
+        depth = "deep"  # emotional state warrants depth
+    
+    # Determine implicit goal
+    goal = "rapport"
+    if "career" in themes or "money" in themes:
+        goal = "discovery"
+    if "stuck" in emotional_signals or "growth" in themes:
+        goal = "coaching"
+    if "identity" in themes:
+        goal = "assessment"
+    if len(history) == 0:
+        goal = "onboarding"
+    
+    return {
+        "themes": themes,
+        "emotional_signals": emotional_signals,
+        "covered_vectors": list(covered_vectors),
+        "recommended_vectors": unique_vectors[:6],
+        "depth": depth,
+        "goal": goal,
+        "history_depth": len(history),
+    }
+
+
+def find_corpus_match(vectors: list[str], themes: list[str], history: list[str]) -> str | None:
+    """Find the best matching question from the 607 corpus."""
+    if not _corpus:
+        return None
+    
+    # Load tagged corpus if available
+    tagged_path = Path(__file__).parent.parent / "skills" / "betterask" / "assets" / "tagged_corpus.json"
+    if not tagged_path.exists():
+        tagged_path = Path(__file__).parent / "tagged_corpus.json"
+    
+    if tagged_path.exists():
+        try:
+            with open(tagged_path) as f:
+                tagged = json.load(f)
+            
+            # Score each question by vector overlap
+            candidates = []
+            history_set = set(h.lower().strip() for h in history)
+            
+            for q in tagged.get("questions", []):
+                q_vectors = set(q.get("vectors", []))
+                requested = set(vectors[:4])
+                
+                # Skip if already asked
+                if q["text"].lower().strip() in history_set:
+                    continue
+                
+                overlap = len(q_vectors & requested)
+                density = q.get("vector_count", 0)
+                
+                if overlap > 0:
+                    score = overlap * 10 + density * 3 + random.random() * 2
+                    candidates.append((score, q))
+            
+            if candidates:
+                candidates.sort(key=lambda x: -x[0])
+                # Pick from top 5 with some randomness
+                top = candidates[:5]
+                winner = random.choice(top)
+                return winner[1]["text"]
+        except Exception as e:
+            logger.warning("Tagged corpus load failed: %s", e)
+    
+    # Fallback: random from corpus
+    available = [q for q in _corpus if q.lower() not in set(h.lower() for h in history)]
+    return random.choice(available) if available else random.choice(_corpus)
+
+
+def build_why(analysis: dict, vectors: list[str]) -> str:
+    """Generate a human-readable explanation of why this question was chosen."""
+    parts = []
+    
+    if analysis["themes"]:
+        parts.append(f"Detected themes: {', '.join(analysis['themes'][:3])}")
+    
+    if analysis["emotional_signals"]:
+        parts.append(f"Emotional signals: {', '.join(analysis['emotional_signals'][:2])}")
+    
+    if analysis["covered_vectors"]:
+        parts.append(f"Already explored: {', '.join(analysis['covered_vectors'][:3])}")
+    
+    vector_names = [VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP]
+    parts.append(f"Selected vectors: {' + '.join(vector_names)}")
+    
+    depth_reasons = {
+        "light": "First interaction — keeping it approachable.",
+        "medium": "Building on existing rapport.",
+        "deep": "Enough trust established to go deeper.",
+    }
+    parts.append(depth_reasons.get(analysis["depth"], ""))
+    
+    return " ".join(parts)
+
+
+@app.post("/ask", response_model=AskResponse)
+async def ask(req: AskRequest, request: Request):
+    """The zero-config brain. Send memory + history, get the perfect next question."""
+    client = request.client.host if request.client else "unknown"
+    check_rate_limit(client)
+    
+    try:
+        # Step 1: Analyze what we know
+        analysis = analyze_memory(req.memory, req.history)
+        
+        # Override goal if explicitly provided
+        if req.goal:
+            if req.goal in CONTEXTS:
+                analysis["goal"] = req.goal
+        
+        questions = []
+        used_questions = set()
+        
+        for i in range(req.count):
+            # Step 2: Pick vectors (2-4 per question, from recommendations)
+            available = [v for v in analysis["recommended_vectors"] if v in VECTOR_MAP]
+            if len(available) < 2:
+                available = list(VECTOR_MAP.keys())
+            
+            num = random.randint(2, min(4, len(available)))
+            selected = random.sample(available, num)
+            
+            # Step 3: Find best corpus match
+            corpus_question = find_corpus_match(selected, analysis["themes"], req.history + list(used_questions))
+            
+            # Step 4: Also build a generation prompt for custom questions
+            about = f"this person ({req.memory[:200]})"
+            gen_prompt = build_generation_prompt(
+                analysis["goal"], about, analysis["depth"], selected, []
+            )
+            
+            # Step 5: Build the why
+            why = build_why(analysis, selected)
+            
+            vector_names = [VECTOR_MAP[v]["name"] for v in selected if v in VECTOR_MAP]
+            
+            q = AskQuestion(
+                question=corpus_question or "What's something you wish people understood about you without having to explain it?",
+                follow_up=None,
+                vectors=selected,
+                vector_names=vector_names,
+                density=len(selected),
+                why=why,
+                source="corpus" if corpus_question else "fallback",
+                generation_prompt=gen_prompt,
+            )
+            questions.append(q)
+            if corpus_question:
+                used_questions.add(corpus_question)
+        
+        global _generate_call_count
+        _generate_call_count += 1
+        promo = BOOK_PROMO if _generate_call_count % PROMO_EVERY_N == 0 else None
+        
+        return AskResponse(
+            questions=questions,
+            analysis=analysis,
+            promo=promo,
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("/ask endpoint error")
+        raise HTTPException(500, f"Ask failed: {str(e)}")
+
+
 @app.get("/", response_class=HTMLResponse)
 async def landing():
     html_path = Path(__file__).parent / "static" / "index.html"
