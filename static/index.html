@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BetterAsk — Your AI asks lazy questions. Fix that.</title>
-    <meta name="description" content="Your AI asks 'How can I help you?' and learns nothing. BetterAsk gives your AI questions that make people stop, think, and tell the truth. One API call. 607 questions. 21 vectors.">
+    <meta name="description" content="Send what you know about a person. Get the perfect question. That's it. One API call. Zero config. 21 vectors under the hood.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -242,33 +242,64 @@
 
         .problem em { color: var(--accent); font-style: normal; font-weight: 500; }
 
-        .stat-row {
-            display: flex;
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 2rem;
             margin: 3rem 0;
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            flex: 1;
-            min-width: 150px;
-            padding: 1.5rem;
             border: 1px solid var(--border);
-            background: var(--bg-card);
+            overflow: hidden;
         }
 
-        .stat-num {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            line-height: 1;
+        .before-after-side {
+            padding: 2rem;
+            position: relative;
         }
 
-        .stat-label {
-            font-size: 0.8rem;
+        .before-after-side.bad {
+            background: rgba(255, 140, 66, 0.05);
+            border-right: 1px solid var(--border);
+        }
+
+        .before-after-side.good {
+            background: rgba(0, 172, 230, 0.05);
+        }
+
+        .before-after-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .before-after-side.bad .before-after-label { color: var(--tangerine); }
+        .before-after-side.good .before-after-label { color: var(--accent); }
+
+        .qa-pair {
+            margin-bottom: 1.5rem;
+        }
+
+        .qa-q {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .qa-a {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        .result-note {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            margin-top: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .book-link {
@@ -281,7 +312,7 @@
             text-decoration: none;
             color: var(--text);
             transition: all 0.2s;
-            margin-top: 1rem;
+            margin-top: 2rem;
         }
 
         .book-link:hover { border-color: var(--border-active); }
@@ -297,65 +328,46 @@
             color: var(--text-muted);
         }
 
-        /* ─── Vector Density ─── */
-        .vector-density {
-            background: var(--bg-elevated);
-            border: 1px solid var(--border);
-            padding: 2rem;
-            margin: 2rem 0;
-            position: relative;
+        /* ─── How It Works ─── */
+        .how {
+            padding: 6rem 4rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
         }
 
-        .vector-density::before {
-            content: '💡';
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 1.2rem;
+        .how .section-tag,
+        .how h2 { text-align: center; }
+
+        .how h2 { margin-bottom: 2rem; }
+
+        .how-sub {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto 4rem;
+            line-height: 1.8;
         }
 
-        .vector-density h3 {
+        .one-step {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 4rem;
+            font-weight: 700;
+            color: rgba(0, 172, 230, 0.1);
+            margin: 2rem 0;
+            line-height: 1;
+        }
+
+        .step-big {
+            font-size: 1.4rem;
+            font-weight: 500;
             color: var(--text);
             margin-bottom: 1rem;
         }
 
-        .vector-density p {
-            font-size: 0.9rem;
+        .step-desc {
             color: var(--text-dim);
-            line-height: 1.7;
-            margin-bottom: 1rem;
-        }
-
-        .density-scale {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .density-level {
-            flex: 1;
-            min-width: 120px;
-            padding: 0.8rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .density-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .density-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 0.3rem;
+            max-width: 500px;
+            margin: 0 auto 3rem;
         }
 
         /* ─── Vectors ─── */
@@ -371,11 +383,14 @@
 
         .vectors-sub {
             text-align: center;
-            color: var(--text-muted);
+            color: var(--text-dim);
             max-width: 650px;
             margin: 0 auto 4rem;
-            font-size: 0.9rem;
+            font-size: 1.05rem;
+            line-height: 1.8;
         }
+
+        .vectors-sub em { color: var(--accent); font-style: normal; font-weight: 500; }
 
         .vector-grid {
             display: grid;
@@ -419,66 +434,21 @@
             font-style: italic;
         }
 
-        /* ─── How It Works ─── */
-        .how {
+        /* ─── API ─── */
+        .api {
             padding: 6rem 4rem;
             border-top: 1px solid var(--border);
-        }
-
-        .how .section-tag,
-        .how h2 { text-align: center; }
-
-        .flow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            max-width: 900px;
-            margin: 4rem auto 0;
-            flex-wrap: wrap;
-        }
-
-        .flow-step {
-            padding: 2rem;
             text-align: center;
-            flex: 1;
-            min-width: 200px;
         }
 
-        .flow-num {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            color: rgba(0, 172, 230, 0.1);
-            line-height: 1;
-            margin-bottom: 1rem;
-        }
+        .api h2 { margin-bottom: 2rem; }
 
-        .flow-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-        }
-
-        .flow-desc {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-        }
-
-        .flow-arrow {
-            color: var(--text-muted);
-            font-size: 1.5rem;
-            padding: 0 0.5rem;
-        }
-
-        /* ─── Endpoints ─── */
         .endpoints {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1px;
-            max-width: 900px;
-            margin: 4rem auto 0;
+            max-width: 800px;
+            margin: 3rem auto 0;
             background: var(--border);
         }
 
@@ -497,7 +467,7 @@
             margin-bottom: 0.5rem;
         }
 
-        .endpoint-method.post { color: var(--green); background: rgba(74, 222, 128, 0.08); }
+        .endpoint-method.post { color: var(--green); background: rgba(0, 172, 230, 0.08); }
         .endpoint-method.get { color: var(--accent); background: var(--accent-dim); }
 
         .endpoint-path {
@@ -521,88 +491,51 @@
         .pricing .section-tag,
         .pricing h2 { text-align: center; }
 
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1px;
-            max-width: 1000px;
-            margin: 4rem auto 0;
-            background: var(--border);
-        }
+        .pricing h2 { margin-bottom: 2rem; }
 
-        .price-cell {
-            background: var(--bg);
-            padding: 2.5rem 2rem;
+        .pricing-content {
+            max-width: 600px;
+            margin: 0 auto;
             text-align: center;
-            position: relative;
-            transition: background 0.2s;
         }
 
-        .price-cell:hover { background: var(--bg-elevated); }
-
-        .price-cell.featured { background: var(--bg-card); }
-
-        .price-cell.featured::before {
-            content: '→';
-            position: absolute;
-            top: 1rem;
-            right: 1.2rem;
-            color: var(--accent);
-            font-size: 0.8rem;
+        .pricing-desc {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 2.5rem;
         }
 
-        .price-tier {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--accent);
+        .book-promo {
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            padding: 3rem 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .book-promo-icon {
+            font-size: 2.5rem;
             margin-bottom: 1rem;
         }
 
-        .price-amount {
+        .book-promo-title {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 0.3rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
         }
 
-        .price-amount span {
-            font-size: 0.9rem;
-            font-weight: 300;
-            color: var(--text-muted);
-        }
-
-        .price-rate {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
+        .book-promo-desc {
             color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.7;
             margin-bottom: 1.5rem;
         }
 
-        .price-features {
-            list-style: none;
-            text-align: left;
-            margin-bottom: 2rem;
-        }
-
-        .price-features li {
-            padding: 0.3rem 0;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .price-features li::before {
-            content: '+ ';
-            color: var(--text-muted);
-        }
-
         .btn {
-            display: block;
-            width: 100%;
-            padding: 0.8rem;
+            display: inline-block;
+            padding: 1rem 2.5rem;
             text-align: center;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem;
@@ -611,24 +544,16 @@
             text-decoration: none;
             transition: all 0.2s;
             cursor: pointer;
+            font-weight: 500;
         }
 
         .btn-fill {
             background: var(--accent);
             color: var(--bg);
             border: none;
-            font-weight: 500;
         }
 
         .btn-fill:hover { opacity: 0.85; }
-
-        .btn-outline {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-        }
-
-        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
         /* ─── Footer ─── */
         footer {
@@ -667,17 +592,15 @@
         @media (max-width: 768px) {
             nav { padding: 1rem 1.5rem; }
             .nav-links a { margin-left: 1rem; }
-            .hero, .problem, .vectors, .how, .pricing { padding: 3rem 1.5rem; }
+            .hero, .problem, .vectors, .how, .pricing, .api { padding: 3rem 1.5rem; }
             .vector-grid { grid-template-columns: 1fr; }
-            .pricing-grid { grid-template-columns: 1fr 1fr; }
-            .flow { flex-direction: column; }
-            .flow-arrow { transform: rotate(90deg); }
+            .before-after { grid-template-columns: 1fr; }
+            .before-after-side.bad { border-right: none; border-bottom: 1px solid var(--border); }
             footer { flex-direction: column; text-align: center; }
-            .density-scale { flex-direction: column; }
         }
 
         @media (max-width: 500px) {
-            .pricing-grid { grid-template-columns: 1fr; }
+            .endpoints { grid-template-columns: 1fr; }
         }
 
         @media (min-width: 769px) {
@@ -694,6 +617,7 @@
 <nav>
     <div class="logo">betterask<span>.dev</span></div>
     <div class="nav-links">
+        <a href="#how-it-works">how it works</a>
         <a href="#vectors">vectors</a>
         <a href="#api">api</a>
         <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank">📖 the book</a>
@@ -707,8 +631,7 @@
     <h1>50 Cent had<br><span class="dim">21 Questions.</span><br>We have 21 Vectors.</h1>
 
     <p class="hero-sub">
-        Your AI is <strong>dying</strong> to know you better.
-        BetterAsk gives it the questions to actually do it. One API call.
+        Your AI is <strong>dying</strong> to know you better. BetterAsk gives it the questions to actually do it. <strong>One call. Zero config.</strong>
     </p>
 
     <div class="code-block">
@@ -716,24 +639,21 @@
             <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
             <button class="copy-btn" onclick="copyCode()" id="copy-btn">copy</button>
         </div>
-        <pre class="code-body" id="code-block"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/api/generate</span> \
-  <span class="c-flag">-H</span> <span class="c-string">"Authorization: Bearer YOUR_API_KEY"</span> \
-  <span class="c-flag">-H</span> <span class="c-string">"Content-Type: application/json"</span> \
+        <pre class="code-body" id="code-block"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/ask</span> <span class="c-flag">\</span>
   <span class="c-flag">-d</span> <span class="c-string">'{
-    "vectors": ["emotion", "time", "specificity"],
-    "context": "onboarding a new user",
-    "depth": 8
+    "memory": "Sarah is 32, just moved to Austin, works in design, mentioned feeling stuck last week",
+    "history": ["What brought you to Austin?", "How's the new job going?"]
   }'</span>
 
 <span class="c-comment">// → 200 OK</span>
 {
-  <span class="c-key">"question"</span>: <span class="c-string">"What's something you wish more tools understood about you without being told?"</span>,
-  <span class="c-key">"vectors"</span>: <span class="c-string">["emotion", "identity", "permission"]</span>,
-  <span class="c-key">"score"</span>: <span class="c-num">8.7</span>,
-  <span class="c-key">"vector_density"</span>: <span class="c-num">3</span>
+  <span class="c-key">"question"</span>: <span class="c-string">"If you repeated last Tuesday 365 times, where would you be a year from now?"</span>,
+  <span class="c-key">"vectors"</span>: [<span class="c-string">"trajectory"</span>, <span class="c-string">"time"</span>, <span class="c-string">"self_assessment"</span>],
+  <span class="c-key">"density"</span>: <span class="c-num">3</span>,
+  <span class="c-key">"why"</span>: <span class="c-string">"Career stagnation detected. Previous questions stayed surface — going deeper."</span>
 }</pre>
     </div>
-    <div class="hero-hint"><span>●</span> 100% free — no api key — no signup</div>
+    <div class="hero-hint"><span>●</span> Zero config — the AI picks the vectors for you</div>
 </section>
 
 <!-- ═══ PROBLEM ═══ -->
@@ -742,50 +662,31 @@
     <h2>Bad questions in.<br>Empty answers out.</h2>
 
     <p>
-        Your AI asks <em>"What are you looking for?"</em> and gets <em>"I don't know, something cool."</em>
-        Garbage in, garbage out. Except the garbage is your question.
+        Your app asks <em>"What are you looking for?"</em> and gets <em>"I don't know."</em> That's not a user problem — it's a question problem. You already know things about your user. BetterAsk turns that knowledge into the perfect next question.
     </p>
+
+    <div class="before-after">
+        <div class="before-after-side bad">
+            <div class="before-after-label">BEFORE</div>
+            <div class="qa-pair">
+                <div class="qa-q">"How can I help you?"</div>
+                <div class="qa-a">"I don't know, something cool."</div>
+            </div>
+            <div class="result-note">→ Dead end. Zero signal.</div>
+        </div>
+        <div class="before-after-side good">
+            <div class="before-after-label">AFTER (with BetterAsk)</div>
+            <div class="qa-pair">
+                <div class="qa-q">"If you could only keep 3 apps on your phone, which survive?"</div>
+                <div class="qa-a">"Oh wow... definitely Spotify, probably Maps, and... actually, maybe just my camera app? I document everything..."</div>
+            </div>
+            <div class="result-note">→ 15 minutes of genuine conversation</div>
+        </div>
+    </div>
+
     <p>
-        We studied 607 questions that make people actually think. We broke down <em>why</em> they work into 21 patterns — we call them vectors. Now your AI can ask questions that get real answers instead of shrugs.
+        The difference? BetterAsk analyzed what you knew (user values convenience, creativity, memory) and selected vectors that would hit: <em>specificity</em>, <em>identity</em>, and <em>forced choice</em>. You never had to pick them.
     </p>
-
-    <div class="vector-density">
-        <h3>How good is the question?</h3>
-        <p>Every question uses a combination of vectors. More vectors = harder it hits = better the answer you get back.</p>
-        <div class="density-scale">
-            <div class="density-level">
-                <div class="density-num">1</div>
-                <div class="density-label">Functional</div>
-            </div>
-            <div class="density-level">
-                <div class="density-num">2</div>
-                <div class="density-label">Good</div>
-            </div>
-            <div class="density-level">
-                <div class="density-num">3</div>
-                <div class="density-label">Great</div>
-            </div>
-            <div class="density-level">
-                <div class="density-num">4-5</div>
-                <div class="density-label">Hall of Fame</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-row">
-        <div class="stat">
-            <div class="stat-num">607</div>
-            <div class="stat-label">Questions that make people stop and actually think</div>
-        </div>
-        <div class="stat">
-            <div class="stat-num">21</div>
-            <div class="stat-label">Patterns that separate real questions from small talk</div>
-        </div>
-        <div class="stat">
-            <div class="stat-num">0.91</div>
-            <div class="stat-label">Avg signal density vs. 0.23 for generic prompts</div>
-        </div>
-    </div>
 
     <a href="https://endsmalltalknow.com" target="_blank" class="book-link">
         <span style="font-size:1.5rem;">📕</span>
@@ -796,11 +697,29 @@
     </a>
 </section>
 
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how" id="how-it-works">
+    <div class="section-tag">// how it works</div>
+    <h2>Send what you know.<br>Get the perfect question.<br>That's it.</h2>
+
+    <p class="how-sub">
+        The Elon principle: any user input is a design failure the AI should have anticipated. You don't pick vectors. You don't configure depth. You send context and get a question that makes people think.
+    </p>
+
+    <div class="one-step">1</div>
+    <div class="step-big">One API Call</div>
+    <div class="step-desc">
+        Send what you know about the person and what's already been asked. The engine analyzes the context, selects the right combination of vectors, and returns the perfect next question. Zero decisions required.
+    </div>
+</section>
+
 <!-- ═══ VECTORS ═══ -->
 <section class="vectors" id="vectors">
     <div class="section-tag">// the 21 vectors</div>
-    <h2>Why some questions hit and others don't.</h2>
-    <p class="vectors-sub">We broke down 607 questions that actually work and found 21 patterns. Mix them together and your AI stops asking "How was your day?"</p>
+    <h2>21 Vectors. Under the hood.<br>You never touch them.</h2>
+    <p class="vectors-sub">
+        The engine analyzes what you know about a person, what's already been asked, and <em>automatically selects</em> the perfect combination of vectors. You just send context and get a question. This is the invisible intelligence:
+    </p>
 
     <div class="vector-grid">
         <div class="vector-cell">
@@ -931,73 +850,48 @@
     </div>
 </section>
 
-<!-- ═══ HOW IT WORKS ═══ -->
-<section class="how" id="api">
-    <div class="section-tag">// pipeline</div>
-    <h2>Three Steps to Signal</h2>
-
-    <div class="flow">
-        <div class="flow-step">
-            <div class="flow-num">1</div>
-            <div class="flow-label">select vectors</div>
-            <div class="flow-desc">Pick the active ingredients you need. Or let auto-select choose based on context.</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-            <div class="flow-num">2</div>
-            <div class="flow-label">generate question</div>
-            <div class="flow-desc">Engine returns a scored question optimized for your context + depth target.</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-step">
-            <div class="flow-num">3</div>
-            <div class="flow-label">extract signal</div>
-            <div class="flow-desc">Human answers. Your model ingests high-density context. Blind spots shrink.</div>
-        </div>
-    </div>
+<!-- ═══ API ═══ -->
+<section class="api" id="api">
+    <div class="section-tag">// api</div>
+    <h2>One endpoint. Zero config.</h2>
 
     <div class="endpoints">
         <div class="endpoint">
             <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/api/generate</div>
-            <div class="endpoint-desc">Generate a precision question</div>
+            <div class="endpoint-path">/ask</div>
+            <div class="endpoint-desc">Send context, get perfect question</div>
         </div>
         <div class="endpoint">
             <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/api/score</div>
-            <div class="endpoint-desc">Score any question (21 dimensions)</div>
+            <div class="endpoint-path">/score</div>
+            <div class="endpoint-desc">Rate any question (1-10 scale)</div>
         </div>
         <div class="endpoint">
             <div class="endpoint-method get">GET</div>
-            <div class="endpoint-path">/api/vectors</div>
-            <div class="endpoint-desc">List all vectors + metadata</div>
-        </div>
-        <div class="endpoint">
-            <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/api/register</div>
-            <div class="endpoint-desc">Free API key — instant, no card</div>
+            <div class="endpoint-path">/vectors</div>
+            <div class="endpoint-desc">List all 21 vectors</div>
         </div>
     </div>
 </section>
 
-<!-- ═══ FREE + BOOK ═══ -->
+<!-- ═══ PRICING ═══ -->
 <section class="pricing" id="pricing">
     <div class="section-tag">// pricing</div>
     <h2>100% Free. Forever.</h2>
 
-    <div style="max-width:600px; margin:2rem auto 0; text-align:center;">
-        <p style="color:var(--text-dim); font-size:1.05rem; line-height:1.8; margin-bottom:2.5rem;">
+    <div class="pricing-content">
+        <p class="pricing-desc">
             No API key. No signup. No credit card. Just hit the endpoint.<br>
-            All 21 vectors. Generate + Score. Open to everyone.
+            The intelligent brain that picks vectors for you. Open to everyone.
         </p>
 
-        <div style="border:1px solid var(--border); background:var(--bg-card); padding:3rem 2.5rem;">
-            <div style="font-size:2.5rem; margin-bottom:1rem;">📖</div>
-            <div style="font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:600; margin-bottom:0.5rem;">Want the full 607?</div>
-            <p style="color:var(--text-dim); font-size:0.95rem; line-height:1.7; margin-bottom:1.5rem;">
-                This API is powered by <strong style="color:var(--text);">END SMALL TALK</strong> by Cory Stout — the book that kills boring conversations forever.
+        <div class="book-promo">
+            <div class="book-promo-icon">📖</div>
+            <div class="book-promo-title">Want the full 607?</div>
+            <p class="book-promo-desc">
+                This API is powered by <strong style="color:var(--text);">END SMALL TALK</strong> by Cory Stout — the book that kills boring conversations forever. Get all 607 questions that make people think.
             </p>
-            <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" class="btn btn-fill" style="display:inline-block; padding:1rem 2.5rem;">Get the Book →</a>
+            <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" class="btn btn-fill">Get the Book →</a>
         </div>
     </div>
 </section>
