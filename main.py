@@ -1158,13 +1158,30 @@ async def score(req: ScoreRequest, request: Request):
 
 
 # ---------------------------------------------------------------------------
-# /ask — The Zero-Config Brain
+# /ask — Agent Self-Improvement Engine
 # ---------------------------------------------------------------------------
 
+class AskKnown(BaseModel):
+    """What the agent already knows about its human."""
+    name: str | None = None
+    age: int | None = None
+    location: str | None = None
+    career: str | None = None
+    interests: list[str] = []
+    relationships: dict = {}
+    health: str | None = None
+    goals: list[str] = []
+    values: list[str] = []
+    recent_context: str | None = None
+    raw: str | None = Field(None, description="Freeform text dump of everything the agent knows", max_length=10000)
+
+
 class AskRequest(BaseModel):
-    memory: str = Field(..., description="What you know about this person", max_length=5000)
-    history: list[str] = Field(default=[], description="Previous questions already asked", max_length=50)
-    goal: str | None = Field(None, description="Optional: what you're trying to learn (auto-detected if omitted)")
+    known: AskKnown | None = Field(None, description="Structured data the agent has about its human")
+    memory: str | None = Field(None, description="Freeform text of what agent knows (alternative to 'known')", max_length=10000)
+    agent_role: str = Field("personal assistant", description="What role the agent plays")
+    agent_gaps: list[str] = Field(default=[], description="Gaps the agent has identified (auto-detected if empty)")
+    history: list[str] = Field(default=[], description="Previous questions already asked")
     count: int = Field(1, ge=1, le=5, description="Number of questions to return")
 
 
@@ -1174,152 +1191,253 @@ class AskQuestion(BaseModel):
     vectors: list[str]
     vector_names: list[str]
     density: int
+    gap_targeted: str
     why: str
+    what_to_listen_for: str
     source: str  # "corpus" or "generated"
-    generation_prompt: str | None = None  # included if caller wants to regenerate via LLM
+    generation_prompt: str | None = None
 
 
 class AskResponse(BaseModel):
     questions: list[AskQuestion]
     analysis: dict
+    gaps_detected: list[str]
     promo: str | None = None
 
 
-def analyze_memory(memory: str, history: list[str]) -> dict:
-    """Analyze memory + history to determine what vectors and topics to target."""
-    memory_lower = memory.lower()
-    history_lower = [h.lower() for h in history]
-    history_joined = " ".join(history_lower)
+def flatten_known(req: "AskRequest") -> str:
+    """Flatten structured 'known' + freeform 'memory' into one text blob."""
+    parts = []
+    if req.memory:
+        parts.append(req.memory)
+    if req.known:
+        k = req.known
+        if k.raw:
+            parts.append(k.raw)
+        if k.name:
+            parts.append(f"Name: {k.name}")
+        if k.age:
+            parts.append(f"Age: {k.age}")
+        if k.location:
+            parts.append(f"Location: {k.location}")
+        if k.career:
+            parts.append(f"Career: {k.career}")
+        if k.interests:
+            parts.append(f"Interests: {', '.join(k.interests)}")
+        if k.relationships:
+            parts.append(f"Relationships: {json.dumps(k.relationships)}")
+        if k.health:
+            parts.append(f"Health: {k.health}")
+        if k.goals:
+            parts.append(f"Goals: {', '.join(k.goals)}")
+        if k.values:
+            parts.append(f"Values: {', '.join(k.values)}")
+        if k.recent_context:
+            parts.append(f"Recent: {k.recent_context}")
+    return " ".join(parts) if parts else ""
+
+
+# Life domains the agent should understand about its human
+LIFE_DOMAINS = {
+    "daily_routines": {
+        "label": "Daily Routines",
+        "keywords": ["morning", "routine", "habit", "wake up", "sleep", "schedule", "day looks like"],
+        "question_angle": "how they structure their time reveals priorities",
+        "vectors": ["time", "trajectory", "self_assessment"],
+        "listen_for": "Whether the answer reveals satisfaction or restlessness with current patterns.",
+    },
+    "career_direction": {
+        "label": "Career Direction", 
+        "keywords": ["job", "career", "work", "boss", "company", "startup", "business", "salary", "promotion", "role"],
+        "question_angle": "where they're heading professionally",
+        "vectors": ["trajectory", "self_assessment", "comparison"],
+        "listen_for": "Are they building toward something or maintaining? Listen for energy vs. obligation.",
+    },
+    "relationship_quality": {
+        "label": "Relationship Quality",
+        "keywords": ["partner", "wife", "husband", "boyfriend", "girlfriend", "dating", "married", "love", "relationship"],
+        "question_angle": "depth and health of romantic connections",
+        "vectors": ["other_eyes", "emotion", "contradiction"],
+        "listen_for": "The gap between what they say and how they say it. Hesitation often reveals more than words.",
+    },
+    "family_dynamics": {
+        "label": "Family Dynamics",
+        "keywords": ["mom", "dad", "mother", "father", "sister", "brother", "parents", "kids", "children", "family"],
+        "question_angle": "how family shapes their current self",
+        "vectors": ["other_eyes", "time", "confession"],
+        "listen_for": "Patterns inherited from family vs. patterns they've consciously broken.",
+    },
+    "financial_reality": {
+        "label": "Financial Reality",
+        "keywords": ["money", "debt", "savings", "invest", "financial", "income", "budget", "afford", "rich", "poor"],
+        "question_angle": "relationship with money beyond the numbers",
+        "vectors": ["self_assessment", "scale", "contradiction"],
+        "listen_for": "Whether money is a tool, a score, a source of anxiety, or freedom. The frame matters more than the amount.",
+    },
+    "health_practices": {
+        "label": "Health & Body",
+        "keywords": ["health", "fitness", "gym", "diet", "sleep", "exercise", "weight", "body", "energy", "sick"],
+        "question_angle": "how they relate to their physical vessel",
+        "vectors": ["self_assessment", "trajectory", "sensory_imagination"],
+        "listen_for": "Whether health is aspirational or practiced. The gap between knowing and doing.",
+    },
+    "social_life": {
+        "label": "Social Life",
+        "keywords": ["friends", "social", "lonely", "community", "network", "party", "group", "belong"],
+        "question_angle": "quality and depth of friendships",
+        "vectors": ["comparison", "other_eyes", "time"],
+        "listen_for": "Breadth vs. depth of connections. Are they surrounded by people or known by them?",
+    },
+    "inner_life": {
+        "label": "Inner Life & Meaning",
+        "keywords": ["meaning", "purpose", "spiritual", "meditate", "believe", "faith", "values", "philosophy", "why"],
+        "question_angle": "what gives their life meaning beyond accomplishment",
+        "vectors": ["identity", "metaphor", "confession"],
+        "listen_for": "Whether they've examined their beliefs or inherited them. Self-chosen vs. default worldview.",
+    },
+    "creative_expression": {
+        "label": "Creative Expression",
+        "keywords": ["creative", "art", "music", "writing", "design", "build", "project", "create", "maker", "content"],
+        "question_angle": "how they express their inner world externally",
+        "vectors": ["sensory_imagination", "metaphor", "identity"],
+        "listen_for": "Whether creativity is a practice or a wish. Do they make things or just think about making things?",
+    },
+    "growth_edge": {
+        "label": "Growth Edge",
+        "keywords": ["stuck", "change", "growth", "improve", "learn", "goal", "dream", "ambition", "potential", "fear"],
+        "question_angle": "where they're expanding and what's holding them back",
+        "vectors": ["trajectory", "contradiction", "permission"],
+        "listen_for": "The thing they know they need to do but haven't. The unnamed resistance.",
+    },
+    "fun_and_play": {
+        "label": "Fun & Play",
+        "keywords": ["fun", "play", "adventure", "travel", "hobby", "game", "enjoy", "laugh", "weekend"],
+        "question_angle": "capacity for joy and unstructured living",
+        "vectors": ["absurdity", "name_an_example", "sensory_imagination"],
+        "listen_for": "When was the last time they did something just because it was fun? Guilt-free play is revealing.",
+    },
+    "past_wounds": {
+        "label": "Past & Wounds",
+        "keywords": ["trauma", "hurt", "pain", "loss", "grief", "regret", "mistake", "failed", "broke"],
+        "question_angle": "how the past lives in their present",
+        "vectors": ["confession", "time", "permission"],
+        "listen_for": "Whether wounds have been processed or just buried. Integration vs. avoidance.",
+    },
+}
+
+
+def detect_gaps(memory_text: str, agent_gaps: list[str]) -> list[dict]:
+    """Detect what the agent doesn't know about its human."""
+    memory_lower = memory_text.lower()
     
-    # Detect themes in memory
+    gaps = []
+    covered = []
+    
+    for domain_id, domain in LIFE_DOMAINS.items():
+        domain_mentioned = any(kw in memory_lower for kw in domain["keywords"])
+        
+        if domain_mentioned:
+            covered.append(domain_id)
+        else:
+            gaps.append({
+                "domain": domain_id,
+                "label": domain["label"],
+                "question_angle": domain["question_angle"],
+                "vectors": domain["vectors"],
+                "listen_for": domain["listen_for"],
+                "priority": "high" if domain_id in ["daily_routines", "growth_edge", "career_direction"] else "medium",
+            })
+    
+    # Also include any agent-declared gaps
+    for gap_text in agent_gaps:
+        gaps.append({
+            "domain": "agent_declared",
+            "label": gap_text,
+            "question_angle": gap_text,
+            "vectors": ["specificity", "name_an_example", "self_assessment"],
+            "listen_for": f"Direct answer to: {gap_text}",
+            "priority": "high",
+        })
+    
+    # Sort: high priority first, then by how fundamental the domain is
+    priority_order = {"high": 0, "medium": 1, "low": 2}
+    gaps.sort(key=lambda g: priority_order.get(g["priority"], 1))
+    
+    return gaps, covered
+
+
+def analyze_for_agent(req: "AskRequest") -> dict:
+    """Full analysis: themes, emotions, gaps, vector recommendations."""
+    memory_text = flatten_known(req)
+    memory_lower = memory_text.lower()
+    
+    # Detect themes present
     themes = []
     theme_keywords = {
-        "career": ["work", "job", "career", "boss", "office", "company", "startup", "business", "role", "promotion", "fired", "hired", "salary"],
-        "relationships": ["partner", "wife", "husband", "boyfriend", "girlfriend", "dating", "married", "divorce", "ex", "relationship", "love", "breakup"],
-        "family": ["mom", "dad", "mother", "father", "sister", "brother", "parents", "kids", "children", "family", "son", "daughter"],
-        "health": ["health", "fitness", "gym", "diet", "sleep", "anxiety", "depression", "therapy", "mental", "weight", "exercise", "sick"],
-        "creativity": ["creative", "art", "music", "writing", "design", "build", "project", "create", "maker", "content"],
-        "growth": ["stuck", "change", "growth", "improve", "learn", "goal", "dream", "ambition", "potential", "purpose"],
-        "money": ["money", "debt", "savings", "invest", "rich", "poor", "financial", "income", "budget", "afford"],
-        "identity": ["identity", "values", "believe", "personality", "introvert", "extrovert", "who am i", "purpose", "meaning"],
-        "social": ["friends", "social", "lonely", "community", "network", "party", "group", "belong"],
-        "location": ["moved", "moving", "city", "town", "home", "travel", "live in", "from", "relocated"],
+        "career": ["work", "job", "career", "boss", "company", "startup", "business"],
+        "relationships": ["partner", "wife", "husband", "dating", "married", "love"],
+        "family": ["mom", "dad", "parents", "kids", "children", "family", "sister", "brother"],
+        "health": ["health", "fitness", "gym", "sleep", "exercise", "mental"],
+        "creativity": ["creative", "art", "music", "writing", "design", "build", "maker"],
+        "growth": ["stuck", "change", "growth", "improve", "goal", "dream", "ambition"],
+        "money": ["money", "debt", "savings", "invest", "financial", "income"],
+        "identity": ["identity", "values", "believe", "personality", "purpose", "meaning"],
+        "social": ["friends", "social", "lonely", "community", "belong"],
+        "location": ["moved", "moving", "city", "travel", "live in", "relocated"],
     }
-    
-    for theme, keywords in theme_keywords.items():
-        if any(kw in memory_lower for kw in keywords):
+    for theme, kws in theme_keywords.items():
+        if any(kw in memory_lower for kw in kws):
             themes.append(theme)
     
     # Detect emotional signals
     emotional_signals = []
-    emotion_keywords = {
-        "stuck": ["stuck", "stagnant", "plateau", "rut", "same", "nothing changes"],
-        "excited": ["excited", "pumped", "thrilled", "can't wait", "amazing", "new"],
-        "anxious": ["anxious", "worried", "nervous", "stressed", "overwhelmed", "scared"],
-        "nostalgic": ["remember", "used to", "back when", "miss", "childhood", "growing up"],
-        "conflicted": ["torn", "conflicted", "not sure", "both", "dilemma", "should i"],
-        "lonely": ["lonely", "alone", "isolated", "no one", "by myself", "miss people"],
-        "ambitious": ["want to", "going to", "plan to", "dream", "goal", "build", "start"],
+    emotion_kws = {
+        "stuck": ["stuck", "stagnant", "plateau", "rut"],
+        "excited": ["excited", "pumped", "thrilled", "momentum", "launched"],
+        "anxious": ["anxious", "worried", "nervous", "stressed", "overwhelmed"],
+        "nostalgic": ["remember", "used to", "back when", "miss"],
+        "conflicted": ["torn", "conflicted", "not sure", "dilemma"],
+        "lonely": ["lonely", "alone", "isolated"],
+        "ambitious": ["want to", "going to", "plan to", "dream", "goal", "build"],
     }
-    
-    for signal, keywords in emotion_keywords.items():
-        if any(kw in memory_lower for kw in keywords):
+    for signal, kws in emotion_kws.items():
+        if any(kw in memory_lower for kw in kws):
             emotional_signals.append(signal)
     
-    # Detect what's already been covered by history
+    # Detect gaps
+    gaps, covered_domains = detect_gaps(memory_text, req.agent_gaps)
+    
+    # Detect covered vectors from history
     covered_vectors = set()
-    for h in history_lower:
-        if any(w in h for w in ["how many", "how much", "what percentage"]):
-            covered_vectors.add("specificity")
-        if any(w in h for w in ["what was", "name a", "which", "favorite"]):
-            covered_vectors.add("name_an_example")
-        if any(w in h for w in ["imagine", "what if", "would you rather"]):
-            covered_vectors.add("hypothetical")
-        if any(w in h for w in ["scale of", "1-10", "rate yourself"]):
-            covered_vectors.add("self_assessment")
-        if any(w in h for w in ["how do you feel", "what does that feel"]):
-            covered_vectors.add("emotion")
-        if any(w in h for w in ["compared to", "or", "which is more"]):
-            covered_vectors.add("comparison")
-        if any(w in h for w in ["years ago", "last time", "when did"]):
-            covered_vectors.add("time")
+    for h in [x.lower() for x in req.history]:
+        if any(w in h for w in ["how many", "how much"]): covered_vectors.add("specificity")
+        if any(w in h for w in ["what was", "name a", "favorite"]): covered_vectors.add("name_an_example")
+        if any(w in h for w in ["imagine", "what if", "would you rather"]): covered_vectors.add("hypothetical")
+        if any(w in h for w in ["scale of", "1-10"]): covered_vectors.add("self_assessment")
+        if any(w in h for w in ["how do you feel"]): covered_vectors.add("emotion")
     
-    # Determine best vectors based on analysis
-    recommended_vectors = []
-    
-    # If person is stuck → trajectory, contradiction, confession
-    if "stuck" in emotional_signals or "growth" in themes:
-        recommended_vectors.extend(["trajectory", "contradiction", "confession"])
-    
-    # If person is new/excited → hypothetical, identity, comparison
-    if "excited" in emotional_signals or "location" in themes:
-        recommended_vectors.extend(["hypothetical", "identity", "comparison"])
-    
-    # If emotional territory detected → emotion, permission, other_eyes
+    # Determine depth
+    depth = "light" if len(req.history) == 0 else ("deep" if len(req.history) >= 3 else "medium")
     if any(s in emotional_signals for s in ["anxious", "lonely", "conflicted"]):
-        recommended_vectors.extend(["emotion", "permission", "other_eyes"])
+        depth = "deep"
     
-    # If career/money themes → self_assessment, trajectory, scale
-    if "career" in themes or "money" in themes:
-        recommended_vectors.extend(["self_assessment", "trajectory", "scale"])
-    
-    # If relationships → other_eyes, contradiction, permission
-    if "relationships" in themes or "family" in themes:
-        recommended_vectors.extend(["other_eyes", "contradiction", "permission"])
-    
-    # If identity/meaning → identity, metaphor, confession
-    if "identity" in themes:
-        recommended_vectors.extend(["identity", "metaphor", "confession"])
-    
-    # If creativity → sensory_imagination, metaphor, subversion
-    if "creativity" in themes:
-        recommended_vectors.extend(["sensory_imagination", "metaphor", "subversion"])
-    
-    # Default: always good vectors
-    if not recommended_vectors:
-        recommended_vectors = ["specificity", "hypothetical", "self_assessment", "time", "identity"]
-    
-    # Remove already-covered vectors, prioritize fresh ones
-    fresh_vectors = [v for v in recommended_vectors if v not in covered_vectors]
-    if len(fresh_vectors) < 2:
-        fresh_vectors = recommended_vectors  # fall back if too many covered
-    
-    # Deduplicate while preserving order
-    seen = set()
-    unique_vectors = []
-    for v in fresh_vectors:
-        if v not in seen:
-            seen.add(v)
-            unique_vectors.append(v)
-    
-    # Determine depth from emotional signals
-    depth = "medium"
-    if len(history) == 0:
-        depth = "light"  # first question should be approachable
-    elif len(history) >= 3:
-        depth = "deep"  # they've been talking, go deeper
-    if any(s in emotional_signals for s in ["anxious", "lonely", "conflicted"]):
-        depth = "deep"  # emotional state warrants depth
-    
-    # Determine implicit goal
+    # Determine goal
     goal = "rapport"
-    if "career" in themes or "money" in themes:
-        goal = "discovery"
-    if "stuck" in emotional_signals or "growth" in themes:
-        goal = "coaching"
-    if "identity" in themes:
-        goal = "assessment"
-    if len(history) == 0:
-        goal = "onboarding"
+    if len(req.history) == 0: goal = "onboarding"
+    elif "stuck" in emotional_signals or "growth" in themes: goal = "coaching"
+    elif "career" in themes or "money" in themes: goal = "discovery"
     
     return {
+        "memory_text": memory_text,
         "themes": themes,
         "emotional_signals": emotional_signals,
+        "covered_domains": covered_domains,
         "covered_vectors": list(covered_vectors),
-        "recommended_vectors": unique_vectors[:6],
+        "gaps": gaps,
         "depth": depth,
         "goal": goal,
-        "history_depth": len(history),
+        "history_depth": len(req.history),
+        "agent_role": req.agent_role,
     }
 
 
@@ -1371,26 +1489,21 @@ def find_corpus_match(vectors: list[str], themes: list[str], history: list[str])
     return random.choice(available) if available else random.choice(_corpus)
 
 
-def build_why(analysis: dict, vectors: list[str]) -> str:
-    """Generate a human-readable explanation of why this question was chosen."""
+def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
+    """Explain to the agent why this question was chosen."""
     parts = []
-    
-    if analysis["themes"]:
-        parts.append(f"Detected themes: {', '.join(analysis['themes'][:3])}")
+    parts.append(f"Gap targeted: {gap['label']}.")
     
     if analysis["emotional_signals"]:
-        parts.append(f"Emotional signals: {', '.join(analysis['emotional_signals'][:2])}")
-    
-    if analysis["covered_vectors"]:
-        parts.append(f"Already explored: {', '.join(analysis['covered_vectors'][:3])}")
+        parts.append(f"Emotional context: {', '.join(analysis['emotional_signals'][:2])}.")
     
     vector_names = [VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP]
-    parts.append(f"Selected vectors: {' + '.join(vector_names)}")
+    parts.append(f"Vectors: {' + '.join(vector_names)}.")
     
     depth_reasons = {
         "light": "First interaction — keeping it approachable.",
-        "medium": "Building on existing rapport.",
-        "deep": "Enough trust established to go deeper.",
+        "medium": "Building on existing rapport — balance fun with insight.",
+        "deep": "Trust established — going for real territory.",
     }
     parts.append(depth_reasons.get(analysis["depth"], ""))
     
@@ -1399,42 +1512,59 @@ def build_why(analysis: dict, vectors: list[str]) -> str:
 
 @app.post("/ask", response_model=AskResponse)
 async def ask(req: AskRequest, request: Request):
-    """The zero-config brain. Send memory + history, get the perfect next question."""
+    """Agent self-improvement engine. Agent sends what it knows, gets the question that fills its biggest gap."""
     client = request.client.host if request.client else "unknown"
     check_rate_limit(client)
     
     try:
-        # Step 1: Analyze what we know
-        analysis = analyze_memory(req.memory, req.history)
+        # Step 1: Full analysis — themes, emotions, gaps, recommendations
+        analysis = analyze_for_agent(req)
+        gaps = analysis["gaps"]
         
-        # Override goal if explicitly provided
-        if req.goal:
-            if req.goal in CONTEXTS:
-                analysis["goal"] = req.goal
+        if not gaps:
+            # Agent knows everything (unlikely) — fall back to deepening existing knowledge
+            gaps = [{
+                "domain": "deepening",
+                "label": "Deepening existing understanding",
+                "question_angle": "go deeper on what's already known",
+                "vectors": ["confession", "contradiction", "trajectory"],
+                "listen_for": "New layers beneath what's already been shared.",
+                "priority": "medium",
+            }]
         
         questions = []
         used_questions = set()
+        gaps_targeted = []
         
-        for i in range(req.count):
-            # Step 2: Pick vectors (2-4 per question, from recommendations)
-            available = [v for v in analysis["recommended_vectors"] if v in VECTOR_MAP]
-            if len(available) < 2:
-                available = list(VECTOR_MAP.keys())
+        for i in range(min(req.count, len(gaps))):
+            gap = gaps[i]
             
-            num = random.randint(2, min(4, len(available)))
-            selected = random.sample(available, num)
+            # Step 2: Pick vectors from the gap's recommended set
+            gap_vectors = [v for v in gap["vectors"] if v in VECTOR_MAP]
+            if len(gap_vectors) < 2:
+                gap_vectors = random.sample(list(VECTOR_MAP.keys()), 3)
+            
+            # Add 1-2 extra vectors for density, avoiding already-covered ones
+            all_vector_ids = list(VECTOR_MAP.keys())
+            extras = [v for v in all_vector_ids if v not in gap_vectors and v not in analysis["covered_vectors"]]
+            if extras:
+                gap_vectors.append(random.choice(extras))
+            
+            selected = gap_vectors[:4]
             
             # Step 3: Find best corpus match
             corpus_question = find_corpus_match(selected, analysis["themes"], req.history + list(used_questions))
             
-            # Step 4: Also build a generation prompt for custom questions
-            about = f"this person ({req.memory[:200]})"
+            # Step 4: Build generation prompt for custom LLM question
+            memory_text = analysis["memory_text"]
+            about = f"this person ({memory_text[:300]})"
             gen_prompt = build_generation_prompt(
                 analysis["goal"], about, analysis["depth"], selected, []
             )
             
-            # Step 5: Build the why
-            why = build_why(analysis, selected)
+            # Step 5: Build why + listen_for
+            why = build_agent_why(gap, analysis, selected)
+            listen_for = gap.get("listen_for", "Pay attention to what's said and what's avoided.")
             
             vector_names = [VECTOR_MAP[v]["name"] for v in selected if v in VECTOR_MAP]
             
@@ -1444,11 +1574,14 @@ async def ask(req: AskRequest, request: Request):
                 vectors=selected,
                 vector_names=vector_names,
                 density=len(selected),
+                gap_targeted=gap["label"],
                 why=why,
+                what_to_listen_for=listen_for,
                 source="corpus" if corpus_question else "fallback",
                 generation_prompt=gen_prompt,
             )
             questions.append(q)
+            gaps_targeted.append(gap["label"])
             if corpus_question:
                 used_questions.add(corpus_question)
         
@@ -1456,9 +1589,14 @@ async def ask(req: AskRequest, request: Request):
         _generate_call_count += 1
         promo = BOOK_PROMO if _generate_call_count % PROMO_EVERY_N == 0 else None
         
+        # Clean analysis for response (remove memory_text for privacy)
+        response_analysis = {k: v for k, v in analysis.items() if k != "memory_text"}
+        all_gap_labels = [g["label"] for g in gaps]
+        
         return AskResponse(
             questions=questions,
-            analysis=analysis,
+            analysis=response_analysis,
+            gaps_detected=all_gap_labels,
             promo=promo,
         )
     
