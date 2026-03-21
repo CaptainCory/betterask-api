@@ -68,7 +68,7 @@ PRODUCT_TO_TIER = {v["stripe_product_id"]: k for k, v in TIERS.items() if v["str
 # ---------------------------------------------------------------------------
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
 
@@ -181,7 +181,7 @@ def create_api_key(tier: str = "free", stripe_customer_id: str | None = None,
 def get_api_key_record(key: str) -> dict | None:
     conn = get_db()
     try:
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         cur.execute("SELECT * FROM api_keys WHERE key = %s AND active = 1", (key,))
         row = cur.fetchone()
         return dict(row) if row else None
@@ -467,8 +467,8 @@ def load_corpus():
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM questions WHERE active=1")
-        count = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) AS cnt FROM questions WHERE active=1")
+        count = cur.fetchone()["cnt"]
         if count == 0:
             # Seed from corpus text file
             for path, source in [(CORPUS_PATH, "corpus"), (EXTRAS_PATH, "manual")]:
@@ -491,7 +491,7 @@ def load_corpus():
         # Always load from DB
         cur.execute("SELECT question FROM questions WHERE active=1 ORDER BY id")
         rows = cur.fetchall()
-        _corpus = [r[0] for r in rows]
+        _corpus = [r["question"] for r in rows]
         logger.info("Loaded %d questions from database", len(_corpus))
     finally:
         conn.close()
@@ -607,7 +607,7 @@ def get_human_profile(human_id: str, agent_api_key: str) -> dict | None:
     """Get a human profile from the database."""
     conn = get_db()
     try:
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         cur.execute(
             "SELECT * FROM human_profiles WHERE human_id = %s AND agent_api_key = %s",
             (human_id, agent_api_key)
@@ -1188,12 +1188,12 @@ async def list_questions(
 
     conn = get_db()
     try:
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         cur.execute(query, params)
         rows = cur.fetchall()
         cur2 = conn.cursor()
-        cur2.execute("SELECT COUNT(*) FROM questions WHERE active=1")
-        total = cur2.fetchone()[0]
+        cur2.execute("SELECT COUNT(*) AS cnt FROM questions WHERE active=1")
+        total = cur2.fetchone()["cnt"]
 
         return {
             "questions": [dict(r) for r in rows],
@@ -1260,12 +1260,12 @@ async def admin_stats(x_admin_key: str | None = Header(None)):
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM api_keys WHERE active=1")
-        total_keys = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) AS cnt FROM api_keys WHERE active=1")
+        total_keys = cur.fetchone()["cnt"]
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        cur.execute("SELECT SUM(calls_today) FROM api_keys WHERE calls_date=%s", (today,))
-        calls_today = cur.fetchone()[0] or 0
-        cur2 = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT COALESCE(SUM(calls_today), 0) AS cnt FROM api_keys WHERE calls_date=%s", (today,))
+        calls_today = cur.fetchone()["cnt"] or 0
+        cur2 = conn.cursor()
         cur2.execute("SELECT key, tier, calls_today, calls_date, created_at FROM api_keys WHERE active=1 ORDER BY created_at DESC")
         keys = cur2.fetchall()
         return {
@@ -1483,11 +1483,11 @@ def get_question_performance_stats(question_text: str, gap: str) -> dict:
         gap_row = cur.fetchone()
         
         return {
-            "times_asked": row[0] if row else 0,
-            "avg_delta": row[1] if row and row[1] else 0,
-            "avg_depth_score": row[2] if row and row[2] else 0,
-            "gap_specific_delta": gap_row[0] if gap_row and gap_row[0] else 0,
-            "gap_specific_count": gap_row[1] if gap_row else 0,
+            "times_asked": row["times_asked"] if row else 0,
+            "avg_delta": row["avg_delta"] if row and row["avg_delta"] else 0,
+            "avg_depth_score": row["avg_depth_score"] if row and row["avg_depth_score"] else 0,
+            "gap_specific_delta": gap_row["gap_delta"] if gap_row and gap_row["gap_delta"] else 0,
+            "gap_specific_count": gap_row["gap_count"] if gap_row else 0,
         }
     finally:
         conn.close()
@@ -1563,7 +1563,7 @@ def promote_high_performing_questions(question_text: str):
         """, (question_text,))
         stats = cur.fetchone()
         
-        if stats and stats[0] >= 5 and stats[1] > 0.05:
+        if stats and stats["times_asked"] >= 5 and stats["avg_delta"] > 0.05:
             # Check if already in corpus
             cur.execute(
                 "SELECT id FROM questions WHERE question = %s", (question_text,)
@@ -1575,7 +1575,7 @@ def promote_high_performing_questions(question_text: str):
                 cur.execute("""
                     INSERT INTO questions (question, source, vectors, score_composite)
                     VALUES (%s, 'generated_promoted', '[]', %s)
-                """, (question_text, stats[1]))
+                """, (question_text, stats["avg_delta"]))
                 conn.commit()
                 logger.info(f"Promoted generated question to corpus: {question_text[:50]}...")
                 
@@ -2184,13 +2184,13 @@ def detect_avoidance_patterns(profile: dict) -> list[PredictiveInsight]:
         rows = cur.fetchall()
         
         for row in rows:
-            domain_id = row[0]
+            domain_id = row["domain_explored"]
             if domain_id and domain_id in LIFE_DOMAINS and domain_id not in [i.domain for i in insights]:
                 domain_info = LIFE_DOMAINS[domain_id]
                 insights.append(PredictiveInsight(
                     insight_type="avoidance",
                     confidence=0.6,
-                    signal=f"Questions about '{domain_info['label']}' consistently produce near-zero understanding improvement ({row[2]:.3f} avg delta over {row[1]} questions).",
+                    signal=f"Questions about '{domain_info['label']}' consistently produce near-zero understanding improvement ({row['avg_delta']:.3f} avg delta over {row['cnt']} questions).",
                     predicted_question=f"What are you protecting by keeping your {domain_info['label'].lower()} surface-level?",
                     vectors_recommended=["permission", "confession", "self_assessment"],
                     domain=domain_id,
@@ -2314,8 +2314,8 @@ def detect_trajectory_signals(profile: dict) -> list[PredictiveInsight]:
         rows = cur.fetchall()
         
         for row in rows:
-            domain_id = row[0]
-            last_active = row[1]
+            domain_id = row["domain_explored"]
+            last_active = row["last_active"]
             if domain_id and domain_id in LIFE_DOMAINS:
                 domain_info = LIFE_DOMAINS[domain_id]
                 # If this domain was productive but hasn't been touched recently
@@ -2324,7 +2324,7 @@ def detect_trajectory_signals(profile: dict) -> list[PredictiveInsight]:
                     insights.append(PredictiveInsight(
                         insight_type="growth_edge",
                         confidence=0.55,
-                        signal=f"{domain_info['label']} was producing real growth (avg delta {row[2]:.3f}) but hasn't been explored recently.",
+                        signal=f"{domain_info['label']} was producing real growth (avg delta {row['avg_delta']:.3f}) but hasn't been explored recently.",
                         predicted_question=f"What's changed about your {domain_info['label'].lower()} since we last went there?",
                         vectors_recommended=["trajectory", "time", "self_assessment"],
                         domain=domain_id,
@@ -2672,28 +2672,30 @@ def build_personalized_generation_prompt(
     top_questions = []
     gap_label = gap.get("label", "")
     if gap_label:
-        with get_db() as conn:
-            rows = conn.execute("""
-                SELECT question_text, understanding_delta, answer_depth, times_asked
-                FROM (
-                    SELECT question_text, understanding_delta, answer_depth,
-                           COUNT(*) as times_asked,
-                           AVG(understanding_delta) as avg_delta
-                    FROM question_performance 
-                    WHERE gap_targeted = ? AND understanding_delta > 0
-                    GROUP BY question_text
-                    HAVING times_asked >= 2
-                    ORDER BY avg_delta DESC
-                    LIMIT 3
-                )
-            """, (gap_label,)).fetchall()
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT question_text, understanding_delta, answer_depth, 
+                       COUNT(*) as times_asked,
+                       AVG(understanding_delta) as avg_delta
+                FROM question_performance 
+                WHERE gap_targeted = %s AND understanding_delta > 0
+                GROUP BY question_text, understanding_delta, answer_depth
+                HAVING COUNT(*) >= 2
+                ORDER BY AVG(understanding_delta) DESC
+                LIMIT 3
+            """, (gap_label,))
+            rows = cur.fetchall()
             
             for row in rows:
                 top_questions.append({
-                    "question": row[0],
-                    "avg_delta": row[3],
-                    "depth": row[2]
+                    "question": row["question_text"],
+                    "avg_delta": row["avg_delta"],
+                    "depth": row["answer_depth"]
                 })
+        finally:
+            conn.close()
     
     # Format vector descriptions
     vector_descriptions = []
@@ -3062,7 +3064,7 @@ async def learn(req: LearnRequest, x_api_key: str | None = Header(None)):
                         conversation_depth = %s, human_context_summary = %s
                     WHERE id = %s
                 """, (understanding_delta, answer_depth, domain_explored,
-                      profile["total_questions"], human_context_summary, existing_perf[0]))
+                      profile["total_questions"], human_context_summary, existing_perf["id"]))
                 conn.commit()
             else:
                 # Create new record
@@ -3231,7 +3233,7 @@ async def get_top_corpus_questions(
                     MAX(created_at) as last_used
                 FROM question_performance
                 WHERE gap_targeted = %s AND understanding_delta > 0
-                GROUP BY question_text
+                GROUP BY question_text, question_source
                 HAVING COUNT(*) >= 1
                 ORDER BY AVG(understanding_delta) DESC
                 LIMIT %s
@@ -3241,13 +3243,13 @@ async def get_top_corpus_questions(
             questions = []
             for row in rows:
                 questions.append({
-                    "question": row[0],
-                    "source": row[1],
-                    "times_asked": row[2],
-                    "avg_delta": row[3],
-                    "avg_depth_score": row[4],
-                    "last_used": row[5],
-                    "performance_score": row[3] * row[2]  # weighted by usage
+                    "question": row["question_text"],
+                    "source": row["question_source"],
+                    "times_asked": row["times_asked"],
+                    "avg_delta": row["avg_delta"],
+                    "avg_depth_score": row["avg_depth_score"],
+                    "last_used": row["last_used"],
+                    "performance_score": row["avg_delta"] * row["times_asked"]  # weighted by usage
                 })
         finally:
             conn.close()
@@ -3412,7 +3414,7 @@ async def privacy_audit(human_id: str, x_api_key: str | None = Header(None)):
                 "SELECT COUNT(*) FROM question_performance WHERE human_context_summary LIKE %s",
                 (f"%{human_id}%",)
             )
-            perf_count = cur.fetchone()[0]
+            perf_count = cur.fetchone()["cnt"]
         finally:
             conn.close()
         
@@ -3516,15 +3518,15 @@ async def export_profile(human_id: str, x_api_key: str | None = Header(None)):
             export_data["question_performance"] = []
             for row in perf_rows:
                 export_data["question_performance"].append({
-                    "question_text": row[0],
-                    "question_source": row[1],
-                    "gap_targeted": row[2],
-                    "vectors_used": json.loads(row[3]) if row[3] else [],
-                    "understanding_delta": row[4],
-                    "answer_depth": row[5],
-                    "domain_explored": row[6],
-                    "conversation_depth": row[7],
-                    "created_at": row[8]
+                    "question_text": row["question_text"],
+                    "question_source": row["question_source"],
+                    "gap_targeted": row["gap_targeted"],
+                    "vectors_used": json.loads(row["vectors_used"]) if row["vectors_used"] else [],
+                    "understanding_delta": row["understanding_delta"],
+                    "answer_depth": row["answer_depth"],
+                    "domain_explored": row["domain_explored"],
+                    "conversation_depth": row["conversation_depth"],
+                    "created_at": row["created_at"]
                 })
         finally:
             conn.close()
