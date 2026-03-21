@@ -10,13 +10,14 @@ import os
 import random
 import re
 import secrets
-import sqlite3
 import time
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import stripe
 from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,7 +37,7 @@ CORPUS_PATH = os.getenv(
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
-DB_PATH = os.getenv("DB_PATH", str(Path(__file__).parent / "betterask.db"))
+DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -66,16 +67,16 @@ PRODUCT_TO_TIER = {v["stripe_product_id"]: k for k, v in TIERS.items() if v["str
 # Database
 # ---------------------------------------------------------------------------
 
-def get_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
+def get_db():
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
 
 def init_db():
-    with get_db() as conn:
-        conn.execute("""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
             CREATE TABLE IF NOT EXISTS api_keys (
                 key TEXT PRIMARY KEY,
                 stripe_customer_id TEXT,
@@ -83,28 +84,28 @@ def init_db():
                 tier TEXT NOT NULL DEFAULT 'free',
                 calls_today INTEGER NOT NULL DEFAULT 0,
                 calls_date TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                created_at TEXT NOT NULL DEFAULT NOW()::TEXT,
                 active INTEGER NOT NULL DEFAULT 1
             )
         """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_api_keys_customer ON api_keys(stripe_customer_id)")
-        conn.execute("""
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_api_keys_customer ON api_keys(stripe_customer_id)")
+        cur.execute("""
             CREATE TABLE IF NOT EXISTS questions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 question TEXT NOT NULL UNIQUE,
                 archetype TEXT,
                 vectors TEXT,
                 source TEXT DEFAULT 'corpus',
                 tags TEXT,
-                added_at TEXT NOT NULL DEFAULT (datetime('now')),
+                added_at TEXT NOT NULL DEFAULT NOW()::TEXT,
                 score_composite REAL,
                 score_data TEXT,
                 active INTEGER NOT NULL DEFAULT 1
             )
         """)
-        conn.execute("""
+        cur.execute("""
             CREATE TABLE IF NOT EXISTS human_profiles (
-                human_id TEXT PRIMARY KEY,
+                human_id TEXT,
                 agent_api_key TEXT,
                 known_data TEXT DEFAULT '{}',
                 domains_covered TEXT DEFAULT '[]',
@@ -113,15 +114,16 @@ def init_db():
                 gaps_history TEXT DEFAULT '[]',
                 total_questions INTEGER DEFAULT 0,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (human_id, agent_api_key)
             )
         """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_human_profiles_agent ON human_profiles(agent_api_key)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_human_profiles_agent ON human_profiles(agent_api_key)")
         
         # Question performance tracking table (BUILD 1)
-        conn.execute("""
+        cur.execute("""
             CREATE TABLE IF NOT EXISTS question_performance (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 question_text TEXT NOT NULL,
                 question_source TEXT DEFAULT 'corpus',  -- 'corpus' or 'generated'
                 gap_targeted TEXT,
@@ -135,19 +137,21 @@ def init_db():
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_qp_question ON question_performance(question_text)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_qp_gap ON question_performance(gap_targeted)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_qp_delta ON question_performance(understanding_delta)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_question ON question_performance(question_text)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_gap ON question_performance(gap_targeted)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_delta ON question_performance(understanding_delta)")
         
         # Add vectors column to existing tables (safe migration)
         try:
-            conn.execute("ALTER TABLE questions ADD COLUMN vectors TEXT")
-        except sqlite3.OperationalError:
+            cur.execute("ALTER TABLE questions ADD COLUMN vectors TEXT")
+        except psycopg2.Error:
             pass  # Column already exists
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_questions_archetype ON questions(archetype)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_questions_source ON questions(source)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_questions_archetype ON questions(archetype)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_questions_source ON questions(source)")
         conn.commit()
-    logger.info("Database initialized at %s", DB_PATH)
+    finally:
+        conn.close()
+    logger.info("Database initialized with PostgreSQL")
 
 
 def generate_api_key() -> str:
@@ -158,27 +162,39 @@ def generate_api_key() -> str:
 def create_api_key(tier: str = "free", stripe_customer_id: str | None = None,
                    stripe_subscription_id: str | None = None) -> str:
     key = generate_api_key()
-    with get_db() as conn:
-        conn.execute(
-            "INSERT INTO api_keys (key, stripe_customer_id, stripe_subscription_id, tier, calls_today, calls_date) VALUES (?, ?, ?, ?, 0, ?)",
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO api_keys (key, stripe_customer_id, stripe_subscription_id, tier, calls_today, calls_date) VALUES (%s, %s, %s, %s, 0, %s)",
             (key, stripe_customer_id, stripe_subscription_id, tier, date.today().isoformat()),
         )
         conn.commit()
+    finally:
+        conn.close()
     logger.info("Created API key for tier=%s customer=%s", tier, stripe_customer_id)
     return key
 
 
 def get_api_key_record(key: str) -> dict | None:
-    with get_db() as conn:
-        row = conn.execute("SELECT * FROM api_keys WHERE key = ? AND active = 1", (key,)).fetchone()
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM api_keys WHERE key = %s AND active = 1", (key,))
+        row = cur.fetchone()
         return dict(row) if row else None
+    finally:
+        conn.close()
 
 
 def increment_usage(key: str) -> bool:
     """Increment call count. Returns True if within limit, False if rate-limited."""
     today = date.today().isoformat()
-    with get_db() as conn:
-        row = conn.execute("SELECT tier, calls_today, calls_date FROM api_keys WHERE key = ? AND active = 1", (key,)).fetchone()
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT tier, calls_today, calls_date FROM api_keys WHERE key = %s AND active = 1", (key,))
+        row = cur.fetchone()
         if not row:
             return False
         tier = row["tier"]
@@ -186,36 +202,46 @@ def increment_usage(key: str) -> bool:
 
         # Reset counter if new day
         if row["calls_date"] != today:
-            conn.execute("UPDATE api_keys SET calls_today = 1, calls_date = ? WHERE key = ?", (today, key))
+            cur.execute("UPDATE api_keys SET calls_today = 1, calls_date = %s WHERE key = %s", (today, key))
             conn.commit()
             return True
 
         # Unlimited tier
         if limit is None:
-            conn.execute("UPDATE api_keys SET calls_today = calls_today + 1 WHERE key = ?", (key,))
+            cur.execute("UPDATE api_keys SET calls_today = calls_today + 1 WHERE key = %s", (key,))
             conn.commit()
             return True
 
         if row["calls_today"] >= limit:
             return False
 
-        conn.execute("UPDATE api_keys SET calls_today = calls_today + 1 WHERE key = ?", (key,))
+        cur.execute("UPDATE api_keys SET calls_today = calls_today + 1 WHERE key = %s", (key,))
         conn.commit()
         return True
+    finally:
+        conn.close()
 
 
 def deactivate_keys_for_subscription(subscription_id: str):
-    with get_db() as conn:
-        conn.execute("UPDATE api_keys SET active = 0 WHERE stripe_subscription_id = ?", (subscription_id,))
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE api_keys SET active = 0 WHERE stripe_subscription_id = %s", (subscription_id,))
         conn.commit()
+    finally:
+        conn.close()
     logger.info("Deactivated keys for subscription %s", subscription_id)
 
 
 def upgrade_keys_for_subscription(subscription_id: str, new_tier: str):
-    with get_db() as conn:
-        conn.execute("UPDATE api_keys SET tier = ? WHERE stripe_subscription_id = ? AND active = 1",
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE api_keys SET tier = %s WHERE stripe_subscription_id = %s AND active = 1",
                       (new_tier, subscription_id))
         conn.commit()
+    finally:
+        conn.close()
     logger.info("Upgraded subscription %s to tier %s", subscription_id, new_tier)
 
 # ---------------------------------------------------------------------------
@@ -436,8 +462,11 @@ EXTRAS_PATH = os.getenv("EXTRAS_PATH", str(Path(__file__).parent / "seed-extras.
 def load_corpus():
     """Load questions from DB. If DB is empty, seed from corpus + extras files."""
     global _corpus
-    with get_db() as conn:
-        count = conn.execute("SELECT COUNT(*) FROM questions WHERE active=1").fetchone()[0]
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM questions WHERE active=1")
+        count = cur.fetchone()[0]
         if count == 0:
             # Seed from corpus text file
             for path, source in [(CORPUS_PATH, "corpus"), (EXTRAS_PATH, "manual")]:
@@ -446,8 +475,8 @@ def load_corpus():
                     file_questions = re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)
                     for q in file_questions:
                         try:
-                            conn.execute(
-                                "INSERT OR IGNORE INTO questions (question, source) VALUES (?, ?)",
+                            cur.execute(
+                                "INSERT INTO questions (question, source) VALUES (%s, %s) ON CONFLICT (question) DO NOTHING",
                                 (q.strip(), source),
                             )
                         except Exception:
@@ -458,9 +487,12 @@ def load_corpus():
             conn.commit()
 
         # Always load from DB
-        rows = conn.execute("SELECT question FROM questions WHERE active=1 ORDER BY id").fetchall()
+        cur.execute("SELECT question FROM questions WHERE active=1 ORDER BY id")
+        rows = cur.fetchall()
         _corpus = [r[0] for r in rows]
         logger.info("Loaded %d questions from database", len(_corpus))
+    finally:
+        conn.close()
 
 
 # ---------------------------------------------------------------------------
@@ -571,22 +603,31 @@ async def rate_limit_middleware(request: Request, call_next):
 
 def get_human_profile(human_id: str, agent_api_key: str) -> dict | None:
     """Get a human profile from the database."""
-    with get_db() as conn:
-        row = conn.execute(
-            "SELECT * FROM human_profiles WHERE human_id = ? AND agent_api_key = ?",
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT * FROM human_profiles WHERE human_id = %s AND agent_api_key = %s",
             (human_id, agent_api_key)
-        ).fetchone()
+        )
+        row = cur.fetchone()
         return dict(row) if row else None
+    finally:
+        conn.close()
 
 
 def create_human_profile(human_id: str, agent_api_key: str) -> dict:
     """Create a new human profile."""
-    with get_db() as conn:
-        conn.execute("""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
             INSERT INTO human_profiles (human_id, agent_api_key)
-            VALUES (?, ?)
+            VALUES (%s, %s)
         """, (human_id, agent_api_key))
         conn.commit()
+    finally:
+        conn.close()
     return get_human_profile(human_id, agent_api_key)
 
 
@@ -598,16 +639,20 @@ def update_human_profile(human_id: str, agent_api_key: str, **updates) -> bool:
     # Always update the timestamp
     updates['updated_at'] = datetime.now().isoformat()
     
-    set_clauses = ', '.join(f"{k} = ?" for k in updates.keys())
+    set_clauses = ', '.join(f"{k} = %s" for k in updates.keys())
     values = list(updates.values()) + [human_id, agent_api_key]
     
-    with get_db() as conn:
-        cursor = conn.execute(
-            f"UPDATE human_profiles SET {set_clauses} WHERE human_id = ? AND agent_api_key = ?",
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            f"UPDATE human_profiles SET {set_clauses} WHERE human_id = %s AND agent_api_key = %s",
             values
         )
         conn.commit()
-        return cursor.rowcount > 0
+        return cur.rowcount > 0
+    finally:
+        conn.close()
 
 
 def deep_merge_dict(base: dict, update: dict) -> dict:
@@ -942,11 +987,16 @@ async def subscribe_success(session_id: str):
         tier = session.metadata.get("tier", "builder")
 
         # Check if we already created a key for this subscription
-        with get_db() as conn:
-            existing = conn.execute(
-                "SELECT key FROM api_keys WHERE stripe_subscription_id = ? AND active = 1",
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT key FROM api_keys WHERE stripe_subscription_id = %s AND active = 1",
                 (subscription_id,)
-            ).fetchone()
+            )
+            existing = cur.fetchone()
+        finally:
+            conn.close()
 
         if existing:
             api_key = existing["key"]
@@ -1012,11 +1062,16 @@ async def stripe_webhook(request: Request):
                 break
 
         # Key may already exist (created at checkout success), ensure it exists
-        with get_db() as conn:
-            existing = conn.execute(
-                "SELECT key FROM api_keys WHERE stripe_subscription_id = ? AND active = 1",
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT key FROM api_keys WHERE stripe_subscription_id = %s AND active = 1",
                 (subscription_id,)
-            ).fetchone()
+            )
+            existing = cur.fetchone()
+        finally:
+            conn.close()
         if not existing:
             create_api_key(tier=tier, stripe_customer_id=customer_id,
                            stripe_subscription_id=subscription_id)
@@ -1076,7 +1131,9 @@ async def add_questions(
     """Add one or more questions to the permanent database."""
     require_admin(x_admin_key)
     added = 0
-    with get_db() as conn:
+    conn = get_db()
+    try:
+        cur = conn.cursor()
         for q in req.questions:
             q = q.strip()
             if not q:
@@ -1087,14 +1144,16 @@ async def add_questions(
                 if not vectors and req.archetype:
                     vectors = ",".join(map_archetype_to_vectors(req.archetype))
                 
-                conn.execute(
-                    "INSERT OR IGNORE INTO questions (question, archetype, vectors, source) VALUES (?, ?, ?, ?)",
+                cur.execute(
+                    "INSERT INTO questions (question, archetype, vectors, source) VALUES (%s, %s, %s, %s) ON CONFLICT (question) DO NOTHING",
                     (q, req.archetype, vectors, req.source),
                 )
                 added += 1
             except Exception:
                 pass
         conn.commit()
+    finally:
+        conn.close()
     # Reload corpus
     load_corpus()
     return {"added": added, "total": len(_corpus)}
@@ -1114,36 +1173,46 @@ async def list_questions(
     query = "SELECT id, question, archetype, vectors, source, score_composite, added_at FROM questions WHERE active=1"
     params = []
     if source:
-        query += " AND source=?"
+        query += " AND source=%s"
         params.append(source)
     if vectors:
-        query += " AND vectors LIKE ?"
+        query += " AND vectors LIKE %s"
         params.append(f"%{vectors}%")
     elif archetype:
-        query += " AND archetype=?"
+        query += " AND archetype=%s"
         params.append(archetype)
-    query += " ORDER BY id DESC LIMIT ? OFFSET ?"
+    query += " ORDER BY id DESC LIMIT %s OFFSET %s"
     params.extend([limit, offset])
 
-    with get_db() as conn:
-        rows = conn.execute(query, params).fetchall()
-        total = conn.execute("SELECT COUNT(*) FROM questions WHERE active=1").fetchone()[0]
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        cur.execute("SELECT COUNT(*) FROM questions WHERE active=1")
+        total = cur.fetchone()[0]
 
-    return {
-        "questions": [dict(r) for r in rows],
-        "total": total,
-        "limit": limit,
-        "offset": offset,
-    }
+        return {
+            "questions": [dict(r) for r in rows],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+    finally:
+        conn.close()
 
 
 @app.delete("/admin/questions/{question_id}")
 async def deactivate_question(question_id: int, x_admin_key: str | None = Header(None)):
     """Soft-delete a question (set active=0)."""
     require_admin(x_admin_key)
-    with get_db() as conn:
-        conn.execute("UPDATE questions SET active=0 WHERE id=?", (question_id,))
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE questions SET active=0 WHERE id=%s", (question_id,))
         conn.commit()
+    finally:
+        conn.close()
     load_corpus()
     return {"deactivated": question_id, "total": len(_corpus)}
 
@@ -1162,17 +1231,21 @@ async def import_questions_file(
     require_admin(x_admin_key)
     imported = re.findall(r"^\d+\.\s+(.+)$", req.text, re.MULTILINE)
     added = 0
-    with get_db() as conn:
+    conn = get_db()
+    try:
+        cur = conn.cursor()
         for q in imported:
             try:
-                conn.execute(
-                    "INSERT OR IGNORE INTO questions (question, source) VALUES (?, ?)",
+                cur.execute(
+                    "INSERT INTO questions (question, source) VALUES (%s, %s) ON CONFLICT (question) DO NOTHING",
                     (q.strip(), req.source),
                 )
                 added += 1
             except Exception:
                 pass
         conn.commit()
+    finally:
+        conn.close()
     load_corpus()
     return {"parsed": len(imported), "added": added, "total": len(_corpus)}
 
@@ -1181,17 +1254,24 @@ async def import_questions_file(
 async def admin_stats(x_admin_key: str | None = Header(None)):
     """Usage stats: total keys, calls today, all-time estimate."""
     require_admin(x_admin_key)
-    with get_db() as conn:
-        total_keys = conn.execute("SELECT COUNT(*) FROM api_keys WHERE active=1").fetchone()[0]
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM api_keys WHERE active=1")
+        total_keys = cur.fetchone()[0]
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        calls_today = conn.execute("SELECT SUM(calls_today) FROM api_keys WHERE calls_date=?", (today,)).fetchone()[0] or 0
-        keys = conn.execute("SELECT key, tier, calls_today, calls_date, created_at FROM api_keys WHERE active=1 ORDER BY created_at DESC").fetchall()
-    return {
-        "total_keys": total_keys,
-        "calls_today": calls_today,
-        "corpus_size": len(_corpus),
-        "keys": [dict(r) for r in keys],
-    }
+        cur.execute("SELECT SUM(calls_today) FROM api_keys WHERE calls_date=%s", (today,))
+        calls_today = cur.fetchone()[0] or 0
+        cur.execute("SELECT key, tier, calls_today, calls_date, created_at FROM api_keys WHERE active=1 ORDER BY created_at DESC")
+        keys = cur.fetchall()
+        return {
+            "total_keys": total_keys,
+            "calls_today": calls_today,
+            "corpus_size": len(_corpus),
+            "keys": [dict(r) for r in keys],
+        }
+    finally:
+        conn.close()
 
 
 @app.get("/health")
@@ -1373,9 +1453,11 @@ class LearnRequest(BaseModel):
 
 def get_question_performance_stats(question_text: str, gap: str) -> dict:
     """Get empirical performance data for a question."""
-    with get_db() as conn:
+    conn = get_db()
+    try:
+        cur = conn.cursor()
         # Overall stats
-        row = conn.execute("""
+        cur.execute("""
             SELECT 
                 COUNT(*) as times_asked,
                 AVG(understanding_delta) as avg_delta,
@@ -1384,15 +1466,17 @@ def get_question_performance_stats(question_text: str, gap: str) -> dict:
                          WHEN answer_depth='medium' THEN 2 
                          ELSE 1 END) as avg_depth_score
             FROM question_performance 
-            WHERE question_text = ?
-        """, (question_text,)).fetchone()
+            WHERE question_text = %s
+        """, (question_text,))
+        row = cur.fetchone()
         
         # Gap-specific stats
-        gap_row = conn.execute("""
+        cur.execute("""
             SELECT AVG(understanding_delta) as gap_delta, COUNT(*) as gap_count
             FROM question_performance
-            WHERE question_text = ? AND gap_targeted = ?
-        """, (question_text, gap)).fetchone()
+            WHERE question_text = %s AND gap_targeted = %s
+        """, (question_text, gap))
+        gap_row = cur.fetchone()
         
         return {
             "times_asked": row[0] if row else 0,
@@ -1401,6 +1485,8 @@ def get_question_performance_stats(question_text: str, gap: str) -> dict:
             "gap_specific_delta": gap_row[0] if gap_row and gap_row[0] else 0,
             "gap_specific_count": gap_row[1] if gap_row else 0,
         }
+    finally:
+        conn.close()
 
 
 def classify_answer_depth(answer: str, agent_interpretation: str | None = None) -> str:
@@ -1437,13 +1523,15 @@ def record_question_performance(
     agent_role: str
 ):
     """Record how well a question performed."""
-    with get_db() as conn:
-        conn.execute("""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
             INSERT INTO question_performance (
                 question_text, question_source, gap_targeted, vectors_used,
                 understanding_delta, answer_depth, domain_explored,
                 conversation_depth, human_context_summary, agent_role
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             question_text, question_source, gap_targeted, json.dumps(vectors_used),
             understanding_delta, answer_depth, domain_explored,
@@ -1454,35 +1542,43 @@ def record_question_performance(
         # BUILD 3: Auto-promote high-performing generated questions to corpus
         if question_source == "generated":
             promote_high_performing_questions(question_text)
+    finally:
+        conn.close()
 
 
 def promote_high_performing_questions(question_text: str):
     """Check if a generated question should be promoted to the permanent corpus."""
-    with get_db() as conn:
+    conn = get_db()
+    try:
+        cur = conn.cursor()
         # Check performance stats
-        stats = conn.execute("""
+        cur.execute("""
             SELECT COUNT(*) as times_asked, AVG(understanding_delta) as avg_delta
             FROM question_performance
-            WHERE question_text = ? AND question_source = 'generated'
-        """, (question_text,)).fetchone()
+            WHERE question_text = %s AND question_source = 'generated'
+        """, (question_text,))
+        stats = cur.fetchone()
         
         if stats and stats[0] >= 5 and stats[1] > 0.05:
             # Check if already in corpus
-            existing = conn.execute(
-                "SELECT id FROM questions WHERE question = ?", (question_text,)
-            ).fetchone()
+            cur.execute(
+                "SELECT id FROM questions WHERE question = %s", (question_text,)
+            )
+            existing = cur.fetchone()
             
             if not existing:
                 # Add to permanent corpus
-                conn.execute("""
+                cur.execute("""
                     INSERT INTO questions (question, source, vectors, score_composite)
-                    VALUES (?, 'generated_promoted', '[]', ?)
+                    VALUES (%s, 'generated_promoted', '[]', %s)
                 """, (question_text, stats[1]))
                 conn.commit()
                 logger.info(f"Promoted generated question to corpus: {question_text[:50]}...")
                 
                 # Reload corpus
                 load_corpus()
+    finally:
+        conn.close()
 
 
 class LearnResponse(BaseModel):
@@ -2071,14 +2167,17 @@ def detect_avoidance_patterns(profile: dict) -> list[PredictiveInsight]:
             ))
     
     # Also check question_performance for low understanding_delta patterns
-    with get_db() as conn:
-        rows = conn.execute("""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
             SELECT domain_explored, COUNT(*) as cnt, AVG(understanding_delta) as avg_delta
             FROM question_performance
             WHERE understanding_delta IS NOT NULL
             GROUP BY domain_explored
             HAVING cnt >= 3 AND avg_delta < 0.01
-        """).fetchall()
+        """)
+        rows = cur.fetchall()
         
         for row in rows:
             domain_id = row[0]
@@ -2094,6 +2193,8 @@ def detect_avoidance_patterns(profile: dict) -> list[PredictiveInsight]:
                     why="When questions land but don't move the needle, there's a wall. The question isn't better questions — it's why the wall exists.",
                     urgency="medium",
                 ))
+    finally:
+        conn.close()
     
     return insights
 
@@ -2193,8 +2294,10 @@ def detect_trajectory_signals(profile: dict) -> list[PredictiveInsight]:
         ))
     
     # Growth edge detection: domains that were growing but have stopped
-    with get_db() as conn:
-        rows = conn.execute("""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
             SELECT domain_explored,
                    MAX(created_at) as last_active,
                    AVG(understanding_delta) as avg_delta
@@ -2203,7 +2306,8 @@ def detect_trajectory_signals(profile: dict) -> list[PredictiveInsight]:
             GROUP BY domain_explored
             ORDER BY last_active ASC
             LIMIT 3
-        """).fetchall()
+        """)
+        rows = cur.fetchall()
         
         for row in rows:
             domain_id = row[0]
@@ -2223,6 +2327,8 @@ def detect_trajectory_signals(profile: dict) -> list[PredictiveInsight]:
                         why="Domains that produced real deltas are fertile ground. Going back after a break often unlocks the next layer.",
                         urgency="low",
                     ))
+    finally:
+        conn.close()
     
     return insights
 
@@ -2935,19 +3041,22 @@ async def learn(req: LearnRequest, x_api_key: str | None = Header(None)):
         
         # Record question performance (BUILD 1)
         # Check if this question was already captured as a generated question
-        with get_db() as conn:
-            existing_perf = conn.execute(
-                "SELECT id FROM question_performance WHERE question_text = ? AND understanding_delta = 0",
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT id FROM question_performance WHERE question_text = %s AND understanding_delta = 0",
                 (req.question_asked,)
-            ).fetchone()
+            )
+            existing_perf = cur.fetchone()
             
             if existing_perf:
                 # Update existing record with learning data
-                conn.execute("""
+                cur.execute("""
                     UPDATE question_performance 
-                    SET understanding_delta = ?, answer_depth = ?, domain_explored = ?,
-                        conversation_depth = ?, human_context_summary = ?
-                    WHERE id = ?
+                    SET understanding_delta = %s, answer_depth = %s, domain_explored = %s,
+                        conversation_depth = %s, human_context_summary = %s
+                    WHERE id = %s
                 """, (understanding_delta, answer_depth, domain_explored,
                       profile["total_questions"], human_context_summary, existing_perf[0]))
                 conn.commit()
@@ -2965,6 +3074,8 @@ async def learn(req: LearnRequest, x_api_key: str | None = Header(None)):
                     human_context_summary=human_context_summary,
                     agent_role="personal assistant"  # Could be dynamic based on request
                 )
+        finally:
+            conn.close()
         
         # Find next recommended gap
         remaining_domains = [d for d in LIFE_DOMAINS.keys() if d not in domains_covered]
@@ -3100,8 +3211,10 @@ async def get_top_corpus_questions(
     api_key_record = validate_api_key(x_api_key)
     
     try:
-        with get_db() as conn:
-            rows = conn.execute("""
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute("""
                 SELECT 
                     question_text,
                     question_source,
@@ -3113,12 +3226,13 @@ async def get_top_corpus_questions(
                              ELSE 1 END) as avg_depth_score,
                     MAX(created_at) as last_used
                 FROM question_performance
-                WHERE gap_targeted = ? AND understanding_delta > 0
+                WHERE gap_targeted = %s AND understanding_delta > 0
                 GROUP BY question_text
-                HAVING times_asked >= 1
-                ORDER BY avg_delta DESC
-                LIMIT ?
-            """, (gap, limit)).fetchall()
+                HAVING COUNT(*) >= 1
+                ORDER BY AVG(understanding_delta) DESC
+                LIMIT %s
+            """, (gap, limit))
+            rows = cur.fetchall()
             
             questions = []
             for row in rows:
@@ -3131,6 +3245,8 @@ async def get_top_corpus_questions(
                     "last_used": row[5],
                     "performance_score": row[3] * row[2]  # weighted by usage
                 })
+        finally:
+            conn.close()
         
         return {
             "gap": gap,
@@ -3210,30 +3326,37 @@ async def delete_profile(human_id: str, x_api_key: str | None = Header(None)):
     api_key_record = validate_api_key(x_api_key)
     
     try:
-        with get_db() as conn:
+        conn = get_db()
+        try:
+            cur = conn.cursor()
             # Check if profile exists
-            profile = conn.execute(
-                "SELECT * FROM human_profiles WHERE human_id = ? AND agent_api_key = ?",
+            cur.execute(
+                "SELECT * FROM human_profiles WHERE human_id = %s AND agent_api_key = %s",
                 (human_id, api_key_record["key"])
-            ).fetchone()
+            )
+            profile = cur.fetchone()
             
             if not profile:
                 raise HTTPException(404, f"Profile not found for human_id: {human_id}")
             
             # Delete from human_profiles table
-            profile_deleted = conn.execute(
-                "DELETE FROM human_profiles WHERE human_id = ? AND agent_api_key = ?",
+            cur.execute(
+                "DELETE FROM human_profiles WHERE human_id = %s AND agent_api_key = %s",
                 (human_id, api_key_record["key"])
-            ).rowcount > 0
+            )
+            profile_deleted = cur.rowcount > 0
             
             # Delete from question_performance table - use human_context_summary to match
             # since it contains the human_id information
-            perf_deleted = conn.execute(
-                "DELETE FROM question_performance WHERE human_context_summary LIKE ?",
+            cur.execute(
+                "DELETE FROM question_performance WHERE human_context_summary LIKE %s",
                 (f"%{human_id}%",)
-            ).rowcount
+            )
+            perf_deleted = cur.rowcount
             
             conn.commit()
+        finally:
+            conn.close()
         
         # Log the deletion
         logger.info(f"Profile deletion completed for human_id: {human_id}, API key: {api_key_record['key'][:10]}...")
@@ -3278,11 +3401,16 @@ async def privacy_audit(human_id: str, x_api_key: str | None = Header(None)):
             conversation_entries = len(known_data["conversation_history"])
         
         # Get question performance data count
-        with get_db() as conn:
-            perf_count = conn.execute(
-                "SELECT COUNT(*) FROM question_performance WHERE human_context_summary LIKE ?",
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT COUNT(*) FROM question_performance WHERE human_context_summary LIKE %s",
                 (f"%{human_id}%",)
-            ).fetchone()[0]
+            )
+            perf_count = cur.fetchone()[0]
+        finally:
+            conn.close()
         
         # Data categories stored (without revealing actual sensitive data)
         data_categories = []
@@ -3368,15 +3496,18 @@ async def export_profile(human_id: str, x_api_key: str | None = Header(None)):
                 }
         
         # Get question performance data
-        with get_db() as conn:
-            perf_rows = conn.execute("""
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute("""
                 SELECT question_text, question_source, gap_targeted, vectors_used,
                        understanding_delta, answer_depth, domain_explored,
                        conversation_depth, created_at
                 FROM question_performance 
-                WHERE human_context_summary LIKE ?
+                WHERE human_context_summary LIKE %s
                 ORDER BY created_at DESC
-            """, (f"%{human_id}%",)).fetchall()
+            """, (f"%{human_id}%",))
+            perf_rows = cur.fetchall()
             
             export_data["question_performance"] = []
             for row in perf_rows:
@@ -3391,6 +3522,8 @@ async def export_profile(human_id: str, x_api_key: str | None = Header(None)):
                     "conversation_depth": row[7],
                     "created_at": row[8]
                 })
+        finally:
+            conn.close()
         
         # Log the export
         logger.info(f"Profile export completed for human_id: {human_id}")
