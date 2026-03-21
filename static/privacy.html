@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetterAsk — Privacy Policy</title>
+    <meta name="description" content="Privacy Policy for BetterAsk — how we handle human profile data and what data we collect.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1A1A2E;
+            --bg-elevated: #222240;
+            --bg-card: #2A2A4A;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(0, 172, 230, 0.35);
+            --text: #F5F5F5;
+            --text-dim: rgba(245, 245, 245, 0.55);
+            --text-muted: rgba(245, 245, 245, 0.3);
+            --accent: #00ACE6;
+            --accent-dim: rgba(0, 172, 230, 0.15);
+            --green: #00ACE6;
+            --amber: #FF8C42;
+            --red: #FF8C42;
+            --purple: #00ACE6;
+            --cerulean: #00ACE6;
+            --tangerine: #FF8C42;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-weight: 300;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Grid bg */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 172, 230, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 172, 230, 0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        main { position: relative; z-index: 1; }
+
+        /* Nav */
+        nav {
+            padding: 1.2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(26, 26, 46, 0.9);
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            text-decoration: none;
+        }
+
+        .logo span { color: var(--text-dim); font-weight: 300; }
+
+        .back-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--accent); }
+
+        /* Content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 3rem 0 1rem 0;
+            letter-spacing: -0.02em;
+        }
+
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 2rem 0 1rem 0;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+            color: var(--text-dim);
+        }
+
+        ul, ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+            color: var(--text-dim);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-elevated);
+            padding: 0.2rem 0.4rem;
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .highlight-box {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin: 2rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .consent-example {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--text-dim);
+            border-radius: 4px;
+        }
+
+        .effective-date {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 4rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .container { padding: 3rem 1.5rem; }
+            footer { padding: 2rem 1.5rem; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="logo">betterask<span>.dev</span></a>
+    <a href="/" class="back-link">← back to home</a>
+</nav>
+
+<main>
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p class="subtitle">
+            How BetterAsk handles human profile data and what we collect. Effective March 20, 2026.
+        </p>
+
+        <h2>What Data We Collect</h2>
+
+        <h3>Human Profiles</h3>
+        <ul>
+            <li><strong>Understanding scores</strong> — numerical scores (0-100%) measuring how well an agent understands its human across 12 life domains</li>
+            <li><strong>Domain coverage</strong> — which life domains have been explored (career, relationships, health, etc.)</li>
+            <li><strong>Conversation history</strong> — the questions asked by agents and answers provided by humans through the agent</li>
+            <li><strong>Profile metadata</strong> — creation dates, update timestamps, question counts</li>
+        </ul>
+
+        <h3>API Usage Data</h3>
+        <ul>
+            <li><strong>API keys</strong> — unique identifiers for each agent/developer account</li>
+            <li><strong>Usage metrics</strong> — number of API calls, rate limiting data, subscription tier information</li>
+            <li><strong>Performance data</strong> — which questions work best, understanding score improvements</li>
+        </ul>
+
+        <h2>What We DON'T Collect</h2>
+
+        <div class="highlight-box">
+            <p><strong>We don't collect data directly from humans.</strong> Agents send us what they know about their humans. We never interact with the human directly — we're a B2B service for AI agents and their developers.</p>
+        </div>
+
+        <ul>
+            <li>No direct contact information (emails, phone numbers, addresses)</li>
+            <li>No financial information</li>
+            <li>No device information or tracking pixels</li>
+            <li>No cookies — we don't use them</li>
+            <li>No analytics on the API — no tracking your usage patterns beyond rate limiting</li>
+        </ul>
+
+        <h2>How Data Is Stored</h2>
+
+        <ul>
+            <li><strong>Database:</strong> SQLite database hosted on Railway infrastructure</li>
+            <li><strong>Encryption:</strong> Data encrypted at rest using Railway's standard encryption</li>
+            <li><strong>Access:</strong> Each API key can only access profiles it created — complete isolation between different agents</li>
+            <li><strong>Retention:</strong> Profiles persist until explicitly deleted. API keys persist until deactivated.</li>
+        </ul>
+
+        <h2>Data Sharing Policy</h2>
+
+        <div class="highlight-box">
+            <p><strong>We do NOT sell, share, or provide access to human profile data to any third party.</strong> Each API key can only access profiles it created. This data isolation is enforced at the database level.</p>
+        </div>
+
+        <ul>
+            <li>No third-party analytics or tracking</li>
+            <li>No data brokers or advertisers</li>
+            <li>No sharing for marketing purposes</li>
+            <li>Customer data stays with the customer who created it</li>
+        </ul>
+
+        <h2>Agent/Developer Responsibility</h2>
+
+        <p>The agent or developer using BetterAsk is responsible for:</p>
+        <ul>
+            <li><strong>Informing their human</strong> that BetterAsk is being used to improve understanding</li>
+            <li><strong>Obtaining consent</strong> for sharing human data with BetterAsk</li>
+            <li><strong>Explaining what data is being shared</strong> and how it's used</li>
+            <li><strong>Respecting human preferences</strong> about data collection and retention</li>
+        </ul>
+
+        <h2>Suggested Consent Flow for Agents</h2>
+
+        <p>We recommend agents introduce BetterAsk to their humans like this:</p>
+
+        <div class="consent-example">
+            "I'd like to understand you better over time so I can be more helpful. I use a service called BetterAsk that helps me ask the right questions and tracks how well I understand you across different areas of your life (like your career, relationships, health, and goals). Your answers help me improve. You can ask me to show your understanding score anytime, and you can request all your data be deleted at any point. Is that okay with you?"
+        </div>
+
+        <p>This approach:</p>
+        <ul>
+            <li>Explains what BetterAsk does in human terms</li>
+            <li>Makes data usage transparent</li>
+            <li>Gives the human control and choice</li>
+            <li>Sets expectations for ongoing data collection</li>
+        </ul>
+
+        <h2>Your Rights</h2>
+
+        <h3>Right to Deletion</h3>
+        <ul>
+            <li><strong>Endpoint:</strong> <code>DELETE /profile/{human_id}</code></li>
+            <li><strong>Timeline:</strong> Complete data removal within 24 hours</li>
+            <li><strong>Scope:</strong> Removes all profile data, conversation history, and understanding scores</li>
+        </ul>
+
+        <h3>Right to Export</h3>
+        <ul>
+            <li><strong>Endpoint:</strong> <code>POST /profile/{human_id}/export</code></li>
+            <li><strong>Format:</strong> Complete JSON export of all stored data</li>
+            <li><strong>Portability:</strong> Take your data anywhere</li>
+        </ul>
+
+        <h3>Right to Audit</h3>
+        <ul>
+            <li><strong>Endpoint:</strong> <code>GET /privacy/{human_id}</code></li>
+            <li><strong>Shows:</strong> Exactly what data is stored, when it was collected, and how it's been used</li>
+            <li><strong>Transparency:</strong> No hidden data collection</li>
+        </ul>
+
+        <h2>GDPR Compliance</h2>
+
+        <p>BetterAsk follows GDPR principles:</p>
+        <ul>
+            <li><strong>Data minimization</strong> — we collect only what's needed for understanding improvement</li>
+            <li><strong>Purpose limitation</strong> — data is used only for agent-human understanding improvement</li>
+            <li><strong>Right to erasure</strong> — delete all data via API endpoint</li>
+            <li><strong>Right to portability</strong> — export all data in machine-readable format</li>
+            <li><strong>Consent-based processing</strong> — agents must obtain human consent</li>
+        </ul>
+
+        <h2>Security</h2>
+
+        <ul>
+            <li><strong>API key authentication</strong> for all data access</li>
+            <li><strong>Data isolation</strong> — each API key can only see its own data</li>
+            <li><strong>Encryption at rest</strong> via Railway platform</li>
+            <li><strong>No plaintext storage</strong> of sensitive profile information</li>
+            <li><strong>Rate limiting</strong> to prevent abuse</li>
+        </ul>
+
+        <h2>Contact</h2>
+
+        <p>Questions about privacy, data handling, or this policy:</p>
+        <ul>
+            <li><strong>Email:</strong> hello@betterask.dev</li>
+            <li><strong>Subject line:</strong> "Privacy Policy Question"</li>
+            <li><strong>Response time:</strong> Within 48 hours</li>
+        </ul>
+
+        <h2>Changes to This Policy</h2>
+
+        <p>We'll update this policy if our data practices change. When we do:</p>
+        <ul>
+            <li>We'll update the effective date at the top</li>
+            <li>For significant changes, we'll notify API key holders via email</li>
+            <li>The most current version is always available at betterask.dev/privacy</li>
+        </ul>
+
+        <div class="effective-date">
+            <strong>Effective Date:</strong> March 20, 2026<br>
+            <strong>Last Updated:</strong> March 20, 2026
+        </div>
+    </div>
+</main>
+
+<footer>
+    © 2026 betterask.dev · <a href="/" style="color: var(--accent);">back to home</a>
+</footer>
+
+</body>
+</html>

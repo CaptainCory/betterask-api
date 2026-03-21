@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetterAsk — Terms of Service</title>
+    <meta name="description" content="Terms of Service for BetterAsk — usage rules and developer responsibilities.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1A1A2E;
+            --bg-elevated: #222240;
+            --bg-card: #2A2A4A;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(0, 172, 230, 0.35);
+            --text: #F5F5F5;
+            --text-dim: rgba(245, 245, 245, 0.55);
+            --text-muted: rgba(245, 245, 245, 0.3);
+            --accent: #00ACE6;
+            --accent-dim: rgba(0, 172, 230, 0.15);
+            --green: #00ACE6;
+            --amber: #FF8C42;
+            --red: #FF8C42;
+            --purple: #00ACE6;
+            --cerulean: #00ACE6;
+            --tangerine: #FF8C42;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-weight: 300;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Grid bg */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 172, 230, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 172, 230, 0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        main { position: relative; z-index: 1; }
+
+        /* Nav */
+        nav {
+            padding: 1.2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(26, 26, 46, 0.9);
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            text-decoration: none;
+        }
+
+        .logo span { color: var(--text-dim); font-weight: 300; }
+
+        .back-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--accent); }
+
+        /* Content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 3rem 0 1rem 0;
+            letter-spacing: -0.02em;
+        }
+
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 2rem 0 1rem 0;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+            color: var(--text-dim);
+        }
+
+        ul, ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+            color: var(--text-dim);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-elevated);
+            padding: 0.2rem 0.4rem;
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .highlight-box {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin: 2rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .warning-box {
+            background: rgba(255, 140, 66, 0.1);
+            border: 1px solid var(--tangerine);
+            border-left: 4px solid var(--tangerine);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .effective-date {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 4rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .container { padding: 3rem 1.5rem; }
+            footer { padding: 2rem 1.5rem; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="logo">betterask<span>.dev</span></a>
+    <a href="/" class="back-link">← back to home</a>
+</nav>
+
+<main>
+    <div class="container">
+        <h1>Terms of Service</h1>
+        <p class="subtitle">
+            Usage rules and developer responsibilities for BetterAsk. Effective March 20, 2026.
+        </p>
+
+        <h2>Acceptable Use</h2>
+
+        <p>BetterAsk is designed to help AI agents understand their humans better through thoughtful questions. When using our service:</p>
+
+        <h3>✅ Allowed</h3>
+        <ul>
+            <li><strong>Building better agent-human relationships</strong> through improved understanding</li>
+            <li><strong>Using questions to enhance conversations</strong> between agents and their humans</li>
+            <li><strong>Tracking understanding improvements</strong> over time via the scoring system</li>
+            <li><strong>Commercial use</strong> in AI agent applications and products</li>
+            <li><strong>Reasonable API usage</strong> within your tier limits</li>
+        </ul>
+
+        <h3>❌ Prohibited</h3>
+        <ul>
+            <li><strong>Harassment or manipulation</strong> — using questions to manipulate, deceive, or harm humans</li>
+            <li><strong>Data scraping without consent</strong> — collecting human data without explicit permission</li>
+            <li><strong>API abuse</strong> — attempting to exceed rate limits, reverse engineer, or circumvent restrictions</li>
+            <li><strong>Reselling API access</strong> — sharing or reselling your API keys</li>
+            <li><strong>Illegal activities</strong> — any use that violates applicable laws</li>
+            <li><strong>Spam or automated harassment</strong> — using the service to send unwanted communications</li>
+        </ul>
+
+        <div class="warning-box">
+            <p><strong>Human Consent Required:</strong> Developers must inform their humans that BetterAsk is being used to improve understanding and obtain appropriate consent for data collection.</p>
+        </div>
+
+        <h2>API Key Responsibility</h2>
+
+        <h3>Keep It Secret</h3>
+        <ul>
+            <li><strong>API keys are confidential</strong> — treat them like passwords</li>
+            <li><strong>Don't share keys</strong> with other developers or embed them in client-side code</li>
+            <li><strong>Use environment variables</strong> or secure credential management</li>
+            <li><strong>Rotate keys</strong> if you suspect they've been compromised</li>
+        </ul>
+
+        <h3>Usage Monitoring</h3>
+        <ul>
+            <li><strong>You're responsible</strong> for all activity under your API key</li>
+            <li><strong>Monitor your usage</strong> to stay within tier limits</li>
+            <li><strong>Report suspicious activity</strong> if you notice unauthorized usage</li>
+        </ul>
+
+        <h2>Rate Limits and Fair Use</h2>
+
+        <h3>Tier Limits</h3>
+        <ul>
+            <li><strong>Free:</strong> 100 questions per day</li>
+            <li><strong>Pro:</strong> 5,000 questions per day</li>
+            <li><strong>Scale:</strong> Usage-based pricing, no daily limits</li>
+        </ul>
+
+        <h3>Fair Use Policy</h3>
+        <ul>
+            <li><strong>Use the service as intended</strong> — for improving agent-human understanding</li>
+            <li><strong>Don't create excessive load</strong> — batch requests reasonably</li>
+            <li><strong>Respect rate limits</strong> — implement proper retry logic with backoff</li>
+            <li><strong>Cache responses appropriately</strong> — don't repeatedly ask for the same data</li>
+        </ul>
+
+        <h2>Service Availability</h2>
+
+        <h3>No Warranty</h3>
+        <div class="highlight-box">
+            <p>BetterAsk is provided <strong>"as is"</strong> without warranties of any kind. We don't guarantee:</p>
+            <ul>
+                <li>100% uptime or availability</li>
+                <li>Error-free operation</li>
+                <li>Specific performance levels</li>
+                <li>Compatibility with all systems</li>
+            </ul>
+        </div>
+
+        <h3>Service Changes</h3>
+        <ul>
+            <li><strong>We may modify the service</strong> with reasonable notice</li>
+            <li><strong>API changes</strong> will follow versioning best practices</li>
+            <li><strong>Breaking changes</strong> will include migration paths when possible</li>
+        </ul>
+
+        <h2>Limitation of Liability</h2>
+
+        <p>To the maximum extent permitted by law:</p>
+        <ul>
+            <li><strong>We're not liable</strong> for indirect, incidental, or consequential damages</li>
+            <li><strong>Our total liability</strong> is limited to the amount you paid in the last 12 months</li>
+            <li><strong>You use the service at your own risk</strong> — we're not responsible for how you implement or use BetterAsk</li>
+            <li><strong>Data loss or corruption</strong> — maintain your own backups of important data</li>
+        </ul>
+
+        <h2>Account Termination</h2>
+
+        <h3>We May Terminate Accounts That:</h3>
+        <ul>
+            <li><strong>Violate these terms</strong> or our acceptable use policy</li>
+            <li><strong>Engage in abusive behavior</strong> toward our service or team</li>
+            <li><strong>Use the service for illegal activities</strong></li>
+            <li><strong>Fail to pay</strong> for paid tiers (after reasonable notice)</li>
+        </ul>
+
+        <h3>Termination Process</h3>
+        <ul>
+            <li><strong>Warning first</strong> — we'll try to resolve issues before termination</li>
+            <li><strong>Data export opportunity</strong> — reasonable time to export your data</li>
+            <li><strong>Immediate termination</strong> reserved for severe violations</li>
+        </ul>
+
+        <h2>Developer Responsibilities</h2>
+
+        <h3>Human Data Protection</h3>
+        <ul>
+            <li><strong>Obtain consent</strong> before sending human data to BetterAsk</li>
+            <li><strong>Inform humans</strong> about data collection and how it's used</li>
+            <li><strong>Respect human preferences</strong> about data sharing and retention</li>
+            <li><strong>Provide deletion options</strong> — humans should be able to request data removal</li>
+        </ul>
+
+        <h3>Technical Implementation</h3>
+        <ul>
+            <li><strong>Implement proper error handling</strong> for API calls</li>
+            <li><strong>Use HTTPS</strong> for all API communications</li>
+            <li><strong>Store API keys securely</strong> — never in client-side code</li>
+            <li><strong>Handle rate limits gracefully</strong> — don't hammer the API</li>
+        </ul>
+
+        <h2>Intellectual Property</h2>
+
+        <h3>Our Content</h3>
+        <ul>
+            <li><strong>BetterAsk service and API</strong> — owned by us</li>
+            <li><strong>21 vectors methodology</strong> — based on END SMALL TALK research</li>
+            <li><strong>Question corpus</strong> — proprietary collection</li>
+        </ul>
+
+        <h3>Your Content</h3>
+        <ul>
+            <li><strong>You retain ownership</strong> of data you send to BetterAsk</li>
+            <li><strong>You grant us license</strong> to process and analyze your data to provide the service</li>
+            <li><strong>We don't claim ownership</strong> of your human profiles or conversation data</li>
+        </ul>
+
+        <h2>Privacy and Data</h2>
+
+        <p>Data handling is covered in detail in our <a href="/privacy" style="color: var(--accent);">Privacy Policy</a>. Key points:</p>
+        <ul>
+            <li><strong>We don't sell your data</strong> to third parties</li>
+            <li><strong>Each API key's data is isolated</strong> — no cross-contamination</li>
+            <li><strong>You can delete profiles</strong> via API endpoints</li>
+            <li><strong>GDPR compliance</strong> — we follow European privacy standards</li>
+        </ul>
+
+        <h2>Changes to Terms</h2>
+
+        <p>We may update these terms occasionally:</p>
+        <ul>
+            <li><strong>Notification:</strong> Changes will be posted here with updated date</li>
+            <li><strong>Significant changes:</strong> We'll email API key holders</li>
+            <li><strong>Continued use:</strong> Using the service after changes means you accept them</li>
+            <li><strong>Disagreement:</strong> Stop using the service if you don't agree with new terms</li>
+        </ul>
+
+        <h2>Governing Law</h2>
+
+        <p>These terms are governed by:</p>
+        <ul>
+            <li><strong>Jurisdiction:</strong> Laws of the United States</li>
+            <li><strong>Disputes:</strong> Resolved through binding arbitration</li>
+            <li><strong>No class actions:</strong> Disputes handled individually</li>
+        </ul>
+
+        <h2>Contact</h2>
+
+        <p>Questions about these terms or the service:</p>
+        <ul>
+            <li><strong>Email:</strong> hello@betterask.dev</li>
+            <li><strong>Subject line:</strong> "Terms of Service Question"</li>
+            <li><strong>Response time:</strong> Within 48 hours</li>
+        </ul>
+
+        <p>For technical support, include your API key (last 4 characters only) and specific error messages.</p>
+
+        <div class="effective-date">
+            <strong>Effective Date:</strong> March 20, 2026<br>
+            <strong>Last Updated:</strong> March 20, 2026
+        </div>
+    </div>
+</main>
+
+<footer>
+    © 2026 betterask.dev · <a href="/" style="color: var(--accent);">back to home</a>
+</footer>
+
+</body>
+</html>

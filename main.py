@@ -539,6 +539,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Middleware to capture request body for privacy headers
+@app.middleware("http")
+async def capture_request_body(request: Request, call_next):
+    # Capture body for privacy header determination
+    if request.method == "POST" and request.url.path in ["/ask", "/learn"]:
+        body = await request.body()
+        request.state.body = body
+    
+    response = await call_next(request)
+    return response
+
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
@@ -3188,6 +3199,258 @@ async def predict(human_id: str, x_api_key: str | None = Header(None)):
         "domains_total": len(LIFE_DOMAINS),
     }
 
+
+# ---------------------------------------------------------------------------
+# Privacy and Data Management Endpoints
+# ---------------------------------------------------------------------------
+
+@app.delete("/profile/{human_id}")
+async def delete_profile(human_id: str, x_api_key: str | None = Header(None)):
+    """Delete a human profile and all associated data. Right to be forgotten."""
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        with get_db() as conn:
+            # Check if profile exists
+            profile = conn.execute(
+                "SELECT * FROM human_profiles WHERE human_id = ? AND agent_api_key = ?",
+                (human_id, api_key_record["key"])
+            ).fetchone()
+            
+            if not profile:
+                raise HTTPException(404, f"Profile not found for human_id: {human_id}")
+            
+            # Delete from human_profiles table
+            profile_deleted = conn.execute(
+                "DELETE FROM human_profiles WHERE human_id = ? AND agent_api_key = ?",
+                (human_id, api_key_record["key"])
+            ).rowcount > 0
+            
+            # Delete from question_performance table - use human_context_summary to match
+            # since it contains the human_id information
+            perf_deleted = conn.execute(
+                "DELETE FROM question_performance WHERE human_context_summary LIKE ?",
+                (f"%{human_id}%",)
+            ).rowcount
+            
+            conn.commit()
+        
+        # Log the deletion
+        logger.info(f"Profile deletion completed for human_id: {human_id}, API key: {api_key_record['key'][:10]}...")
+        
+        return {
+            "success": True,
+            "human_id": human_id,
+            "deleted": {
+                "profile": profile_deleted,
+                "question_performance_records": perf_deleted,
+                "total_records_deleted": 1 + perf_deleted if profile_deleted else perf_deleted
+            },
+            "message": "All data for this human has been permanently deleted."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"/profile/{human_id} DELETE endpoint error")
+        raise HTTPException(500, f"Profile deletion failed: {str(e)}")
+
+
+@app.get("/privacy/{human_id}")
+async def privacy_audit(human_id: str, x_api_key: str | None = Header(None)):
+    """Audit what data is stored about a human. Transparency endpoint."""
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        profile = get_human_profile(human_id, api_key_record["key"])
+        if not profile:
+            raise HTTPException(404, f"Profile not found for human_id: {human_id}")
+        
+        # Parse profile data
+        domains_covered = json.loads(profile.get("domains_covered", "[]"))
+        domains_depth = json.loads(profile.get("domains_depth", "{}"))
+        questions_asked = json.loads(profile.get("questions_asked", "[]"))
+        known_data = json.loads(profile.get("known_data", "{}"))
+        
+        # Count conversation history entries
+        conversation_entries = 0
+        if "conversation_history" in known_data:
+            conversation_entries = len(known_data["conversation_history"])
+        
+        # Get question performance data count
+        with get_db() as conn:
+            perf_count = conn.execute(
+                "SELECT COUNT(*) FROM question_performance WHERE human_context_summary LIKE ?",
+                (f"%{human_id}%",)
+            ).fetchone()[0]
+        
+        # Data categories stored (without revealing actual sensitive data)
+        data_categories = []
+        if known_data:
+            for key, value in known_data.items():
+                if value and value != {} and value != []:
+                    data_categories.append({
+                        "category": key,
+                        "type": type(value).__name__,
+                        "size": len(str(value)) if isinstance(value, (str, list, dict)) else 1
+                    })
+        
+        return {
+            "human_id": human_id,
+            "profile_created": profile.get("created_at", "Unknown"),
+            "profile_last_updated": profile.get("updated_at", "Unknown"),
+            "data_summary": {
+                "domains_covered": {
+                    "count": len(domains_covered),
+                    "domains": [LIFE_DOMAINS.get(d, {}).get("label", d) for d in domains_covered]
+                },
+                "questions_asked": len(questions_asked),
+                "conversation_history_entries": conversation_entries,
+                "question_performance_records": perf_count,
+                "data_categories": data_categories,
+                "understanding_score": calculate_understanding_score(domains_depth, domains_covered)
+            },
+            "privacy_policy": "https://betterask.dev/privacy",
+            "data_portability": f"Request full export via POST /profile/{human_id}/export",
+            "right_to_be_forgotten": f"Delete all data via DELETE /profile/{human_id}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"/privacy/{human_id} endpoint error")
+        raise HTTPException(500, f"Privacy audit failed: {str(e)}")
+
+
+@app.post("/profile/{human_id}/export")
+async def export_profile(human_id: str, x_api_key: str | None = Header(None)):
+    """Export all data stored about a human. Data portability."""
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        profile = get_human_profile(human_id, api_key_record["key"])
+        if not profile:
+            raise HTTPException(404, f"Profile not found for human_id: {human_id}")
+        
+        # Get complete profile data
+        export_data = {
+            "human_id": human_id,
+            "export_timestamp": datetime.now().isoformat(),
+            "profile": {
+                "created_at": profile.get("created_at"),
+                "updated_at": profile.get("updated_at"),
+                "total_questions": profile.get("total_questions", 0),
+                "known_data": json.loads(profile.get("known_data", "{}")),
+                "domains_covered": json.loads(profile.get("domains_covered", "[]")),
+                "domains_depth": json.loads(profile.get("domains_depth", "{}")),
+                "questions_asked": json.loads(profile.get("questions_asked", "[]")),
+                "gaps_history": json.loads(profile.get("gaps_history", "[]"))
+            }
+        }
+        
+        # Add understanding score
+        export_data["analytics"] = {
+            "understanding_score": calculate_understanding_score(
+                export_data["profile"]["domains_depth"],
+                export_data["profile"]["domains_covered"]
+            ),
+            "domains_analysis": {}
+        }
+        
+        # Add domain analysis
+        for domain_id in export_data["profile"]["domains_covered"]:
+            if domain_id in LIFE_DOMAINS:
+                domain_info = LIFE_DOMAINS[domain_id]
+                export_data["analytics"]["domains_analysis"][domain_id] = {
+                    "label": domain_info["label"],
+                    "depth": export_data["profile"]["domains_depth"].get(domain_id, 0),
+                    "question_angle": domain_info["question_angle"]
+                }
+        
+        # Get question performance data
+        with get_db() as conn:
+            perf_rows = conn.execute("""
+                SELECT question_text, question_source, gap_targeted, vectors_used,
+                       understanding_delta, answer_depth, domain_explored,
+                       conversation_depth, created_at
+                FROM question_performance 
+                WHERE human_context_summary LIKE ?
+                ORDER BY created_at DESC
+            """, (f"%{human_id}%",)).fetchall()
+            
+            export_data["question_performance"] = []
+            for row in perf_rows:
+                export_data["question_performance"].append({
+                    "question_text": row[0],
+                    "question_source": row[1],
+                    "gap_targeted": row[2],
+                    "vectors_used": json.loads(row[3]) if row[3] else [],
+                    "understanding_delta": row[4],
+                    "answer_depth": row[5],
+                    "domain_explored": row[6],
+                    "conversation_depth": row[7],
+                    "created_at": row[8]
+                })
+        
+        # Log the export
+        logger.info(f"Profile export completed for human_id: {human_id}")
+        
+        return {
+            "success": True,
+            "export_data": export_data,
+            "data_portability_notice": "This is your complete data export from BetterAsk. You can use this data with other services or for your own records.",
+            "format": "JSON",
+            "total_records": {
+                "profile_data": 1,
+                "question_performance_records": len(export_data["question_performance"])
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"/profile/{human_id}/export endpoint error")
+        raise HTTPException(500, f"Profile export failed: {str(e)}")
+
+
+# Privacy headers middleware
+@app.middleware("http")
+async def privacy_headers_middleware(request: Request, call_next):
+    # Process the request first
+    response = await call_next(request)
+    
+    # Add privacy policy header to all responses
+    response.headers["X-Privacy-Policy"] = "https://betterask.dev/privacy"
+    
+    # Add data storage indicator for /ask and /learn endpoints
+    if request.method == "POST" and request.url.path in ["/ask", "/learn"]:
+        # Check if data was persisted (if human_id was provided)
+        request_body = getattr(request.state, 'body', None)
+        data_stored = False
+        
+        if request_body:
+            try:
+                body_data = json.loads(request_body.decode())
+                data_stored = bool(body_data.get("human_id"))
+            except Exception:
+                data_stored = False
+        
+        response.headers["X-Data-Stored"] = str(data_stored).lower()
+    
+    return response
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+@app.get("/privacy.html", response_class=HTMLResponse)
+async def privacy_page():
+    html_path = Path(__file__).parent / "static" / "privacy.html"
+    return HTMLResponse(html_path.read_text())
+
+@app.get("/terms", response_class=HTMLResponse)
+@app.get("/terms.html", response_class=HTMLResponse)
+async def terms_page():
+    html_path = Path(__file__).parent / "static" / "terms.html"
+    return HTMLResponse(html_path.read_text())
 
 @app.get("/", response_class=HTMLResponse)
 async def landing():

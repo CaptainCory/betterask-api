@@ -1099,6 +1099,97 @@
     </div>
 </section>
 
+<!-- ═══ GET STARTED ═══ -->
+<section style="padding: 6rem 4rem; border-top: 1px solid var(--border); text-align: center;">
+    <div class="section-tag">// get started</div>
+    <h2>Three steps. Five minutes. Start understanding.</h2>
+    
+    <div style="max-width: 900px; margin: 3rem auto; text-align: left;">
+        
+        <!-- Step 1 -->
+        <div style="margin-bottom: 4rem;">
+            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); margin-right: 1rem;">1.</div>
+                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--text); margin: 0;">Get your API key</h3>
+            </div>
+            
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    <button class="copy-btn" onclick="copyCode('step1-code')" id="step1-copy">copy</button>
+                </div>
+                <pre class="code-body" id="step1-code"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/api-key/free</span></pre>
+            </div>
+            
+            <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1rem;">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.5rem;">Response:</div>
+                <pre style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); margin: 0;">{
+  <span class="c-key">"api_key"</span>: <span class="c-string">"ba_live_xxx..."</span>,
+  <span class="c-key">"tier"</span>: <span class="c-string">"free"</span>
+}</pre>
+            </div>
+        </div>
+        
+        <!-- Step 2 -->
+        <div style="margin-bottom: 4rem;">
+            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); margin-right: 1rem;">2.</div>
+                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--text); margin: 0;">Ask your first question</h3>
+            </div>
+            
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    <button class="copy-btn" onclick="copyCode('step2-code')" id="step2-copy">copy</button>
+                </div>
+                <pre class="code-body" id="step2-code"><span class="c-method">curl</span> <span class="c-url">https://betterask.dev/ask</span> \
+  <span class="c-flag">-H</span> <span class="c-string">"X-API-Key: YOUR_KEY"</span> \
+  <span class="c-flag">-H</span> <span class="c-string">"Content-Type: application/json"</span> \
+  <span class="c-flag">-d</span> <span class="c-string">'{"human_id": "user-1", "memory": "Likes hiking, works in tech"}'</span></pre>
+            </div>
+            
+            <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1rem;">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.5rem;">Returns the perfect question:</div>
+                <div style="font-size: 1rem; color: var(--text); font-style: italic; line-height: 1.6;">"If you repeated yesterday 365 times, where would you be?"</div>
+            </div>
+        </div>
+        
+        <!-- Step 3 -->
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); margin-right: 1rem;">3.</div>
+                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--text); margin: 0;">Learn from the answer</h3>
+            </div>
+            
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    <button class="copy-btn" onclick="copyCode('step3-code')" id="step3-copy">copy</button>
+                </div>
+                <pre class="code-body" id="step3-code"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/learn</span> \
+  <span class="c-flag">-H</span> <span class="c-string">"X-API-Key: YOUR_KEY"</span> \
+  <span class="c-flag">-H</span> <span class="c-string">"Content-Type: application/json"</span> \
+  <span class="c-flag">-d</span> <span class="c-string">'{"human_id": "user-1", "question_asked": "...", "answer": "..."}'</span></pre>
+            </div>
+            
+            <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1rem;">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1rem;">Understanding score climbs:</div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--accent);">34%</div>
+                    <div style="color: var(--text-dim); font-size: 1.2rem;">→</div>
+                    <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--green);">41%</div>
+                    <div style="color: var(--tangerine); font-size: 0.9rem; font-weight: 600;">+7% understanding</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem;">
+            <p style="color: var(--text-dim); font-size: 1.1rem; margin-bottom: 2rem;">That's it. Your AI now understands its human 7% better.</p>
+            <a href="/docs" style="display: inline-block; padding: 1rem 2.5rem; background: var(--accent); color: var(--bg); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Try It Now →</a>
+        </div>
+    </div>
+</section>
+
 <!-- ═══ PRICING ═══ -->
 <section class="pricing" id="pricing">
     <div class="section-tag">// pricing</div>
@@ -1177,16 +1268,26 @@
     <div class="footer-left">© 2026 betterask.dev · built on <a href="https://endsmalltalknow.com">END SMALL TALK</a> by cory stout</div>
     <div class="footer-right">
         <a href="#api">docs</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="/terms.html">terms</a>
         <a href="mailto:hello@betterask.dev">contact</a>
         <a href="https://endsmalltalknow.com" target="_blank">book</a>
     </div>
 </footer>
 
 <script>
-function copyCode() {
-    const el = document.getElementById('code-block');
+function copyCode(codeId) {
+    codeId = codeId || 'code-block';
+    const el = document.getElementById(codeId);
     navigator.clipboard.writeText(el.textContent);
-    const btn = document.getElementById('copy-btn');
+    
+    // Handle button feedback
+    let btnId = 'copy-btn';
+    if (codeId === 'step1-code') btnId = 'step1-copy';
+    else if (codeId === 'step2-code') btnId = 'step2-copy';
+    else if (codeId === 'step3-code') btnId = 'step3-copy';
+    
+    const btn = document.getElementById(btnId);
     btn.textContent = 'copied';
     btn.style.borderColor = 'var(--green)';
     btn.style.color = 'var(--green)';
