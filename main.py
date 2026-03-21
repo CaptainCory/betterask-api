@@ -68,7 +68,7 @@ PRODUCT_TO_TIER = {v["stripe_product_id"]: k for k, v in TIERS.items() if v["str
 # ---------------------------------------------------------------------------
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
 
 
@@ -181,7 +181,7 @@ def create_api_key(tier: str = "free", stripe_customer_id: str | None = None,
 def get_api_key_record(key: str) -> dict | None:
     conn = get_db()
     try:
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute("SELECT * FROM api_keys WHERE key = %s AND active = 1", (key,))
         row = cur.fetchone()
         return dict(row) if row else None
@@ -607,7 +607,7 @@ def get_human_profile(human_id: str, agent_api_key: str) -> dict | None:
     """Get a human profile from the database."""
     conn = get_db()
     try:
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(
             "SELECT * FROM human_profiles WHERE human_id = %s AND agent_api_key = %s",
             (human_id, agent_api_key)
@@ -1188,11 +1188,12 @@ async def list_questions(
 
     conn = get_db()
     try:
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(query, params)
         rows = cur.fetchall()
-        cur.execute("SELECT COUNT(*) FROM questions WHERE active=1")
-        total = cur.fetchone()[0]
+        cur2 = conn.cursor()
+        cur2.execute("SELECT COUNT(*) FROM questions WHERE active=1")
+        total = cur2.fetchone()[0]
 
         return {
             "questions": [dict(r) for r in rows],
@@ -1264,8 +1265,9 @@ async def admin_stats(x_admin_key: str | None = Header(None)):
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         cur.execute("SELECT SUM(calls_today) FROM api_keys WHERE calls_date=%s", (today,))
         calls_today = cur.fetchone()[0] or 0
-        cur.execute("SELECT key, tier, calls_today, calls_date, created_at FROM api_keys WHERE active=1 ORDER BY created_at DESC")
-        keys = cur.fetchall()
+        cur2 = conn.cursor(cursor_factory=RealDictCursor)
+        cur2.execute("SELECT key, tier, calls_today, calls_date, created_at FROM api_keys WHERE active=1 ORDER BY created_at DESC")
+        keys = cur2.fetchall()
         return {
             "total_keys": total_keys,
             "calls_today": calls_today,
