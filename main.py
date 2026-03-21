@@ -1293,6 +1293,17 @@ async def score(req: ScoreRequest, request: Request):
 # /ask — Agent Self-Improvement Engine
 # ---------------------------------------------------------------------------
 
+class PredictiveInsight(BaseModel):
+    insight_type: str  # "avoidance", "imbalance", "stagnation", "shadow", "life_phase", "growth_edge"
+    confidence: float  # 0.0 to 1.0
+    signal: str  # What pattern was detected
+    predicted_question: str  # The question they should be asking themselves
+    vectors_recommended: list[str]  # Best vectors to use
+    domain: str  # Which life domain this relates to
+    why: str  # Why this prediction matters
+    urgency: str  # "low", "medium", "high"
+
+
 class AskKnown(BaseModel):
     """What the agent already knows about its human."""
     name: str | None = None
@@ -1336,6 +1347,7 @@ class AskResponse(BaseModel):
     questions: list[AskQuestion]
     analysis: dict
     gaps_detected: list[str]
+    predictive_insights: list[PredictiveInsight] = []
     promo: str | None = None
 
 
@@ -1646,6 +1658,407 @@ def detect_gaps(memory_text: str, agent_gaps: list[str]) -> list[dict]:
     gaps.sort(key=lambda g: priority_order.get(g["priority"], 1))
     
     return gaps, covered
+
+
+# ---------------------------------------------------------------------------
+# Predictive Insights Engine
+# ---------------------------------------------------------------------------
+
+# Domain adjacency pairs — domains that illuminate each other
+DOMAIN_ADJACENCY = {
+    "career_direction": ["relationship_quality", "growth_edge", "financial_reality"],
+    "relationship_quality": ["career_direction", "inner_life", "family_dynamics"],
+    "health_practices": ["inner_life", "daily_routines", "fun_and_play"],
+    "inner_life": ["health_practices", "relationship_quality", "past_wounds"],
+    "social_life": ["fun_and_play", "relationship_quality", "creative_expression"],
+    "fun_and_play": ["social_life", "growth_edge", "creative_expression"],
+    "financial_reality": ["career_direction", "daily_routines", "growth_edge"],
+    "growth_edge": ["career_direction", "inner_life", "past_wounds"],
+    "past_wounds": ["inner_life", "relationship_quality", "growth_edge"],
+    "family_dynamics": ["relationship_quality", "past_wounds", "inner_life"],
+    "daily_routines": ["health_practices", "career_direction", "fun_and_play"],
+    "creative_expression": ["inner_life", "fun_and_play", "growth_edge"],
+}
+
+# Shadow question mapping — the things people avoid asking themselves
+SHADOW_QUESTIONS = [
+    {
+        "present_themes": ["career_direction", "financial_reality"],
+        "absent_domains": ["relationship_quality", "social_life"],
+        "shadow": "Who would you call at 3am?",
+        "why": "Deep career focus without relationship depth often masks loneliness or avoidance of intimacy.",
+        "vectors": ["confession", "other_eyes", "emotion"],
+    },
+    {
+        "present_themes": ["career_direction", "growth_edge"],
+        "absent_domains": ["inner_life", "fun_and_play"],
+        "shadow": "What would you do if you couldn't win?",
+        "why": "Achievement-oriented people rarely examine what they'd be without the scoreboard.",
+        "vectors": ["hypothetical", "identity", "permission"],
+    },
+    {
+        "present_themes": ["family_dynamics", "relationship_quality"],
+        "absent_domains": ["inner_life", "growth_edge"],
+        "shadow": "When was the last time you put yourself first without feeling guilty?",
+        "why": "People who talk about others but never themselves often lose track of their own needs.",
+        "vectors": ["permission", "confession", "time"],
+    },
+    {
+        "present_themes": ["growth_edge"],
+        "absent_domains": ["past_wounds"],
+        "shadow": "What are you running from right now?",
+        "why": "Constant future-focus can be flight from unresolved past. The thing chasing you shapes the direction you run.",
+        "vectors": ["confession", "contradiction", "time"],
+    },
+    {
+        "present_themes": ["relationship_quality", "social_life"],
+        "absent_domains": ["inner_life"],
+        "shadow": "When was the last time you enjoyed your own company?",
+        "why": "Social saturation without inner life suggests discomfort with solitude.",
+        "vectors": ["self_assessment", "time", "sensory_imagination"],
+    },
+    {
+        "present_themes": ["financial_reality"],
+        "absent_domains": ["inner_life", "creative_expression"],
+        "shadow": "If money disappeared tomorrow, what would you do on Monday?",
+        "why": "When money dominates the conversation, meaning often hides behind the numbers.",
+        "vectors": ["hypothetical", "identity", "confession"],
+    },
+    {
+        "present_themes": ["health_practices"],
+        "absent_domains": ["inner_life", "past_wounds"],
+        "shadow": "What's the last thing that made you cry?",
+        "why": "Physical health focus without emotional exploration suggests the body is being optimized while the soul is neglected.",
+        "vectors": ["emotion", "permission", "confession"],
+    },
+    {
+        "present_themes": ["fun_and_play"],
+        "absent_domains": ["growth_edge", "career_direction"],
+        "shadow": "What's the hard thing you keep postponing?",
+        "why": "Excessive play without growth signals can indicate avoidance of difficulty disguised as living fully.",
+        "vectors": ["confession", "contradiction", "trajectory"],
+    },
+    {
+        "present_themes": ["inner_life"],
+        "absent_domains": ["social_life", "relationship_quality"],
+        "shadow": "Who really knows you?",
+        "why": "Deep inner life without social depth means rich self-understanding that nobody else gets to see.",
+        "vectors": ["other_eyes", "confession", "self_assessment"],
+    },
+    {
+        "present_themes": ["past_wounds"],
+        "absent_domains": ["growth_edge"],
+        "shadow": "What would forgiving yourself actually look like?",
+        "why": "Dwelling in past wounds without forward movement suggests the wounds have become identity.",
+        "vectors": ["hypothetical", "permission", "sensory_imagination"],
+    },
+    {
+        "present_themes": ["daily_routines"],
+        "absent_domains": ["fun_and_play", "creative_expression"],
+        "shadow": "When did you last do something with no purpose other than joy?",
+        "why": "Routine without play means life is running on rails. The schedule is full but the soul might be empty.",
+        "vectors": ["time", "permission", "absurdity"],
+    },
+    {
+        "present_themes": ["career_direction"],
+        "absent_domains": ["family_dynamics"],
+        "shadow": "What would the 10-year-old version of you think of your life right now?",
+        "why": "Career focus without family context hides the origin story. Understanding where you came from illuminates where you're going.",
+        "vectors": ["time", "perspective_shift", "emotion"],
+    },
+]
+
+
+def detect_avoidance_patterns(profile: dict) -> list[PredictiveInsight]:
+    """Find domains where the human deflects — many questions asked but depth stays low."""
+    insights = []
+    
+    domains_depth = json.loads(profile.get("domains_depth", "{}"))
+    domains_covered = json.loads(profile.get("domains_covered", "[]"))
+    total_questions = profile.get("total_questions", 0)
+    gaps_history = json.loads(profile.get("gaps_history", "[]"))
+    
+    if total_questions < 3:
+        return insights
+    
+    # Count how many times each domain has been targeted
+    domain_attempts = {}
+    for gap in gaps_history:
+        domain = gap.get("domain", "")
+        domain_attempts[domain] = domain_attempts.get(domain, 0) + 1
+    
+    for domain_id in domains_covered:
+        depth = domains_depth.get(domain_id, 0)
+        attempts = domain_attempts.get(domain_id, 0)
+        
+        # Signal: targeted multiple times (3+) but depth is still low (≤2)
+        if attempts >= 3 and depth <= 2:
+            domain_info = LIFE_DOMAINS.get(domain_id, {})
+            confidence = min(0.9, 0.4 + (attempts - 3) * 0.1)
+            
+            insights.append(PredictiveInsight(
+                insight_type="avoidance",
+                confidence=confidence,
+                signal=f"Domain '{domain_info.get('label', domain_id)}' targeted {attempts} times but depth is only {depth}/10 — they may be deflecting.",
+                predicted_question=f"What makes it hard to talk about your {domain_info.get('label', domain_id).lower()}?",
+                vectors_recommended=["permission", "confession", "contradiction"],
+                domain=domain_id,
+                why=f"When someone answers questions about a topic repeatedly without going deeper, they're often circling the thing they can't say. The avoidance IS the signal.",
+                urgency="high" if attempts >= 5 else "medium",
+            ))
+    
+    # Also check question_performance for low understanding_delta patterns
+    with get_db() as conn:
+        rows = conn.execute("""
+            SELECT domain_explored, COUNT(*) as cnt, AVG(understanding_delta) as avg_delta
+            FROM question_performance
+            WHERE understanding_delta IS NOT NULL
+            GROUP BY domain_explored
+            HAVING cnt >= 3 AND avg_delta < 0.01
+        """).fetchall()
+        
+        for row in rows:
+            domain_id = row[0]
+            if domain_id and domain_id in LIFE_DOMAINS and domain_id not in [i.domain for i in insights]:
+                domain_info = LIFE_DOMAINS[domain_id]
+                insights.append(PredictiveInsight(
+                    insight_type="avoidance",
+                    confidence=0.6,
+                    signal=f"Questions about '{domain_info['label']}' consistently produce near-zero understanding improvement ({row[2]:.3f} avg delta over {row[1]} questions).",
+                    predicted_question=f"What are you protecting by keeping your {domain_info['label'].lower()} surface-level?",
+                    vectors_recommended=["permission", "confession", "self_assessment"],
+                    domain=domain_id,
+                    why="When questions land but don't move the needle, there's a wall. The question isn't better questions — it's why the wall exists.",
+                    urgency="medium",
+                ))
+    
+    return insights
+
+
+def detect_domain_imbalance(profile: dict) -> list[PredictiveInsight]:
+    """Find when one domain is very deep but adjacent domains are empty."""
+    insights = []
+    
+    domains_depth = json.loads(profile.get("domains_depth", "{}"))
+    domains_covered = json.loads(profile.get("domains_covered", "[]"))
+    
+    if not domains_depth:
+        return insights
+    
+    for domain_id, depth in domains_depth.items():
+        if depth < 8:
+            continue
+        
+        # Check adjacent domains
+        adjacent = DOMAIN_ADJACENCY.get(domain_id, [])
+        empty_adjacent = [adj for adj in adjacent if domains_depth.get(adj, 0) <= 1]
+        
+        if not empty_adjacent:
+            continue
+        
+        domain_info = LIFE_DOMAINS.get(domain_id, {})
+        
+        for empty_domain in empty_adjacent:
+            empty_info = LIFE_DOMAINS.get(empty_domain, {})
+            confidence = min(0.85, 0.5 + (depth - 8) * 0.1 + len(empty_adjacent) * 0.05)
+            
+            # Generate a specific insight based on the pair
+            pair_key = f"{domain_id}→{empty_domain}"
+            predicted_q = f"You know so much about their {domain_info.get('label', domain_id).lower()} — but almost nothing about their {empty_info.get('label', empty_domain).lower()}. What's in that blind spot?"
+            
+            insights.append(PredictiveInsight(
+                insight_type="imbalance",
+                confidence=confidence,
+                signal=f"Deep knowledge of {domain_info.get('label', domain_id)} (depth {depth}/10) but {empty_info.get('label', empty_domain)} is nearly empty ({domains_depth.get(empty_domain, 0)}/10).",
+                predicted_question=predicted_q,
+                vectors_recommended=empty_info.get("vectors", ["specificity", "name_an_example"]) if empty_domain in LIFE_DOMAINS else ["specificity"],
+                domain=empty_domain,
+                why=f"Lopsided understanding creates blind spots. Deep {domain_info.get('label', domain_id).lower()} knowledge without {empty_info.get('label', empty_domain).lower()} context means you're seeing one dimension of a multi-dimensional person.",
+                urgency="medium",
+            ))
+    
+    return insights
+
+
+def detect_trajectory_signals(profile: dict) -> list[PredictiveInsight]:
+    """Analyze understanding score growth — accelerating, decelerating, or stagnating."""
+    insights = []
+    
+    gaps_history = json.loads(profile.get("gaps_history", "[]"))
+    domains_depth = json.loads(profile.get("domains_depth", "{}"))
+    domains_covered = json.loads(profile.get("domains_covered", "[]"))
+    total_questions = profile.get("total_questions", 0)
+    
+    if total_questions < 5:
+        return insights
+    
+    # Calculate current understanding score
+    current_score = calculate_understanding_score(domains_depth, domains_covered)
+    
+    # Check for stagnation — time since last meaningful depth increase
+    recent_gaps = gaps_history[-10:] if gaps_history else []
+    recent_domains_touched = set()
+    for gap in recent_gaps:
+        if gap.get("domain"):
+            recent_domains_touched.add(gap["domain"])
+    
+    # Stagnation: asking lots of questions but score isn't moving
+    if total_questions >= 10 and current_score < 0.3:
+        insights.append(PredictiveInsight(
+            insight_type="stagnation",
+            confidence=0.7,
+            signal=f"After {total_questions} questions, understanding is still only {current_score*100:.0f}%. Growth has stalled.",
+            predicted_question="What's the one thing about you that would change everything I know — if I just asked the right way?",
+            vectors_recommended=["permission", "confession", "identity"],
+            domain="growth_edge",
+            why="When lots of questions produce little understanding, the approach needs to change. More questions won't help — different questions will.",
+            urgency="high",
+        ))
+    
+    # Deceleration: many domains covered but all shallow
+    shallow_domains = [d for d in domains_covered if domains_depth.get(d, 0) <= 2]
+    if len(domains_covered) >= 6 and len(shallow_domains) >= 4:
+        insights.append(PredictiveInsight(
+            insight_type="stagnation",
+            confidence=0.65,
+            signal=f"Broad but shallow: {len(domains_covered)} domains touched, but {len(shallow_domains)} are still surface-level (depth ≤2).",
+            predicted_question="If we stopped covering new ground and went deeper on one thing — what would matter most?",
+            vectors_recommended=["comparison", "self_assessment", "confession"],
+            domain=shallow_domains[0] if shallow_domains else "growth_edge",
+            why="Width without depth is a mile wide and an inch deep. Time to drill down instead of spreading out.",
+            urgency="medium",
+        ))
+    
+    # Growth edge detection: domains that were growing but have stopped
+    with get_db() as conn:
+        rows = conn.execute("""
+            SELECT domain_explored,
+                   MAX(created_at) as last_active,
+                   AVG(understanding_delta) as avg_delta
+            FROM question_performance
+            WHERE domain_explored IS NOT NULL AND understanding_delta > 0.02
+            GROUP BY domain_explored
+            ORDER BY last_active ASC
+            LIMIT 3
+        """).fetchall()
+        
+        for row in rows:
+            domain_id = row[0]
+            last_active = row[1]
+            if domain_id and domain_id in LIFE_DOMAINS:
+                domain_info = LIFE_DOMAINS[domain_id]
+                # If this domain was productive but hasn't been touched recently
+                current_depth = domains_depth.get(domain_id, 0)
+                if current_depth >= 3 and current_depth < 8:
+                    insights.append(PredictiveInsight(
+                        insight_type="growth_edge",
+                        confidence=0.55,
+                        signal=f"{domain_info['label']} was producing real growth (avg delta {row[2]:.3f}) but hasn't been explored recently.",
+                        predicted_question=f"What's changed about your {domain_info['label'].lower()} since we last went there?",
+                        vectors_recommended=["trajectory", "time", "self_assessment"],
+                        domain=domain_id,
+                        why="Domains that produced real deltas are fertile ground. Going back after a break often unlocks the next layer.",
+                        urgency="low",
+                    ))
+    
+    return insights
+
+
+def detect_shadow_questions(profile: dict, analysis: dict) -> list[PredictiveInsight]:
+    """The killer feature: what are they NOT talking about that matters?"""
+    insights = []
+    
+    domains_covered = json.loads(profile.get("domains_covered", "[]"))
+    domains_depth = json.loads(profile.get("domains_depth", "{}"))
+    total_questions = profile.get("total_questions", 0)
+    
+    if total_questions < 3:
+        return insights
+    
+    covered_set = set(domains_covered)
+    
+    for shadow in SHADOW_QUESTIONS:
+        # Check: are the "present" themes actually covered?
+        present_match = sum(1 for t in shadow["present_themes"] if t in covered_set)
+        if present_match == 0:
+            continue
+        
+        # Check: are the "absent" domains actually absent or very shallow?
+        absent_match = sum(1 for d in shadow["absent_domains"] 
+                         if d not in covered_set or domains_depth.get(d, 0) <= 1)
+        
+        if absent_match == 0:
+            continue
+        
+        # Confidence based on how strong both signals are
+        present_strength = present_match / len(shadow["present_themes"])
+        absent_strength = absent_match / len(shadow["absent_domains"])
+        
+        # Also factor in depth of present themes — deeper = more confident in the pattern
+        present_depth = sum(domains_depth.get(t, 0) for t in shadow["present_themes"] if t in covered_set)
+        depth_factor = min(1.0, present_depth / 10.0)
+        
+        confidence = min(0.95, (present_strength * 0.3 + absent_strength * 0.4 + depth_factor * 0.3))
+        
+        # Only include if confidence is meaningful
+        if confidence < 0.3:
+            continue
+        
+        # Determine the primary absent domain for this insight
+        primary_absent = next(
+            (d for d in shadow["absent_domains"] if d not in covered_set or domains_depth.get(d, 0) <= 1),
+            shadow["absent_domains"][0]
+        )
+        
+        insights.append(PredictiveInsight(
+            insight_type="shadow",
+            confidence=confidence,
+            signal=f"Talks about {', '.join(LIFE_DOMAINS.get(t, {}).get('label', t) for t in shadow['present_themes'] if t in covered_set)} but avoids {', '.join(LIFE_DOMAINS.get(d, {}).get('label', d) for d in shadow['absent_domains'] if d not in covered_set or domains_depth.get(d, 0) <= 1)}.",
+            predicted_question=shadow["shadow"],
+            vectors_recommended=shadow["vectors"],
+            domain=primary_absent,
+            why=shadow["why"],
+            urgency="high" if confidence > 0.6 else "medium",
+        ))
+    
+    return insights
+
+
+def generate_predictive_insights(profile: dict, analysis: dict) -> list[PredictiveInsight]:
+    """
+    Main predictive engine — combines all detection functions,
+    deduplicates, scores, and returns top 3-5 insights.
+    """
+    all_insights = []
+    
+    # Run all detection functions
+    all_insights.extend(detect_avoidance_patterns(profile))
+    all_insights.extend(detect_domain_imbalance(profile))
+    all_insights.extend(detect_trajectory_signals(profile))
+    all_insights.extend(detect_shadow_questions(profile, analysis))
+    
+    if not all_insights:
+        return []
+    
+    # Deduplicate: if multiple insights target the same domain, keep the highest confidence one
+    seen_domains = {}
+    deduped = []
+    for insight in all_insights:
+        key = (insight.domain, insight.insight_type)
+        if key not in seen_domains or insight.confidence > seen_domains[key].confidence:
+            seen_domains[key] = insight
+    deduped = list(seen_domains.values())
+    
+    # Score by confidence × urgency multiplier
+    urgency_multiplier = {"high": 3.0, "medium": 2.0, "low": 1.0}
+    
+    def sort_key(insight: PredictiveInsight) -> float:
+        return insight.confidence * urgency_multiplier.get(insight.urgency, 1.0)
+    
+    deduped.sort(key=sort_key, reverse=True)
+    
+    # Return top 3-5 (up to 5, but at least 3 if we have them)
+    return deduped[:5]
 
 
 def analyze_for_agent(req: "AskRequest") -> dict:
@@ -1991,6 +2404,21 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
         analysis = analyze_for_agent(req)
         gaps = analysis["gaps"]
         
+        # Step 1.5: Predictive Insights Engine
+        predictive_insights = []
+        if profile and profile.get("total_questions", 0) >= 3:
+            predictive_insights = generate_predictive_insights(profile, analysis)
+            
+            # Boost gap priority for domains targeted by predictive insights
+            if predictive_insights:
+                insight_domains = {pi.domain for pi in predictive_insights}
+                for gap in gaps:
+                    if gap["domain"] in insight_domains:
+                        gap["priority"] = "high"  # Boost priority
+                # Re-sort gaps with boosted priorities
+                priority_order = {"high": 0, "medium": 1, "low": 2}
+                gaps.sort(key=lambda g: priority_order.get(g["priority"], 1))
+        
         if not gaps:
             # Agent knows everything (unlikely) — fall back to deepening existing knowledge
             gaps = [{
@@ -2028,9 +2456,22 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
             # Step 4: Build generation prompt for custom LLM question
             memory_text = analysis["memory_text"]
             about = f"this person ({memory_text[:300]})"
+            
+            # Include predictive context in generation prompt if available
+            predictive_context_lines = []
+            if predictive_insights:
+                relevant_insights = [pi for pi in predictive_insights if pi.domain == gap.get("domain")]
+                if relevant_insights:
+                    for pi in relevant_insights[:2]:
+                        predictive_context_lines.append(
+                            f"PREDICTIVE SIGNAL: {pi.signal} Consider asking something in the direction of: \"{pi.predicted_question}\""
+                        )
+            
             gen_prompt = build_generation_prompt(
                 analysis["goal"], about, analysis["depth"], selected, []
             )
+            if predictive_context_lines:
+                gen_prompt += "\n\n== PREDICTIVE CONTEXT ==\n" + "\n".join(predictive_context_lines)
             
             # Step 5: Build why + listen_for
             why = build_agent_why(gap, analysis, selected)
@@ -2115,6 +2556,7 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
             questions=questions,
             analysis=response_analysis,
             gaps_detected=all_gap_labels,
+            predictive_insights=predictive_insights,
             promo=promo,
         )
     
@@ -2404,6 +2846,63 @@ async def get_top_corpus_questions(
     except Exception as e:
         logger.exception("/corpus/top endpoint error")
         raise HTTPException(500, f"Failed to get top questions: {str(e)}")
+
+
+@app.get("/predict/{human_id}")
+async def predict(human_id: str, x_api_key: str | None = Header(None)):
+    """Get predictive insights for a human — what should they be thinking about?"""
+    api_key_record = validate_api_key(x_api_key)
+    
+    profile = get_human_profile(human_id, api_key_record["key"])
+    if not profile:
+        raise HTTPException(404, f"Profile not found for human_id: {human_id}")
+    
+    total_questions = profile.get("total_questions", 0)
+    if total_questions < 3:
+        return {
+            "human_id": human_id,
+            "predictive_insights": [],
+            "message": f"Need at least 3 questions for predictions (currently {total_questions}). Keep asking!",
+            "understanding_score": calculate_understanding_score(
+                json.loads(profile.get("domains_depth", "{}")),
+                json.loads(profile.get("domains_covered", "[]"))
+            ),
+        }
+    
+    # Build a lightweight analysis from profile data
+    known_data = json.loads(profile.get("known_data", "{}"))
+    domains_covered = json.loads(profile.get("domains_covered", "[]"))
+    domains_depth = json.loads(profile.get("domains_depth", "{}"))
+    
+    analysis = {
+        "themes": [d for d in domains_covered if d in LIFE_DOMAINS],
+        "emotional_signals": [],
+        "covered_domains": domains_covered,
+        "gaps": [
+            {
+                "domain": d,
+                "label": LIFE_DOMAINS[d]["label"],
+                "priority": "medium",
+            }
+            for d in LIFE_DOMAINS
+            if d not in domains_covered
+        ],
+        "depth": "deep" if total_questions >= 10 else "medium",
+        "history_depth": total_questions,
+    }
+    
+    insights = generate_predictive_insights(profile, analysis)
+    understanding_score = calculate_understanding_score(domains_depth, domains_covered)
+    
+    return {
+        "human_id": human_id,
+        "predictive_insights": [i.dict() for i in insights],
+        "total_insights": len(insights),
+        "understanding_score": understanding_score,
+        "total_questions": total_questions,
+        "domains_covered": len(domains_covered),
+        "domains_total": len(LIFE_DOMAINS),
+    }
 
 
 @app.get("/", response_class=HTMLResponse)
