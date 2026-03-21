@@ -37,7 +37,7 @@ CORPUS_PATH = os.getenv(
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
-DATABASE_URL = os.getenv("DATABASE_URL", "")
+DATABASE_URL = os.getenv("BETTERASK_DATABASE_URL", os.getenv("DATABASE_URL", ""))
 
 stripe.api_key = STRIPE_SECRET_KEY
 
