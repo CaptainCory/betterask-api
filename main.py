@@ -1316,12 +1316,12 @@ class AskKnown(BaseModel):
     goals: list[str] = []
     values: list[str] = []
     recent_context: str | None = None
-    raw: str | None = Field(None, description="Freeform text dump of everything the agent knows", max_length=10000)
+    raw: str | None = Field(None, description="Freeform text dump of everything the agent knows", max_length=50000)
 
 
 class AskRequest(BaseModel):
     known: AskKnown | None = Field(None, description="Structured data the agent has about its human")
-    memory: str | None = Field(None, description="Freeform text of what agent knows (alternative to 'known')", max_length=10000)
+    memory: str | None = Field(None, description="Freeform text of what agent knows (alternative to 'known')", max_length=50000)
     agent_role: str = Field("personal assistant", description="What role the agent plays")
     agent_gaps: list[str] = Field(default=[], description="Gaps the agent has identified (auto-detected if empty)")
     history: list[str] = Field(default=[], description="Previous questions already asked")
@@ -1535,113 +1535,360 @@ def flatten_known(req: "AskRequest") -> str:
 LIFE_DOMAINS = {
     "daily_routines": {
         "label": "Daily Routines",
-        "keywords": ["morning", "routine", "habit", "wake up", "sleep", "schedule", "day looks like"],
+        "keywords": [
+            "morning", "routine", "habit", "wake up", "sleep", "schedule", "day looks like",
+            "evening", "coffee", "commute", "work from home", "alarm", "meditation", "journal",
+            "breakfast", "lunch", "dinner", "weekday", "weekend", "screen time", "phone",
+            "first thing", "before bed", "ritual", "nap", "walk", "wind down", "playlist",
+            "shower", "night owl", "early bird",
+        ],
         "question_angle": "how they structure their time reveals priorities",
         "vectors": ["time", "trajectory", "self_assessment"],
         "listen_for": "Whether the answer reveals satisfaction or restlessness with current patterns.",
+        "depth_missing": {
+            "low": "basic structure of their day",
+            "medium": "whether routines feel chosen or defaulted into, energy patterns, what they'd change",
+            "high": "relationship between routines and identity — do rituals serve growth or avoidance?",
+        },
     },
     "career_direction": {
-        "label": "Career Direction", 
-        "keywords": ["job", "career", "work", "boss", "company", "startup", "business", "salary", "promotion", "role"],
+        "label": "Career Direction",
+        "keywords": [
+            "job", "career", "work", "boss", "company", "startup", "business", "salary",
+            "promotion", "role", "founder", "entrepreneur", "side project", "launch", "revenue",
+            "customers", "pivot", "quit", "hire", "freelance", "passion project", "nine to five",
+            "mission", "impact", "cofounder", "equity", "raise", "funding", "remote",
+            "industry", "title", "manager", "team", "client",
+        ],
         "question_angle": "where they're heading professionally",
         "vectors": ["trajectory", "self_assessment", "comparison"],
         "listen_for": "Are they building toward something or maintaining? Listen for energy vs. obligation.",
+        "depth_missing": {
+            "low": "what they do for work",
+            "medium": "whether they feel aligned with their work, ambitions vs. reality, what success looks like",
+            "high": "tensions between professional identity and personal identity, patterns across career moves",
+        },
     },
     "relationship_quality": {
         "label": "Relationship Quality",
-        "keywords": ["partner", "wife", "husband", "boyfriend", "girlfriend", "dating", "married", "love", "relationship"],
+        "keywords": [
+            "partner", "wife", "husband", "boyfriend", "girlfriend", "dating", "married",
+            "love", "relationship", "breakup", "single", "crush", "ex", "intimate",
+            "connection", "chemistry", "trust", "jealous", "commitment", "long distance",
+            "together", "anniversary", "engaged", "divorce", "separated", "soulmate",
+            "attraction", "vulnerability", "communicate", "fight", "argue",
+        ],
         "question_angle": "depth and health of romantic connections",
         "vectors": ["other_eyes", "emotion", "contradiction"],
         "listen_for": "The gap between what they say and how they say it. Hesitation often reveals more than words.",
+        "depth_missing": {
+            "low": "relationship status and basic facts",
+            "medium": "quality of connection, patterns in relationships, what they're learning about themselves through love",
+            "high": "attachment patterns, what they avoid in intimacy, how past wounds show up in current relationships",
+        },
     },
     "family_dynamics": {
         "label": "Family Dynamics",
-        "keywords": ["mom", "dad", "mother", "father", "sister", "brother", "parents", "kids", "children", "family"],
+        "keywords": [
+            "mom", "dad", "mother", "father", "sister", "brother", "parents", "kids",
+            "children", "family", "raised", "grew up", "hometown", "inheritance", "holiday",
+            "thanksgiving", "christmas", "sibling", "aunt", "uncle", "grandparent", "divorce",
+            "step", "adopted", "only child", "eldest", "youngest", "in-laws", "nephew",
+            "niece", "cousin", "family dinner", "home",
+        ],
         "question_angle": "how family shapes their current self",
         "vectors": ["other_eyes", "time", "confession"],
         "listen_for": "Patterns inherited from family vs. patterns they've consciously broken.",
+        "depth_missing": {
+            "low": "who is in their family",
+            "medium": "quality of family relationships, inherited patterns, unresolved dynamics",
+            "high": "how family of origin shaped their worldview, what they've consciously chosen to repeat or reject",
+        },
     },
     "financial_reality": {
         "label": "Financial Reality",
-        "keywords": ["money", "debt", "savings", "invest", "financial", "income", "budget", "afford", "rich", "poor"],
+        "keywords": [
+            "money", "debt", "savings", "invest", "financial", "income", "budget", "afford",
+            "rich", "poor", "rent", "mortgage", "crypto", "stock", "portfolio", "price",
+            "expensive", "cheap", "worth", "cost", "earn", "net worth", "bank", "credit",
+            "insurance", "retire", "wealth", "broke", "loan", "tax", "bonus", "raise",
+            "side hustle", "passive income",
+        ],
         "question_angle": "relationship with money beyond the numbers",
         "vectors": ["self_assessment", "scale", "contradiction"],
         "listen_for": "Whether money is a tool, a score, a source of anxiety, or freedom. The frame matters more than the amount.",
+        "depth_missing": {
+            "low": "basic financial situation",
+            "medium": "emotional relationship with money, financial fears and aspirations, money stories from childhood",
+            "high": "how money beliefs shape life choices, tension between enough and more, generosity patterns",
+        },
     },
     "health_practices": {
         "label": "Health & Body",
-        "keywords": ["health", "fitness", "gym", "diet", "sleep", "exercise", "weight", "body", "energy", "sick"],
+        "keywords": [
+            "health", "fitness", "gym", "diet", "sleep", "exercise", "weight", "body",
+            "energy", "sick", "WHOOP", "Oura", "run", "lift", "yoga", "stretching",
+            "injury", "doctor", "mental health", "therapy", "anxiety", "depression",
+            "nutrition", "supplement", "fasting", "Ironman", "marathon", "recovery",
+            "calories", "protein", "blood work", "longevity", "aging", "pain",
+            "meditation", "breathwork", "cold plunge",
+        ],
         "question_angle": "how they relate to their physical vessel",
         "vectors": ["self_assessment", "trajectory", "sensory_imagination"],
         "listen_for": "Whether health is aspirational or practiced. The gap between knowing and doing.",
+        "depth_missing": {
+            "low": "basic health habits and status",
+            "medium": "relationship with their body, health motivations, what they track and why",
+            "high": "body image narrative, health anxiety vs. health agency, what health means for their identity",
+        },
     },
     "social_life": {
         "label": "Social Life",
-        "keywords": ["friends", "social", "lonely", "community", "network", "party", "group", "belong"],
+        "keywords": [
+            "friends", "social", "lonely", "community", "network", "party", "group",
+            "belong", "hang out", "crew", "tribe", "dinner party", "gathering", "invite",
+            "text", "call", "best friend", "acquaintance", "coworker", "neighbor",
+            "new friend", "old friend", "circle", "introvert", "extrovert", "awkward",
+            "bar", "club", "meetup", "brunch",
+        ],
         "question_angle": "quality and depth of friendships",
         "vectors": ["comparison", "other_eyes", "time"],
         "listen_for": "Breadth vs. depth of connections. Are they surrounded by people or known by them?",
+        "depth_missing": {
+            "low": "whether they have close friends",
+            "medium": "quality of friendships, who they turn to, how they show up for others",
+            "high": "loneliness beneath social activity, friendships they've outgrown, vulnerability in platonic relationships",
+        },
     },
     "inner_life": {
         "label": "Inner Life & Meaning",
-        "keywords": ["meaning", "purpose", "spiritual", "meditate", "believe", "faith", "values", "philosophy", "why"],
+        "keywords": [
+            "meaning", "purpose", "spiritual", "meditate", "believe", "faith", "values",
+            "philosophy", "why", "Stoicism", "Objectivism", "mortality", "death", "atheist",
+            "agnostic", "grateful", "mindful", "presence", "consciousness", "awareness",
+            "reflection", "journal", "prayer", "soul", "sacred", "existential", "void",
+            "enlightenment", "wisdom", "truth",
+        ],
         "question_angle": "what gives their life meaning beyond accomplishment",
         "vectors": ["identity", "metaphor", "confession"],
         "listen_for": "Whether they've examined their beliefs or inherited them. Self-chosen vs. default worldview.",
+        "depth_missing": {
+            "low": "whether they think about meaning at all",
+            "medium": "what framework they use to navigate life, sources of meaning beyond work",
+            "high": "existential tensions they sit with, how their worldview has evolved, relationship with uncertainty",
+        },
     },
     "creative_expression": {
         "label": "Creative Expression",
-        "keywords": ["creative", "art", "music", "writing", "design", "build", "project", "create", "maker", "content"],
+        "keywords": [
+            "creative", "art", "music", "writing", "design", "build", "project", "create",
+            "maker", "content", "book", "wrote", "author", "podcast", "film", "photography",
+            "draw", "paint", "code", "app", "website", "brand", "product", "ship", "launch",
+            "studio", "gallery", "perform", "compose", "craft", "DIY",
+        ],
         "question_angle": "how they express their inner world externally",
         "vectors": ["sensory_imagination", "metaphor", "identity"],
         "listen_for": "Whether creativity is a practice or a wish. Do they make things or just think about making things?",
+        "depth_missing": {
+            "low": "whether they create anything",
+            "medium": "what drives their creative impulse, relationship between creating and identity",
+            "high": "creative blocks and breakthroughs, what they're afraid to make, the gap between vision and output",
+        },
     },
     "growth_edge": {
         "label": "Growth Edge",
-        "keywords": ["stuck", "change", "growth", "improve", "learn", "goal", "dream", "ambition", "potential", "fear"],
+        "keywords": [
+            "stuck", "change", "growth", "improve", "learn", "goal", "dream", "ambition",
+            "potential", "fear", "comfort zone", "scared", "nervous", "first time", "lessons",
+            "flight lessons", "pilot", "learning", "beginner", "practice", "master", "skill",
+            "edge", "stretch", "challenge", "risk", "leap", "evolve", "transform",
+            "breakthrough", "plateau",
+        ],
         "question_angle": "where they're expanding and what's holding them back",
         "vectors": ["trajectory", "contradiction", "permission"],
         "listen_for": "The thing they know they need to do but haven't. The unnamed resistance.",
+        "depth_missing": {
+            "low": "whether they're actively growing in any direction",
+            "medium": "specific growth edges, what resistance looks like, what they're avoiding",
+            "high": "pattern of growth vs. retreat over their life, relationship between fear and desire, meta-awareness of their own edge",
+        },
     },
     "fun_and_play": {
         "label": "Fun & Play",
-        "keywords": ["fun", "play", "adventure", "travel", "hobby", "game", "enjoy", "laugh", "weekend"],
+        "keywords": [
+            "fun", "play", "adventure", "travel", "hobby", "game", "enjoy", "laugh",
+            "weekend", "basketball", "surf", "hike", "concert", "festival", "road trip",
+            "spontaneous", "bucket list", "explore", "dance", "music", "party", "beach",
+            "vacation", "ski", "camp", "fishing", "golf", "tennis", "swim", "dive",
+        ],
         "question_angle": "capacity for joy and unstructured living",
         "vectors": ["absurdity", "name_an_example", "sensory_imagination"],
         "listen_for": "When was the last time they did something just because it was fun? Guilt-free play is revealing.",
+        "depth_missing": {
+            "low": "what they do for fun",
+            "medium": "whether play is regular or rare, guilt around unproductive time, what lights them up",
+            "high": "relationship between play and purpose, whether fun requires permission, childlike wonder vs. adult obligation",
+        },
     },
     "past_wounds": {
         "label": "Past & Wounds",
-        "keywords": ["trauma", "hurt", "pain", "loss", "grief", "regret", "mistake", "failed", "broke"],
+        "keywords": [
+            "trauma", "hurt", "pain", "loss", "grief", "regret", "mistake", "failed",
+            "broke", "breakup", "divorce", "death", "therapy", "forgive", "resentment",
+            "childhood", "abandoned", "betrayed", "trust issues", "heartbreak", "rehab",
+            "recovery", "sobriety", "addiction", "abuse", "bully", "shame", "guilt",
+            "apology", "closure",
+        ],
         "question_angle": "how the past lives in their present",
         "vectors": ["confession", "time", "permission"],
         "listen_for": "Whether wounds have been processed or just buried. Integration vs. avoidance.",
+        "depth_missing": {
+            "low": "whether they carry significant past pain",
+            "medium": "specific wounds and how they've been processed, what triggers remain",
+            "high": "how wounds have shaped their worldview and relationships, integration vs. avoidance patterns, growth from suffering",
+        },
     },
 }
 
+# ---------------------------------------------------------------------------
+# Depth-scoring markers for detect_gaps_deep
+# ---------------------------------------------------------------------------
 
-def detect_gaps(memory_text: str, agent_gaps: list[str]) -> list[dict]:
-    """Detect what the agent doesn't know about its human."""
+EMOTIONAL_MARKERS = [
+    "love", "loves", "loved", "hate", "hates", "hated",
+    "struggle", "struggles", "struggled", "fear", "fears", "afraid",
+    "excited", "thrilled", "passionate", "obsessed", "committed",
+    "hurt", "broken", "healed", "healing", "processing",
+    "deeply", "intensely", "genuinely", "desperately",
+    "miss", "misses", "missed", "regret", "regrets",
+    "proud", "ashamed", "guilty", "grateful", "resentful",
+    "anxious", "worried", "stressed", "overwhelmed", "peaceful",
+    "happy", "sad", "angry", "frustrated", "content",
+    "lonely", "connected", "fulfilled", "empty", "alive",
+    "spiritual", "meaningful", "purposeful", "lost", "found",
+]
+
+SPECIFICITY_MARKERS_PATTERNS = [
+    r'\b\d+\b',           # numbers
+    r'\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b',
+    r'\b\d{4}\b',         # years
+    r'\b[A-Z][a-z]+\b',   # proper nouns (approximate)
+    r'\$\d+',             # dollar amounts
+    r'\b\d+%',            # percentages
+]
+
+RELATIONSHIP_MARKERS = [
+    "with", "because", "after", "despite", "although", "since", "when",
+    "before", "until", "unless", "while", "through", "between",
+    "together", "apart", "against", "toward", "away from",
+]
+
+
+def _score_domain_depth(domain_id: str, domain: dict, memory_text: str, memory_lower: str) -> tuple[int, str]:
+    """Score how deeply a domain is covered in the memory text (0-10).
+
+    Returns (depth_score, gap_detail_description).
+    """
+    keywords = domain["keywords"]
+
+    # 1. keyword breadth — unique keywords matched
+    matched_keywords = [kw for kw in keywords if kw in memory_lower]
+    keyword_count = len(matched_keywords)
+
+    if keyword_count == 0:
+        missing_desc = domain.get("depth_missing", {}).get("low", f"basic information about {domain['label'].lower()}")
+        return 0, f"{domain['label']} — no information at all. Missing: {missing_desc}"
+
+    # 2. sentence richness — total char length of sentences containing any keyword
+    # Split on sentence-ish boundaries
+    sentences = re.split(r'(?<=[.!?])\s+|\n', memory_text)
+    relevant_chars = 0
+    relevant_sentences = []
+    for sent in sentences:
+        sent_lower = sent.lower()
+        if any(kw in sent_lower for kw in matched_keywords):
+            relevant_chars += len(sent)
+            relevant_sentences.append(sent)
+
+    relevant_text = " ".join(relevant_sentences)
+    relevant_lower = relevant_text.lower()
+
+    # 3. emotional markers near domain keywords
+    emotional_marker_count = sum(1 for em in EMOTIONAL_MARKERS if em in relevant_lower)
+
+    # 4. specificity markers near domain keywords
+    specificity_marker_count = 0
+    for pattern in SPECIFICITY_MARKERS_PATTERNS:
+        specificity_marker_count += len(re.findall(pattern, relevant_text))
+    # Cap to avoid proper-noun pattern dominating
+    specificity_marker_count = min(specificity_marker_count, 15)
+
+    # 5. Score formula
+    base = min(3, keyword_count)                          # 0-3 from keyword breadth
+    richness_bonus = min(3, relevant_chars / 150)         # 0-3 from content volume
+    emotional_bonus = min(2, emotional_marker_count)      # 0-2 from emotional depth
+    specificity_bonus = min(2, specificity_marker_count)  # 0-2 from concrete details
+    depth_score = min(10, int(base + richness_bonus + emotional_bonus + specificity_bonus))
+
+    # 6. Build gap_detail based on depth
+    depth_missing = domain.get("depth_missing", {})
+    if depth_score <= 3:
+        level = "low"
+        detail_prefix = f"mentioned in passing ({', '.join(matched_keywords[:3])})"
+    elif depth_score <= 6:
+        level = "medium"
+        detail_prefix = f"some factual detail present ({keyword_count} keywords, {relevant_chars} chars of context)"
+    else:
+        level = "high"
+        detail_prefix = f"well understood ({keyword_count} keywords, emotional + specific detail present)"
+
+    missing_desc = depth_missing.get(level, f"deeper exploration of {domain['label'].lower()}")
+    gap_detail = f"{domain['label']} — {detail_prefix}, but still missing: {missing_desc}"
+
+    return depth_score, gap_detail
+
+
+def detect_gaps(memory_text: str, agent_gaps: list[str]) -> tuple[list[dict], list[str]]:
+    """Detect what the agent doesn't know about its human using depth scoring.
+
+    Returns (gaps, covered) where:
+    - gaps: list of gap dicts with depth-aware priority and detail
+    - covered: list of domain_ids with depth >= 1 (backward compat)
+    """
     memory_lower = memory_text.lower()
-    
+
     gaps = []
     covered = []
-    
+
     for domain_id, domain in LIFE_DOMAINS.items():
-        domain_mentioned = any(kw in memory_lower for kw in domain["keywords"])
-        
-        if domain_mentioned:
+        depth_score, gap_detail = _score_domain_depth(domain_id, domain, memory_text, memory_lower)
+
+        # Any mention at all counts as "covered" for backward compat
+        if depth_score >= 1:
             covered.append(domain_id)
+
+        # Determine priority from depth score
+        if depth_score == 0:
+            priority = "critical"
+        elif depth_score <= 3:
+            priority = "high"
+        elif depth_score <= 6:
+            priority = "medium"
         else:
-            gaps.append({
-                "domain": domain_id,
-                "label": domain["label"],
-                "question_angle": domain["question_angle"],
-                "vectors": domain["vectors"],
-                "listen_for": domain["listen_for"],
-                "priority": "high" if domain_id in ["daily_routines", "growth_edge", "career_direction"] else "medium",
-            })
-    
+            priority = "low"
+
+        # ALL domains get a gap entry (even well-covered ones get "low" priority probes)
+        gaps.append({
+            "domain": domain_id,
+            "label": domain["label"],
+            "question_angle": domain["question_angle"],
+            "vectors": domain["vectors"],
+            "listen_for": domain["listen_for"],
+            "priority": priority,
+            "input_depth_score": depth_score,
+            "gap_detail": gap_detail,
+        })
+
     # Also include any agent-declared gaps
     for gap_text in agent_gaps:
         gaps.append({
@@ -1651,12 +1898,17 @@ def detect_gaps(memory_text: str, agent_gaps: list[str]) -> list[dict]:
             "vectors": ["specificity", "name_an_example", "self_assessment"],
             "listen_for": f"Direct answer to: {gap_text}",
             "priority": "high",
+            "input_depth_score": 0,
+            "gap_detail": f"Agent-declared gap: {gap_text}",
         })
-    
-    # Sort: high priority first, then by how fundamental the domain is
-    priority_order = {"high": 0, "medium": 1, "low": 2}
-    gaps.sort(key=lambda g: priority_order.get(g["priority"], 1))
-    
+
+    # Sort: critical first, then high, medium, low
+    priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    gaps.sort(key=lambda g: (priority_order.get(g["priority"], 2), -g.get("input_depth_score", 0)))
+
+    # Filter out low-priority gaps (depth >= 7) unless there are fewer than count gaps above them
+    # Keep them in the list but push to end — the caller picks top N anyway
+
     return gaps, covered
 
 
@@ -2062,11 +2314,11 @@ def generate_predictive_insights(profile: dict, analysis: dict) -> list[Predicti
 
 
 def analyze_for_agent(req: "AskRequest") -> dict:
-    """Full analysis: themes, emotions, gaps, vector recommendations."""
+    """Full analysis: themes, emotions, gaps, vector recommendations with depth scoring."""
     memory_text = flatten_known(req)
     memory_lower = memory_text.lower()
-    
-    # Detect themes present
+
+    # Detect themes present (richer keyword matching via LIFE_DOMAINS)
     themes = []
     theme_keywords = {
         "career": ["work", "job", "career", "boss", "company", "startup", "business"],
@@ -2083,7 +2335,7 @@ def analyze_for_agent(req: "AskRequest") -> dict:
     for theme, kws in theme_keywords.items():
         if any(kw in memory_lower for kw in kws):
             themes.append(theme)
-    
+
     # Detect emotional signals
     emotional_signals = []
     emotion_kws = {
@@ -2098,10 +2350,28 @@ def analyze_for_agent(req: "AskRequest") -> dict:
     for signal, kws in emotion_kws.items():
         if any(kw in memory_lower for kw in kws):
             emotional_signals.append(signal)
-    
-    # Detect gaps
+
+    # Detect gaps with depth scoring
     gaps, covered_domains = detect_gaps(memory_text, req.agent_gaps)
-    
+
+    # Build domain depth scores from gap data
+    domain_depth_scores: dict[str, int] = {}
+    for gap in gaps:
+        if gap["domain"] != "agent_declared":
+            domain_depth_scores[gap["domain"]] = gap.get("input_depth_score", 0)
+
+    # Derived depth analytics
+    total_input_richness = sum(domain_depth_scores.values())
+    sorted_domains = sorted(domain_depth_scores.items(), key=lambda x: x[1], reverse=True)
+    deepest_domains = [
+        {"domain": d, "label": LIFE_DOMAINS[d]["label"], "depth": s}
+        for d, s in sorted_domains[:3] if s > 0
+    ]
+    shallowest_covered_domains = [
+        {"domain": d, "label": LIFE_DOMAINS[d]["label"], "depth": s}
+        for d, s in sorted_domains if 1 <= s <= 3
+    ]
+
     # Detect covered vectors from history
     covered_vectors = set()
     for h in [x.lower() for x in req.history]:
@@ -2110,18 +2380,18 @@ def analyze_for_agent(req: "AskRequest") -> dict:
         if any(w in h for w in ["imagine", "what if", "would you rather"]): covered_vectors.add("hypothetical")
         if any(w in h for w in ["scale of", "1-10"]): covered_vectors.add("self_assessment")
         if any(w in h for w in ["how do you feel"]): covered_vectors.add("emotion")
-    
+
     # Determine depth
     depth = "light" if len(req.history) == 0 else ("deep" if len(req.history) >= 3 else "medium")
     if any(s in emotional_signals for s in ["anxious", "lonely", "conflicted"]):
         depth = "deep"
-    
+
     # Determine goal
     goal = "rapport"
     if len(req.history) == 0: goal = "onboarding"
     elif "stuck" in emotional_signals or "growth" in themes: goal = "coaching"
     elif "career" in themes or "money" in themes: goal = "discovery"
-    
+
     return {
         "memory_text": memory_text,
         "themes": themes,
@@ -2133,6 +2403,11 @@ def analyze_for_agent(req: "AskRequest") -> dict:
         "goal": goal,
         "history_depth": len(req.history),
         "agent_role": req.agent_role,
+        # New depth-aware fields
+        "domain_depth_scores": domain_depth_scores,
+        "total_input_richness": total_input_richness,
+        "deepest_domains": deepest_domains,
+        "shallowest_covered_domains": shallowest_covered_domains,
     }
 
 
@@ -2212,21 +2487,25 @@ def find_corpus_match(vectors: list[str], themes: list[str], history: list[str],
 def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
     """Explain to the agent why this question was chosen."""
     parts = []
-    parts.append(f"Gap targeted: {gap['label']}.")
-    
+    depth_score = gap.get("input_depth_score", 0)
+    parts.append(f"Gap targeted: {gap['label']} (depth {depth_score}/10, priority: {gap.get('priority', 'medium')}).")
+
+    if gap.get("gap_detail"):
+        parts.append(f"What's missing: {gap['gap_detail']}")
+
     if analysis["emotional_signals"]:
         parts.append(f"Emotional context: {', '.join(analysis['emotional_signals'][:2])}.")
-    
+
     vector_names = [VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP]
     parts.append(f"Vectors: {' + '.join(vector_names)}.")
-    
+
     depth_reasons = {
         "light": "First interaction — keeping it approachable.",
         "medium": "Building on existing rapport — balance fun with insight.",
         "deep": "Trust established — going for real territory.",
     }
     parts.append(depth_reasons.get(analysis["depth"], ""))
-    
+
     return " ".join(parts)
 
 
@@ -2318,8 +2597,11 @@ Previous questions: {', '.join(questions_asked[-3:]) if questions_asked else 'No
 
 == THE GAP TO FILL ==
 Gap: {gap.get('label', 'Unknown')}
+Current depth: {gap.get('input_depth_score', 0)}/10
+Priority: {gap.get('priority', 'medium')}
 Why it matters: {gap.get('question_angle', 'Unknown')}
-What we don't know: {gap.get('listen_for', 'General information about this domain')}
+What's missing specifically: {gap.get('gap_detail', gap.get('listen_for', 'General information about this domain'))}
+What to listen for: {gap.get('listen_for', 'General information about this domain')}
 
 == VECTORS TO USE ==
 {chr(10).join(vector_descriptions)}
@@ -2416,8 +2698,8 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                     if gap["domain"] in insight_domains:
                         gap["priority"] = "high"  # Boost priority
                 # Re-sort gaps with boosted priorities
-                priority_order = {"high": 0, "medium": 1, "low": 2}
-                gaps.sort(key=lambda g: priority_order.get(g["priority"], 1))
+                priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+                gaps.sort(key=lambda g: (priority_order.get(g["priority"], 2), -g.get("input_depth_score", 0)))
         
         if not gaps:
             # Agent knows everything (unlikely) — fall back to deepening existing knowledge
@@ -2428,6 +2710,8 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                 "vectors": ["confession", "contradiction", "trajectory"],
                 "listen_for": "New layers beneath what's already been shared.",
                 "priority": "medium",
+                "input_depth_score": 5,
+                "gap_detail": "All domains have some coverage — time to probe for edges, contradictions, and deeper layers.",
             }]
         
         questions = []
