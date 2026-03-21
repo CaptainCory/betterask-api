@@ -142,10 +142,12 @@ def init_db():
         cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_delta ON question_performance(understanding_delta)")
         
         # Add vectors column to existing tables (safe migration)
+        conn.commit()  # Commit everything above first
         try:
             cur.execute("ALTER TABLE questions ADD COLUMN vectors TEXT")
+            conn.commit()
         except psycopg2.Error:
-            pass  # Column already exists
+            conn.rollback()  # Rollback the failed ALTER so connection stays usable
         cur.execute("CREATE INDEX IF NOT EXISTS idx_questions_archetype ON questions(archetype)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_questions_source ON questions(source)")
         conn.commit()
