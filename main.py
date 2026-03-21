@@ -141,6 +141,59 @@ def init_db():
         cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_gap ON question_performance(gap_targeted)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_delta ON question_performance(understanding_delta)")
         
+        # ---------------------------------------------------------------------------
+        # Global Learning Tables — Universal Question Intelligence
+        # ---------------------------------------------------------------------------
+        
+        # Question patterns: reusable templates discovered from effective questions
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS question_patterns (
+                pattern_id TEXT PRIMARY KEY,
+                template TEXT NOT NULL,
+                domain TEXT,
+                context_type TEXT,
+                vectors_used TEXT DEFAULT '[]',
+                avg_effectiveness FLOAT DEFAULT 0,
+                total_improvement FLOAT DEFAULT 0,
+                usage_count INTEGER DEFAULT 0,
+                example_questions TEXT DEFAULT '[]',
+                best_contexts TEXT DEFAULT '[]',
+                status TEXT DEFAULT 'active',
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_effectiveness ON question_patterns(avg_effectiveness DESC)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_domain ON question_patterns(domain)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_qp_context ON question_patterns(context_type)")
+        
+        # Global effectiveness feedback logs — anonymous learning from all users
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS effectiveness_logs (
+                id SERIAL PRIMARY KEY,
+                pattern_id TEXT REFERENCES question_patterns(pattern_id) ON DELETE SET NULL,
+                session_hash TEXT,
+                context_hash TEXT,
+                question_text TEXT,
+                pre_score FLOAT,
+                post_score FLOAT,
+                improvement FLOAT,
+                effectiveness_score FLOAT,
+                engagement_length INTEGER DEFAULT 0,
+                engagement_depth TEXT DEFAULT 'unknown',
+                emotional_resonance FLOAT DEFAULT 0,
+                insight_quality FLOAT DEFAULT 0,
+                context_type TEXT,
+                domain TEXT,
+                vectors_used TEXT DEFAULT '[]',
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_el_pattern ON effectiveness_logs(pattern_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_el_effectiveness ON effectiveness_logs(effectiveness_score)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_el_domain ON effectiveness_logs(domain)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_el_context ON effectiveness_logs(context_type)")
+        
         # Add vectors column to existing tables (safe migration)
         conn.commit()  # Commit everything above first
         try:
@@ -550,6 +603,7 @@ def validate_api_key(x_api_key: str | None) -> dict:
 async def lifespan(app: FastAPI):
     init_db()
     load_corpus()
+    seed_global_patterns()
     yield
 
 
@@ -3578,6 +3632,726 @@ async def privacy_headers_middleware(request: Request, call_next):
     
     return response
 
+
+# ---------------------------------------------------------------------------
+# Global Learning — Universal Question Intelligence
+# ---------------------------------------------------------------------------
+
+# Seed patterns: hand-curated from the best question structures we've observed
+SEED_PATTERNS = [
+    {
+        "pattern_id": "ptn_whats_driving",
+        "template": "What's driving your {focus_area} right now?",
+        "domain": "growth_edge",
+        "context_type": "transition",
+        "vectors_used": ["trajectory", "self_assessment"],
+        "example_questions": [
+            "What's driving your creative surge right now?",
+            "What's driving your career focus right now?",
+            "What's driving your desire to build something new?"
+        ],
+        "best_contexts": ["life_change", "career_transition", "new_goals"]
+    },
+    {
+        "pattern_id": "ptn_regret_not_exploring",
+        "template": "What would you regret not exploring while you're in this {life_phase}?",
+        "domain": "growth_edge",
+        "context_type": "transition",
+        "vectors_used": ["hypothetical", "time", "confession"],
+        "example_questions": [
+            "What would you regret not exploring while you're in this creative flow?",
+            "What would you regret not trying while you still have the energy for it?"
+        ],
+        "best_contexts": ["momentum", "creative_phase", "life_change"]
+    },
+    {
+        "pattern_id": "ptn_feels_right",
+        "template": "How do you know when {decision_type} feels right to you?",
+        "domain": "inner_life",
+        "context_type": "decision",
+        "vectors_used": ["self_assessment", "sensory_imagination", "identity"],
+        "example_questions": [
+            "How do you know when a creative project feels worth pursuing?",
+            "How do you know when a relationship is right?",
+            "How do you know when it's time to quit something?"
+        ],
+        "best_contexts": ["decision_point", "uncertainty", "crossroads"]
+    },
+    {
+        "pattern_id": "ptn_what_does_mean",
+        "template": "What does {goal} mean to you — the outcome or the process?",
+        "domain": "inner_life",
+        "context_type": "discovery",
+        "vectors_used": ["false_binary", "identity", "self_assessment"],
+        "example_questions": [
+            "What does success mean to you — the outcome or the process?",
+            "What does productivity mean to you — more output or more time for what matters?",
+            "What does health mean to you — the numbers or how you feel?"
+        ],
+        "best_contexts": ["goal_setting", "reflection", "coaching"]
+    },
+    {
+        "pattern_id": "ptn_younger_self",
+        "template": "What would {age}-year-old you think of your life right now?",
+        "domain": "inner_life",
+        "context_type": "reflection",
+        "vectors_used": ["time", "perspective_shift", "emotion"],
+        "example_questions": [
+            "What would 10-year-old you think of your life right now?",
+            "What would 20-year-old you think of who you've become?",
+            "What would the version of you from 5 years ago say about today?"
+        ],
+        "best_contexts": ["milestone", "birthday", "life_assessment"]
+    },
+    {
+        "pattern_id": "ptn_protecting",
+        "template": "What are you protecting by keeping your {topic} surface-level?",
+        "domain": "past_wounds",
+        "context_type": "coaching",
+        "vectors_used": ["confession", "permission", "self_assessment"],
+        "example_questions": [
+            "What are you protecting by keeping your relationships surface-level?",
+            "What are you protecting by staying busy all the time?",
+            "What are you protecting by not talking about your family?"
+        ],
+        "best_contexts": ["avoidance_detected", "coaching", "therapy"]
+    },
+    {
+        "pattern_id": "ptn_if_couldnt_fail",
+        "template": "If you knew you couldn't fail at {domain}, what would you try first?",
+        "domain": "creative_expression",
+        "context_type": "discovery",
+        "vectors_used": ["hypothetical", "permission", "identity"],
+        "example_questions": [
+            "If you knew you couldn't fail at creative work, what would you make first?",
+            "If you knew you couldn't fail at relationships, what would you do differently?",
+            "If you knew you couldn't fail at business, what would you build?"
+        ],
+        "best_contexts": ["fear_detected", "creative_block", "stagnation"]
+    },
+    {
+        "pattern_id": "ptn_last_time_felt",
+        "template": "When was the last time you felt genuinely {emotion} — and what were you doing?",
+        "domain": "fun_and_play",
+        "context_type": "rapport",
+        "vectors_used": ["time", "sensory_imagination", "name_an_example"],
+        "example_questions": [
+            "When was the last time you felt genuinely alive — and what were you doing?",
+            "When was the last time you laughed so hard you couldn't breathe?",
+            "When was the last time you completely lost track of time?"
+        ],
+        "best_contexts": ["rapport_building", "stagnation", "depression"]
+    },
+    {
+        "pattern_id": "ptn_who_would_call",
+        "template": "If everything fell apart tomorrow, who's the first person you'd call?",
+        "domain": "relationship_quality",
+        "context_type": "coaching",
+        "vectors_used": ["hypothetical", "other_eyes", "emotion"],
+        "example_questions": [
+            "If everything fell apart tomorrow, who's the first person you'd call?",
+            "Who knows the real version of you — not the public one?",
+            "Who in your life makes you feel most like yourself?"
+        ],
+        "best_contexts": ["social_isolation", "career_focus", "transition"]
+    },
+    {
+        "pattern_id": "ptn_running_from",
+        "template": "What are you running from right now?",
+        "domain": "past_wounds",
+        "context_type": "coaching",
+        "vectors_used": ["confession", "contradiction", "time"],
+        "example_questions": [
+            "What are you running from right now?",
+            "What are you avoiding that you know you need to face?",
+            "What would happen if you stopped running and just stood still?"
+        ],
+        "best_contexts": ["avoidance_detected", "hyperactivity", "future_obsession"]
+    },
+    {
+        "pattern_id": "ptn_changed_mind",
+        "template": "What's something you believed strongly 5 years ago that you've completely changed your mind about?",
+        "domain": "inner_life",
+        "context_type": "rapport",
+        "vectors_used": ["time", "confirmation_trap", "self_assessment"],
+        "example_questions": [
+            "What's something you believed strongly 5 years ago that you've completely changed your mind about?",
+            "What opinion have you held the longest — and have you ever stress-tested it?"
+        ],
+        "best_contexts": ["rapport_building", "intellectual_conversation", "assessment"]
+    },
+    {
+        "pattern_id": "ptn_no_purpose_joy",
+        "template": "When did you last do something with no purpose other than joy?",
+        "domain": "fun_and_play",
+        "context_type": "coaching",
+        "vectors_used": ["time", "permission", "absurdity"],
+        "example_questions": [
+            "When did you last do something with no purpose other than joy?",
+            "What's something you used to love doing that you've stopped making time for?",
+            "If today had no obligations, what would you do by 10am?"
+        ],
+        "best_contexts": ["burnout", "routine_heavy", "achievement_obsession"]
+    },
+    {
+        "pattern_id": "ptn_others_surprised",
+        "template": "What would people who know you be most surprised to learn about you?",
+        "domain": "inner_life",
+        "context_type": "rapport",
+        "vectors_used": ["other_eyes", "confession", "identity"],
+        "example_questions": [
+            "What would people who know you be most surprised to learn about you?",
+            "What's the gap between who people think you are and who you actually are?"
+        ],
+        "best_contexts": ["onboarding", "rapport_building", "identity_exploration"]
+    },
+    {
+        "pattern_id": "ptn_relationship_pattern",
+        "template": "What pattern keeps showing up in your {relationship_type} that you wish would stop?",
+        "domain": "relationship_quality",
+        "context_type": "coaching",
+        "vectors_used": ["trajectory", "confession", "self_assessment"],
+        "example_questions": [
+            "What pattern keeps showing up in your relationships that you wish would stop?",
+            "What's the thing people always say about you after they leave?"
+        ],
+        "best_contexts": ["relationship_discussion", "coaching", "self_reflection"]
+    },
+    {
+        "pattern_id": "ptn_money_disappeared",
+        "template": "If money disappeared tomorrow, what would you do on Monday?",
+        "domain": "financial_reality",
+        "context_type": "coaching",
+        "vectors_used": ["hypothetical", "identity", "confession"],
+        "example_questions": [
+            "If money disappeared tomorrow, what would you do on Monday?",
+            "What would you build if you never needed to monetize it?"
+        ],
+        "best_contexts": ["career_focus", "financial_stress", "identity_exploration"]
+    },
+    {
+        "pattern_id": "ptn_body_telling",
+        "template": "What is your body telling you that your mind keeps ignoring?",
+        "domain": "health_practices",
+        "context_type": "coaching",
+        "vectors_used": ["sensory_imagination", "contradiction", "self_assessment"],
+        "example_questions": [
+            "What is your body telling you that your mind keeps ignoring?",
+            "When does your body feel most like home?",
+            "What does your body know that you haven't admitted yet?"
+        ],
+        "best_contexts": ["health_focus", "burnout", "stress"]
+    },
+    {
+        "pattern_id": "ptn_hard_thing_postponing",
+        "template": "What's the hard thing you keep postponing?",
+        "domain": "growth_edge",
+        "context_type": "coaching",
+        "vectors_used": ["confession", "contradiction", "trajectory"],
+        "example_questions": [
+            "What's the hard thing you keep postponing?",
+            "What conversation are you avoiding that would change everything?",
+            "What's the thing you know you need to do but can't seem to start?"
+        ],
+        "best_contexts": ["stagnation", "avoidance", "comfort_zone"]
+    },
+    {
+        "pattern_id": "ptn_forgive_yourself",
+        "template": "What would forgiving yourself actually look like?",
+        "domain": "past_wounds",
+        "context_type": "coaching",
+        "vectors_used": ["hypothetical", "permission", "sensory_imagination"],
+        "example_questions": [
+            "What would forgiving yourself actually look like?",
+            "What are you still punishing yourself for?",
+            "What mistake taught you the most about who you are?"
+        ],
+        "best_contexts": ["guilt_detected", "past_focused", "healing"]
+    },
+    {
+        "pattern_id": "ptn_stop_and_think",
+        "template": "What question do you wish someone would ask you that nobody ever does?",
+        "domain": "inner_life",
+        "context_type": "rapport",
+        "vectors_used": ["permission", "identity", "confession"],
+        "example_questions": [
+            "What question do you wish someone would ask you that nobody ever does?",
+            "What's the conversation you've been wanting to have but nobody initiates?"
+        ],
+        "best_contexts": ["onboarding", "deep_rapport", "any"]
+    },
+    {
+        "pattern_id": "ptn_direction_moving",
+        "template": "Are you accelerating, decelerating, or coasting right now — and is that on purpose?",
+        "domain": "growth_edge",
+        "context_type": "coaching",
+        "vectors_used": ["trajectory", "self_assessment", "contradiction"],
+        "example_questions": [
+            "Are you accelerating, decelerating, or coasting right now — and is that on purpose?",
+            "If your life had a speedometer, what would it read today vs. six months ago?"
+        ],
+        "best_contexts": ["momentum_check", "transition", "plateau"]
+    },
+]
+
+
+def seed_global_patterns():
+    """Seed the question_patterns table with hand-curated patterns."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) AS cnt FROM question_patterns")
+        count = cur.fetchone()["cnt"]
+        if count > 0:
+            return  # Already seeded
+        
+        for pattern in SEED_PATTERNS:
+            cur.execute("""
+                INSERT INTO question_patterns 
+                    (pattern_id, template, domain, context_type, vectors_used, 
+                     example_questions, best_contexts, avg_effectiveness, usage_count)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (pattern_id) DO NOTHING
+            """, (
+                pattern["pattern_id"],
+                pattern["template"],
+                pattern["domain"],
+                pattern["context_type"],
+                json.dumps(pattern["vectors_used"]),
+                json.dumps(pattern["example_questions"]),
+                json.dumps(pattern["best_contexts"]),
+                0.5,  # Start with neutral effectiveness
+                0
+            ))
+        conn.commit()
+        logger.info("Seeded %d global question patterns", len(SEED_PATTERNS))
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Global Learning Models
+# ---------------------------------------------------------------------------
+
+class GlobalFeedbackRequest(BaseModel):
+    pattern_id: str | None = Field(None, description="Pattern ID if question came from a known pattern")
+    question_text: str = Field(..., description="The actual question that was asked")
+    pre_score: float = Field(..., ge=0, le=1, description="Understanding score before question")
+    post_score: float = Field(..., ge=0, le=1, description="Understanding score after answer")
+    engagement_metrics: dict = Field(default={}, description="Response quality metrics")
+    context_type: str | None = Field(None, description="Context when question was asked")
+    domain: str | None = Field(None, description="Life domain targeted")
+    vectors_used: list[str] = Field(default=[], description="Vectors used in the question")
+
+
+class GlobalFeedbackResponse(BaseModel):
+    success: bool
+    feedback_id: int
+    improvement: float
+    effectiveness_score: float
+    pattern_stats: dict | None = None
+
+
+class EffectivePattern(BaseModel):
+    pattern_id: str
+    template: str
+    domain: str | None
+    context_type: str | None
+    avg_effectiveness: float
+    usage_count: int
+    example_questions: list[str]
+    best_contexts: list[str]
+    vectors_used: list[str]
+
+
+class GlobalInsightsResponse(BaseModel):
+    top_patterns: list[dict]
+    domain_effectiveness: dict
+    context_effectiveness: dict
+    learning_velocity: dict
+    recommendations: list[str]
+
+
+# ---------------------------------------------------------------------------
+# Global Learning Endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/feedback/global", response_model=GlobalFeedbackResponse)
+async def record_global_feedback(req: GlobalFeedbackRequest, x_api_key: str | None = Header(None)):
+    """
+    Record question effectiveness for Universal Question Intelligence.
+    Every interaction makes all future agents better at asking questions.
+    """
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        improvement = req.post_score - req.pre_score
+        
+        # Calculate effectiveness score
+        engagement_score = req.engagement_metrics.get("engagement_score", 0)
+        emotional_score = req.engagement_metrics.get("emotional_score", 0)
+        insight_score = req.engagement_metrics.get("insight_score", 0)
+        response_length = req.engagement_metrics.get("response_length", 0)
+        
+        effectiveness_score = (
+            max(0, improvement) * 0.4 +
+            engagement_score * 0.3 +
+            emotional_score * 0.2 +
+            insight_score * 0.1
+        )
+        effectiveness_score = min(1.0, effectiveness_score)
+        
+        # Determine engagement depth from length
+        if response_length >= 500:
+            engagement_depth = "transformative"
+        elif response_length >= 200:
+            engagement_depth = "deep"
+        elif response_length >= 50:
+            engagement_depth = "medium"
+        else:
+            engagement_depth = "shallow"
+        
+        # Generate anonymous session hash
+        session_hash = hashlib.sha256(
+            (api_key_record["key"] + str(time.time())).encode()
+        ).hexdigest()[:16]
+        
+        # Generate context hash for pattern matching without PII
+        context_features = json.dumps({
+            "context_type": req.context_type,
+            "domain": req.domain,
+            "vectors": sorted(req.vectors_used),
+        }, sort_keys=True)
+        context_hash = hashlib.md5(context_features.encode()).hexdigest()
+        
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            
+            # Insert effectiveness log
+            cur.execute("""
+                INSERT INTO effectiveness_logs 
+                    (pattern_id, session_hash, context_hash, question_text,
+                     pre_score, post_score, improvement, effectiveness_score,
+                     engagement_length, engagement_depth, emotional_resonance,
+                     insight_quality, context_type, domain, vectors_used)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (
+                req.pattern_id, session_hash, context_hash, req.question_text,
+                req.pre_score, req.post_score, improvement, effectiveness_score,
+                response_length, engagement_depth, emotional_score,
+                insight_score, req.context_type, req.domain,
+                json.dumps(req.vectors_used)
+            ))
+            feedback_id = cur.fetchone()["id"]
+            
+            # Update pattern stats if pattern_id provided
+            pattern_stats = None
+            if req.pattern_id:
+                cur.execute("""
+                    UPDATE question_patterns 
+                    SET usage_count = usage_count + 1,
+                        total_improvement = total_improvement + %s,
+                        avg_effectiveness = (
+                            (avg_effectiveness * usage_count + %s) / (usage_count + 1)
+                        ),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE pattern_id = %s
+                    RETURNING usage_count, avg_effectiveness, total_improvement
+                """, (improvement, effectiveness_score, req.pattern_id))
+                
+                updated = cur.fetchone()
+                if updated:
+                    pattern_stats = {
+                        "pattern_id": req.pattern_id,
+                        "usage_count": updated["usage_count"],
+                        "avg_effectiveness": updated["avg_effectiveness"],
+                        "total_improvement": updated["total_improvement"]
+                    }
+            
+            # Auto-discover new patterns from high-effectiveness questions
+            if effectiveness_score >= 0.7 and not req.pattern_id:
+                _try_discover_pattern(cur, req.question_text, req.domain, 
+                                     req.context_type, req.vectors_used, effectiveness_score)
+            
+            conn.commit()
+        finally:
+            conn.close()
+        
+        logger.info("Global feedback recorded: effectiveness=%.2f improvement=%.2f domain=%s",
+                    effectiveness_score, improvement, req.domain)
+        
+        return GlobalFeedbackResponse(
+            success=True,
+            feedback_id=feedback_id,
+            improvement=improvement,
+            effectiveness_score=effectiveness_score,
+            pattern_stats=pattern_stats
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("/feedback/global endpoint error")
+        raise HTTPException(500, f"Feedback recording failed: {str(e)}")
+
+
+def _try_discover_pattern(cur, question_text: str, domain: str | None, 
+                          context_type: str | None, vectors: list[str], 
+                          effectiveness: float):
+    """Try to extract a reusable pattern from a high-performing question."""
+    # Simple template extraction: replace specific nouns/details with placeholders
+    # In production, this would use NLP/LLM for better extraction
+    template = question_text
+    
+    # Only create pattern if we don't already have a very similar one
+    cur.execute("""
+        SELECT pattern_id FROM question_patterns 
+        WHERE domain = %s AND context_type = %s AND status = 'active'
+        LIMIT 20
+    """, (domain, context_type))
+    existing = cur.fetchall()
+    
+    # Simple similarity check: if we have fewer than 20 patterns for this domain+context, add it
+    if len(existing) < 20:
+        pattern_id = f"ptn_discovered_{hashlib.md5(question_text.encode()).hexdigest()[:8]}"
+        try:
+            cur.execute("""
+                INSERT INTO question_patterns 
+                    (pattern_id, template, domain, context_type, vectors_used,
+                     example_questions, best_contexts, avg_effectiveness, usage_count, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 1, 'discovered')
+                ON CONFLICT (pattern_id) DO UPDATE SET
+                    usage_count = question_patterns.usage_count + 1,
+                    avg_effectiveness = (question_patterns.avg_effectiveness + %s) / 2
+            """, (
+                pattern_id, template, domain, context_type,
+                json.dumps(vectors), json.dumps([question_text]),
+                json.dumps([context_type] if context_type else []),
+                effectiveness, effectiveness
+            ))
+            logger.info("Discovered new pattern: %s (effectiveness: %.2f)", pattern_id, effectiveness)
+        except Exception:
+            pass  # Non-critical — don't fail the feedback recording
+
+
+@app.get("/patterns/effective")
+async def get_effective_patterns(
+    domain: str | None = None,
+    context_type: str | None = None,
+    min_effectiveness: float = 0.4,
+    limit: int = 10,
+    x_api_key: str | None = Header(None)
+):
+    """
+    Get the most effective question patterns from global learning.
+    These patterns have been validated across multiple human interactions.
+    """
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            
+            query = """
+                SELECT pattern_id, template, domain, context_type, vectors_used,
+                       avg_effectiveness, usage_count, example_questions, best_contexts
+                FROM question_patterns
+                WHERE status IN ('active', 'discovered')
+                  AND avg_effectiveness >= %s
+            """
+            params = [min_effectiveness]
+            
+            if domain:
+                query += " AND domain = %s"
+                params.append(domain)
+            if context_type:
+                query += " AND context_type = %s"
+                params.append(context_type)
+            
+            query += " ORDER BY avg_effectiveness DESC, usage_count DESC LIMIT %s"
+            params.append(limit)
+            
+            cur.execute(query, params)
+            rows = cur.fetchall()
+            
+            # Get global stats
+            cur.execute("SELECT COUNT(*) AS cnt FROM effectiveness_logs")
+            total_interactions = cur.fetchone()["cnt"]
+            
+            cur.execute("SELECT AVG(effectiveness_score) AS avg FROM effectiveness_logs WHERE effectiveness_score > 0")
+            avg_row = cur.fetchone()
+            global_avg_effectiveness = avg_row["avg"] if avg_row and avg_row["avg"] else 0
+            
+            patterns = []
+            for row in rows:
+                patterns.append({
+                    "pattern_id": row["pattern_id"],
+                    "template": row["template"],
+                    "domain": row["domain"],
+                    "context_type": row["context_type"],
+                    "avg_effectiveness": row["avg_effectiveness"],
+                    "usage_count": row["usage_count"],
+                    "example_questions": json.loads(row["example_questions"]) if row["example_questions"] else [],
+                    "best_contexts": json.loads(row["best_contexts"]) if row["best_contexts"] else [],
+                    "vectors_used": json.loads(row["vectors_used"]) if row["vectors_used"] else [],
+                })
+        finally:
+            conn.close()
+        
+        return {
+            "patterns": patterns,
+            "total_count": len(patterns),
+            "global_avg_effectiveness": global_avg_effectiveness,
+            "total_interactions_analyzed": total_interactions,
+            "filters": {
+                "domain": domain,
+                "context_type": context_type,
+                "min_effectiveness": min_effectiveness
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("/patterns/effective endpoint error")
+        raise HTTPException(500, f"Pattern retrieval failed: {str(e)}")
+
+
+@app.get("/insights/global", response_model=GlobalInsightsResponse)
+async def get_global_insights(x_api_key: str | None = Header(None)):
+    """
+    Global insights about what makes questions effective across all humans.
+    The collective intelligence of every BetterAsk interaction.
+    """
+    api_key_record = validate_api_key(x_api_key)
+    
+    try:
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            
+            # Top patterns by effectiveness
+            cur.execute("""
+                SELECT pattern_id, template, domain, avg_effectiveness, usage_count
+                FROM question_patterns
+                WHERE status IN ('active', 'discovered') AND usage_count > 0
+                ORDER BY avg_effectiveness DESC
+                LIMIT 10
+            """)
+            top_patterns = [dict(r) for r in cur.fetchall()]
+            
+            # Domain effectiveness
+            cur.execute("""
+                SELECT domain, 
+                       AVG(effectiveness_score) AS avg_eff, 
+                       COUNT(*) AS cnt,
+                       AVG(improvement) AS avg_improvement
+                FROM effectiveness_logs
+                WHERE domain IS NOT NULL
+                GROUP BY domain
+                ORDER BY avg_eff DESC
+            """)
+            domain_rows = cur.fetchall()
+            domain_effectiveness = {
+                r["domain"]: {
+                    "avg_effectiveness": round(r["avg_eff"], 3) if r["avg_eff"] else 0,
+                    "interactions": r["cnt"],
+                    "avg_improvement": round(r["avg_improvement"], 3) if r["avg_improvement"] else 0,
+                }
+                for r in domain_rows
+            }
+            
+            # Context effectiveness
+            cur.execute("""
+                SELECT context_type, 
+                       AVG(effectiveness_score) AS avg_eff, 
+                       COUNT(*) AS cnt
+                FROM effectiveness_logs
+                WHERE context_type IS NOT NULL
+                GROUP BY context_type
+                ORDER BY avg_eff DESC
+            """)
+            context_rows = cur.fetchall()
+            context_effectiveness = {
+                r["context_type"]: {
+                    "avg_effectiveness": round(r["avg_eff"], 3) if r["avg_eff"] else 0,
+                    "interactions": r["cnt"],
+                }
+                for r in context_rows
+            }
+            
+            # Learning velocity
+            cur.execute("SELECT COUNT(*) AS cnt FROM effectiveness_logs")
+            total = cur.fetchone()["cnt"]
+            
+            cur.execute("""
+                SELECT COUNT(*) AS cnt FROM effectiveness_logs 
+                WHERE created_at >= (CURRENT_TIMESTAMP - INTERVAL '7 days')::TEXT
+            """)
+            this_week = cur.fetchone()["cnt"]
+            
+            cur.execute("""
+                SELECT COUNT(*) AS cnt FROM question_patterns 
+                WHERE status = 'discovered'
+            """)
+            discovered = cur.fetchone()["cnt"]
+            
+            cur.execute("SELECT COUNT(*) AS cnt FROM question_patterns WHERE status IN ('active', 'discovered')")
+            total_patterns = cur.fetchone()["cnt"]
+            
+        finally:
+            conn.close()
+        
+        # Generate recommendations based on data
+        recommendations = []
+        if domain_effectiveness:
+            best_domain = max(domain_effectiveness.items(), 
+                            key=lambda x: x[1]["avg_effectiveness"], default=None)
+            worst_domain = min(domain_effectiveness.items(), 
+                            key=lambda x: x[1]["avg_effectiveness"], default=None)
+            if best_domain:
+                recommendations.append(
+                    f"Questions about {best_domain[0]} are most effective "
+                    f"({best_domain[1]['avg_effectiveness']:.0%} avg effectiveness)"
+                )
+            if worst_domain and worst_domain[0] != (best_domain[0] if best_domain else None):
+                recommendations.append(
+                    f"Questions about {worst_domain[0]} need improvement "
+                    f"({worst_domain[1]['avg_effectiveness']:.0%} avg effectiveness)"
+                )
+        
+        if not recommendations:
+            recommendations = [
+                "Keep recording feedback to unlock data-driven insights",
+                "More interactions = better question intelligence for everyone"
+            ]
+        
+        return GlobalInsightsResponse(
+            top_patterns=top_patterns,
+            domain_effectiveness=domain_effectiveness,
+            context_effectiveness=context_effectiveness,
+            learning_velocity={
+                "total_interactions": total,
+                "interactions_this_week": this_week,
+                "patterns_discovered": discovered,
+                "total_patterns": total_patterns,
+            },
+            recommendations=recommendations
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("/insights/global endpoint error")
+        raise HTTPException(500, f"Global insights failed: {str(e)}")
+
+
+# ---------------------------------------------------------------------------
+# Static pages
+# ---------------------------------------------------------------------------
 
 @app.get("/privacy", response_class=HTMLResponse)
 @app.get("/privacy.html", response_class=HTMLResponse)
