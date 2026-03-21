@@ -2233,7 +2233,7 @@ def detect_avoidance_patterns(profile: dict) -> list[PredictiveInsight]:
             FROM question_performance
             WHERE understanding_delta IS NOT NULL
             GROUP BY domain_explored
-            HAVING cnt >= 3 AND avg_delta < 0.01
+            HAVING COUNT(*) >= 3 AND AVG(understanding_delta) < 0.01
         """)
         rows = cur.fetchall()
         
