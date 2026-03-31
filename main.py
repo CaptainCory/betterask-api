@@ -2654,10 +2654,11 @@ def find_corpus_match(vectors: list[str], themes: list[str], history: list[str],
         except Exception as e:
             logger.warning("Tagged corpus load failed: %s", e)
     
-    # Fallback: return None so the caller uses the generation prompt instead
-    # Previously this picked a random question, leading to context-mismatched results
-    logger.info("No corpus match found for vectors=%s gap=%s — caller should use generation prompt", vectors, gap_targeted)
-    return None
+    # Fallback: pick from corpus but prefer questions with ANY tag overlap
+    available = [q for q in _corpus if q.lower() not in set(h.lower() for h in history)]
+    if not available:
+        available = list(_corpus)
+    return random.choice(available)
 
 
 def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
@@ -2953,24 +2954,16 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                     top_performing_vectors=top_performing_vectors
                 )
             
-            # When no corpus match, signal to the agent to use the generation_prompt with its own LLM
-            fallback_note = None
-            if not corpus_question:
-                fallback_note = (
-                    "No corpus question matched these vectors. Use the generation_prompt field "
-                    "with your LLM to generate a contextual question for this human."
-                )
-            
             q = AskQuestion(
-                question=corpus_question or f"[Use generation_prompt to create a {gap['label'].lower()} question for this person]",
+                question=corpus_question or "What's something you wish people understood about you without having to explain it?",
                 follow_up=None,
                 vectors=selected,
                 vector_names=vector_names,
                 density=len(selected),
                 gap_targeted=gap["label"],
-                why=why + (f" NOTE: {fallback_note}" if fallback_note else ""),
+                why=why,
                 what_to_listen_for=listen_for,
-                source="corpus" if corpus_question else "generate",
+                source="corpus" if corpus_question else "fallback",
                 generation_prompt=gen_prompt,
                 personalized_prompt=personalized_prompt,  # BUILD 2: Include personalized prompt
             )
