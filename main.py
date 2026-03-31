@@ -2622,11 +2622,10 @@ def find_corpus_match(vectors: list[str], themes: list[str], history: list[str],
                 density = q.get("vector_count", 0)
                 
                 # Performance score (BUILD 1)
-                perf_stats = get_question_performance_stats(q["text"], gap_targeted)
-                proven_delta = perf_stats["avg_delta"] * 100 if perf_stats["times_asked"] > 0 else 0
-                
-                # Exploration bonus for new questions
-                exploration_bonus = 2 if perf_stats["times_asked"] == 0 else 0
+                # Skip per-question DB lookups (was causing 600+ DB round trips = timeout)
+                # Performance scoring will be batch-loaded in a future update
+                proven_delta = 0
+                exploration_bonus = 2  # All questions get exploration bonus until we have perf data
                 
                 # Depth appropriateness (assume medium = 5, deep questions get bonus at conversation_depth > 2)
                 depth_appropriateness = 5
