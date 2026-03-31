@@ -1,0 +1,5648 @@
+{
+  "total_questions": 607,
+  "questions": [
+    {
+      "book": 1,
+      "number": 1,
+      "text": "Imagine you\u2019re holding a box in your hands. Open the lid. What\u2019s in the box?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 2,
+      "text": "In the last 10 days, has time seemed to pass faster or slower than usual?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 3,
+      "text": "A Rocky Mountain town in Colorado announces a new strain of cannabis called Alpine Stone Dust. Your town also announces their new cannabis strain\u2014 and they put you in charge of naming it. What do you call it?",
+      "vectors": [
+        "absurdity",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 4,
+      "text": "Which day of the week fits your personality?",
+      "vectors": [
+        "identity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 5,
+      "text": "Which relative makes the best food dish?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 6,
+      "text": "What was your favorite pet growing up?",
+      "vectors": [
+        "name_an_example",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 7,
+      "text": "What is your current ring tone?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 8,
+      "text": "What does it say about you?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 9,
+      "text": "Do you know the first names of any of your eight great-grandparents?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 10,
+      "text": "Which of these fonts would you put on an outgoing letter?",
+      "vectors": [
+        "identity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 11,
+      "text": "What do you think that says about you?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 12,
+      "text": "If you could play any instrument at a master level, which one would it be?",
+      "vectors": [
+        "name_an_example",
+        "hypothetical"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 13,
+      "text": "If you estimate all the emails you\u2019ll answer in your entire life, are you more than 50% done?",
+      "vectors": [
+        "self_assessment",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 14,
+      "text": "Who owns the right to the space behind the seat on an airplane: the person in front with the button to recline OR the person in back occupying the knee space?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 15,
+      "text": "Name five alternative uses for a brick. Which season fits your personality?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 16,
+      "text": "How many back-and-forth text messages does it take until you think, \u201cWe could have figured this out quicker with a phone call\u201d?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 17,
+      "text": "Which legendary guitarist would you like to perform a solo at your funeral?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 18,
+      "text": "On a scale of 1-10, where 1 = Bob and 10 = \u00a1Xenon!, how bold would you like to be when choosing a child\u2019s name?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 19,
+      "text": "Alexander the Great was so great, they called him \u201cAlexander the Great.\u201d King Richard I was so brave, they named him \u201cRichard the Lionheart.\u201d What will be your epithet?",
+      "vectors": [
+        "identity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 20,
+      "text": "Someone gives you $10,000,000, immortality, and a turtle\u2014but if the turtle touches you, you die. The turtle always knows where you are and will always be slowly making its way toward you. What\u2019s your plan to live forever?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 21,
+      "text": "Where were your old stomping grounds?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 22,
+      "text": "What grounds are you currently stomping?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 23,
+      "text": "Take out your phone. What are your top six most recently used emojis?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 24,
+      "text": "Explain the strangest one. Would you take a 30% pay cut in exchange for Mondays and Fridays off?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 25,
+      "text": "Sir Mix-a-Lot likes big butts and he cannot lie. What do you like so much you cannot lie about it?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 26,
+      "text": "What\u2019s your favorite story that involves a special car?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 27,
+      "text": "Who showed you the ropes on the thing you\u2019re really into?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 28,
+      "text": "Where are you IN YOUR ELEMENT?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 29,
+      "text": "When you smell cigarette smoke, your first thought is what?",
+      "vectors": [
+        "time",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 30,
+      "text": "If you were a cell in the human body, what type of cell would you be?",
+      "vectors": [
+        "hypothetical",
+        "sensory_imagination",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 31,
+      "text": "Which would you appreciate more: one handwritten letter or 10 FaceTime calls?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 32,
+      "text": "If you could give one book as a gift to everyone you know, what would it be?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 33,
+      "text": "Describing it as if it\u2019s a crime, what do you do for a living?",
+      "vectors": [
+        "hypothetical",
+        "perspective_shift"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 34,
+      "text": "What phrase did your mom always say while you were growing up?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 35,
+      "text": "Is it artistic to steal art?",
+      "vectors": [
+        "subversion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 36,
+      "text": "What cacao percentage do you prefer in your chocolate?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 37,
+      "text": "Do you think dark chocolate preference is a strong indicator of emotional maturity?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 38,
+      "text": "What do you remember about your first solo airplane flight?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 39,
+      "text": "Where were you going?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 40,
+      "text": "How many rowdy seven-year-olds would it take to beat you up?",
+      "vectors": [
+        "specificity",
+        "absurdity"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 41,
+      "text": "At the end of the day, is happiness a choice or an experience?",
+      "vectors": [
+        "emotion",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 42,
+      "text": "How many days has it been since you\u2019ve seen the sunrise?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 43,
+      "text": "To the best of your ability, explain how a microwave works. Is the current generation: too naked, the right amount of naked, or not naked enough?",
+      "vectors": [
+        "time",
+        "false_binary",
+        "permission"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 44,
+      "text": "Would it be easier to explain color to a blind person or music to a deaf person?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 45,
+      "text": "Would you rather have a big house on 10 acres in Wyoming OR 1,000 square feet on the 99th floor overlooking Central Park?",
+      "vectors": [
+        "specificity",
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 46,
+      "text": "What do you remember about your high school graduation?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 47,
+      "text": "How many phone numbers do you have memorized?",
+      "vectors": [
+        "specificity",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 48,
+      "text": "How many addresses?",
+      "vectors": [
+        "specificity",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 49,
+      "text": "Would you rather be 12 inches tall or 12 feet tall?",
+      "vectors": [
+        "specificity",
+        "absurdity",
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 5
+    },
+    {
+      "book": 1,
+      "number": 50,
+      "text": "Do you have enough physical space to support your desired level of creativity?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 51,
+      "text": "What does your couch say about you?",
+      "vectors": [
+        "perspective_shift"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 52,
+      "text": "Dali traveled with an ocelot; Elvis famously owned a chimpanzee. What exotic animal would you like to accompany you to showcase your personality?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 53,
+      "text": "To the best of your ability and with as much detail as possible, explain Einstein\u2019s Theory of Relativity. Who is currently winning the battle between you and your phone?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 54,
+      "text": "How might you win the war?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 55,
+      "text": "Would you support a government tracker that observes poor driving habits and suspends the licenses of the lowest-scoring 1% of drivers?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 56,
+      "text": "Of all the cuddling you\u2019ve done in your life, what percentage were you the big spoon vs. the little spoon?",
+      "vectors": [
+        "specificity",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 57,
+      "text": "What seems to last longer: your friendships or romantic relationships?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 58,
+      "text": "If you repeated yesterday 365 more times, where would you be a year from now?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 59,
+      "text": "Is the story of your life more like an epic novel or a book of poems?",
+      "vectors": [
+        "comparison",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 60,
+      "text": "What is a wellness tip that is very SPECIFIC to you?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 61,
+      "text": "Who throws better parties, the rich or the poor?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 62,
+      "text": "It\u2019s your last day on Earth and you get to pick one place to sit for an entire day and watch the world go by. Where do you choose to sit?",
+      "vectors": [
+        "time",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 63,
+      "text": "If you quit everything and applied all your time, talent, and determination to becoming a professional golfer, COULD you succeed?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 64,
+      "text": "What are you trying to communicate by the clothes you\u2019re currently wearing?",
+      "vectors": [
+        "other_eyes"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 65,
+      "text": "Are you more Batman (hero), Robin (sidekick), or Alfred (support)?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 66,
+      "text": "When you check out at a coffee shop and the tip is automatically filled in for 20%, how would you describe this payment feature: a generous design or social extortion?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 67,
+      "text": "Can you teach someone how to kiss?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 68,
+      "text": "It\u2019s your friend\u2019s birthday and you go to the best restaurant in town. They order the $100 steak and ask for a side of ketchup. The server informs them that the chef has elected to not offer ketchup with the steak. Your friend is outraged. Do you side with your friend or with the restaurant?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 69,
+      "text": "If cities were stocks, which one would you buy?",
+      "vectors": [
+        "name_an_example",
+        "hypothetical",
+        "comparison",
+        "metaphor"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 70,
+      "text": "Which one would you sell?",
+      "vectors": [
+        "name_an_example",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 71,
+      "text": "Would you rather have someone pray for you every day for the rest of your life OR give you one really great sandwich right this moment?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 72,
+      "text": "Is your mind more like a hotel, with lots of ideas coming and going, or is it like a bank vault, with a secure door and a strict deposit policy?",
+      "vectors": [
+        "comparison",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 73,
+      "text": "In the art studio of life, do you feel more like the canvas, the paint, or the brush?",
+      "vectors": [
+        "comparison",
+        "emotion",
+        "false_binary",
+        "metaphor"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 74,
+      "text": "Imagine you could only use one type of greeting for the rest of your life. Would you choose: shaking hands, hugging, or bowing?",
+      "vectors": [
+        "hypothetical",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 75,
+      "text": "How many days in the last 30 did you make your bed?",
+      "vectors": [
+        "specificity",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 76,
+      "text": "What are some relationship GREEN flags?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 77,
+      "text": "If someone borrowed your body for a week, what special quirks would you warn them about ahead of time?",
+      "vectors": [
+        "hypothetical",
+        "perspective_shift",
+        "sensory_imagination",
+        "other_eyes"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 78,
+      "text": "Are you a better or worse version of yourself while on vacation?",
+      "vectors": [
+        "self_assessment",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 79,
+      "text": "Why didn\u2019t you quit social media a year ago?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 80,
+      "text": "Do you know the funky chicken?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 81,
+      "text": "Do you know the electric slide?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 82,
+      "text": "Do you know how to walk it out?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 83,
+      "text": "Do you know how to Dougie?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 84,
+      "text": "Do you know how to floss?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 85,
+      "text": "Talent, determination, timing\u2014which combination of TWO do you think gives a person the best chance of being successful?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 86,
+      "text": "What\u2019s your silly and outrageous BUT also semi-serious dream in life (e.g., astronaut, movie star, basketball player)?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 87,
+      "text": "Fill in the blank: I\u2019m really looking forward to a time in my life when . What are you unapologetically nerdy about?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 88,
+      "text": "Is NOW the best time in human history to be really attractive?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 89,
+      "text": "How many times have you moved in the last ten years?",
+      "vectors": [
+        "specificity",
+        "time",
+        "scale"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 90,
+      "text": "How many times would you like to move in the next ten years?",
+      "vectors": [
+        "specificity",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 91,
+      "text": "What addiction do you have in common with the most people on earth?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 92,
+      "text": "If someone decided they no longer wanted to be friends with you, would you rather they break up with you or fade away?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 93,
+      "text": "Are you the same person when your cell phone is in your hand as when your cell phone is in another room?",
+      "vectors": [
+        "contradiction"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 94,
+      "text": "Imagine your thoughts are like plants. Are they in neat rows like a garden or farm?",
+      "vectors": [
+        "hypothetical",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 95,
+      "text": "Or is your mind a forest, with wild things like ferns, weeds, and vines?",
+      "vectors": [
+        "metaphor"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 96,
+      "text": "Or something else?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 97,
+      "text": "If your life were a stovetop, which pursuits are on your two front burners?",
+      "vectors": [
+        "hypothetical",
+        "perspective_shift",
+        "metaphor"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 98,
+      "text": "Which pursuits are on your two back burners?",
+      "vectors": [
+        "metaphor"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 99,
+      "text": "Who have you learned the most from but have never actually met?",
+      "vectors": [
+        "subversion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 100,
+      "text": "Since the internet revolution, has the overall percentage of people who DESERVE their success gone up or down?",
+      "vectors": [
+        "time",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 101,
+      "text": "When you seek change, is it easier to act your way into a new way of thinking, or think your way into a new way of acting?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 102,
+      "text": "A homeless man begs you for money and you give him $5. Later, you see him on the sidewalk enjoying a beer. How do you feel about it?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 103,
+      "text": "Is your life dictated more by wants, needs, or shoulds?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 104,
+      "text": "Is it wise to monetize your passion?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 105,
+      "text": "Are you open to the idea of an open relationship?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 106,
+      "text": "Have you met any of your heroes?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 107,
+      "text": "Imagine your life as a soup that\u2019s been simmering since youth with four special ingredients: a book that shaped your thinking a job that helped you build patience a person who went out of their way to believe in you a city that helped you develop your character What are your four ingredients?",
+      "vectors": [
+        "hypothetical",
+        "sensory_imagination",
+        "metaphor"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 108,
+      "text": "Are you a good friend?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 109,
+      "text": "Are you good at making friends?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 110,
+      "text": "How are these things different or the same?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 111,
+      "text": "Have you spent more time listening or speaking in your life?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 112,
+      "text": "Is it okay to believe in something false, as long as that belief helps you or others in some way?",
+      "vectors": [
+        "subversion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 113,
+      "text": "In the movie of your life, do you feel more like the actor, writer, or executive producer?",
+      "vectors": [
+        "perspective_shift",
+        "comparison",
+        "metaphor"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 114,
+      "text": "What is the most revolutionary social movement you have been a part of?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 115,
+      "text": "Over the course of your life, do you think your name will end up in the media more often or less often than the average person?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment",
+        "time",
+        "comparison"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 116,
+      "text": "Which question do you get asked much more often than you would like?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 117,
+      "text": "On a scale of 1-10, with 10 being the most difficult, how hard would it be for you to sit in a room and do absolutely nothing for 90 minutes?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 118,
+      "text": "In the current season of your life, which are you doing more of: planting seeds or harvesting fruit?",
+      "vectors": [
+        "comparison",
+        "false_binary",
+        "trajectory"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 119,
+      "text": "How many new people do you meet in an average week?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 120,
+      "text": "You have two goals: having a partner to love, and having a big bank account. Which one is better to pursue FIRST?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 121,
+      "text": "What\u2019s a stereotypical joke that is often made about people who share your culture?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 122,
+      "text": "You can go to the settings on your phone to see how full your storage is. How full is your brain\u2019s storage right now?",
+      "vectors": [
+        "specificity",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 123,
+      "text": "The 1920s is known as the Jazz Age and the 1970s is known for the counterculture movement. What will this decade be known for?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 124,
+      "text": "Bill Bryson writes in his book, The Body: \u201cWe make the heart the emotional seat of our being, as when we declare that we love someone with all our heart, or profess a broken heart when they abandon us. Don\u2019t misunderstand me. The heart is a wonderful organ, fully deserving of our praise and gratitude, but it is not invested even slightly in our emotional well-being.\u201d Agree or disagree?",
+      "vectors": [
+        "sensory_imagination",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 125,
+      "text": "How many miles of Instagram feed do you estimate you\u2019ve swiped in your entire life?",
+      "vectors": [
+        "specificity",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 126,
+      "text": "It\u2019s been said that when you\u2019re thinking too little you should probably read, and when you\u2019re thinking too much you should probably write. Which one should you do right now\u2014read or write?",
+      "vectors": [
+        "name_an_example",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 127,
+      "text": "Why are humans so interested in very old things?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 128,
+      "text": "Ten years ago, when you had a big night out, what time would you usually get home?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 129,
+      "text": "Now, when you have a big night out, what time do you get home?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 130,
+      "text": "Overall, is your phone a time-saver or a time-thief?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 131,
+      "text": "Are you more skilled or less skilled than your income currently reflects?",
+      "vectors": [
+        "self_assessment",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 132,
+      "text": "Do memories of your exes fill you with warm nostalgia or chilly anxiety?",
+      "vectors": [
+        "perspective_shift",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 133,
+      "text": "What was your first real taste of independence?",
+      "vectors": [
+        "time",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 134,
+      "text": "Do you think relationships last longer when one partner likes the other just a little more?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 135,
+      "text": "On a scale of 1-10, with 1 being \u201cIt\u2019s fine, let\u2019s just eat and leave,\u201d and 10 being \u201cI\u2019d like to speak with your manager,\u201d where do you place yourself on the entitled customer spectrum?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 136,
+      "text": "If I were to pray for you, what should I pray for?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 137,
+      "text": "What else could go right?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 138,
+      "text": "What is a more EFFECTIVE motivator\u2014shame or praise?",
+      "vectors": [
+        "comparison",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 139,
+      "text": "A credo is defined as a set of guiding principles or beliefs. What is your credo?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 140,
+      "text": "If having children was a product on Amazon, what would be the average review score?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 141,
+      "text": "What would the top result say?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 142,
+      "text": "To what degree is your view of the world warped by your own presence in it?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 143,
+      "text": "(HINT: You\u2019ve never experienced the vibe of a room that doesn\u2019t have you in it.) An inside-out orientation sees identity emerging from within and assumes each person has the liberty to forge their own identity, discover their own values, and choose their own life path. An outside-in perspective sees identity shaped by the social rules of the collective culture to which a person belongs; this person is more focused on their obligation to family and community rather than to themself. On a scale of 1-10, with 1 being totally inside-out and 10 being totally outside-in, where do you fall?",
+      "vectors": [
+        "self_assessment",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 144,
+      "text": "If one extra year at the end of your life was for sale, how much would you be willing to pay for it now?",
+      "vectors": [
+        "specificity",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 145,
+      "text": "What do you invest your time in even though it has zero economic value?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 146,
+      "text": "Assuming consciousness persists throughout all space and time, what feeling or human experience would you bottle up and carry with you for all of eternity?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 147,
+      "text": "You have ten minutes to prepare a one-hour lecture for an attentive audience, on any topic. What topic do you choose?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 148,
+      "text": "Where were you FORGED as a human being?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 149,
+      "text": "What\u2019s more important in a relationship: being the same age as your partner or being raised by parents of the same age?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 150,
+      "text": "What makes someone interesting to you?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 151,
+      "text": "What makes someone boring to you?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 152,
+      "text": "Imagine you committed to one year without using the internet. When the year is up, you find yourself happier and enjoying your new systems for navigating the world. Would going back to the internet make your life better?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 153,
+      "text": "Would you do it?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 154,
+      "text": "What is the best drug in the world?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 155,
+      "text": "In this case, best means it has the most upside and the least downside. What common customs today might be considered inhumane by 2100?",
+      "vectors": [
+        "time",
+        "subversion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 156,
+      "text": "At what age did you experience your biggest physical growth spurt?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 157,
+      "text": "At what age did you have your biggest emotional growth spurt?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 158,
+      "text": "Johnny Appleseed was a prolific spreader of apple seeds. You are a spreader of seeds. (Fill in the blank.) On a scale of 1-10, how lucky are you?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 159,
+      "text": "(You cannot say 7.) Would you rather your kid be the bully or the bullied?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 160,
+      "text": "On a scale of 1-10, how disciplined are you right now?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 161,
+      "text": "(You cannot say 7.) What\u2019s the most disciplined you\u2019ve ever been?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 162,
+      "text": "Do you believe you have the power to change your number?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 163,
+      "text": "On a scale of coffee to cocaine, how addictive is marijuana?",
+      "vectors": [
+        "self_assessment",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 164,
+      "text": "Who is most responsible for the experience of your life?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 165,
+      "text": "Who is second most responsible?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 166,
+      "text": "Do you think cheating is more or less prevalent today than it was for your grandparents\u2019 generation?",
+      "vectors": [
+        "time",
+        "comparison",
+        "permission"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 167,
+      "text": "Which TV dad did you love the most?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 168,
+      "text": "Is alcohol your favorite drug?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 169,
+      "text": "Is it your most consumed drug?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 170,
+      "text": "Why is that the case?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 171,
+      "text": "In what ways does the world pull at you in an attempt to make you NORMAL?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 172,
+      "text": "How much effort does it take to maintain your distinctiveness?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 173,
+      "text": "Do you favor friendships with a shared past or a shared future?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 174,
+      "text": "When you\u2019re going through a slump, which do you prefer: comforters, nudgers, or slappers?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 175,
+      "text": "What doors are opening for you right now?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 176,
+      "text": "In Russian drinking culture, if you break a glass while making a toast, it\u2019s a sign that you need to finally DO that thing you\u2019ve been thinking about doing for a long time. What is that thing for you right now?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 177,
+      "text": "(Cheers!) Are there things that you would like to tell others, but feel it is too risky to share?",
+      "vectors": [
+        "permission",
+        "confession"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 178,
+      "text": "(There is no pressure to share those things now if you\u2019re not ready.) Are you an artist?",
+      "vectors": [
+        "identity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 179,
+      "text": "Why or why not?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 180,
+      "text": "Do you underestimate or overestimate how much YOU contribute to YOUR level of success?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 181,
+      "text": "What\u2019s your least favorite conversation topic?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 182,
+      "text": "Do you believe artists need to suffer in order to make good art?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 183,
+      "text": "In what ways do you help the cowboys sing the blues?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 184,
+      "text": "Are you adding to or subtracting from the cumulative peace of humanity?",
+      "vectors": [
+        "scale"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 185,
+      "text": "Has technology created more independence or dependence? \u201cSo as not to feel the horrible burden of time that breaks your back and bends you to the earth, you have to be continually drunk. But on what?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 186,
+      "text": "Wine, poetry, or virtue, as you wish. But be drunk.\u201d \u2014Charles Baudelaire What are you drunk on?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 187,
+      "text": "If you lost your memory, which three people would you trust to reconstruct the story of your life?",
+      "vectors": [
+        "hypothetical",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 188,
+      "text": "Are you using the internet, or is the internet using you?",
+      "vectors": [
+        "contradiction"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 189,
+      "text": "What is one thing in life right now that you are pretending not to know?",
+      "vectors": [
+        "hypothetical",
+        "permission",
+        "confession"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 190,
+      "text": "Who are your top three suppliers?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 191,
+      "text": "(Of anything, in general.) Is it possible to become more successful than you ever allowed yourself to imagine?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 192,
+      "text": "Should two legally consenting adults be allowed to duel without legal ramifications?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 193,
+      "text": "When was the last time you vomited from drinking?",
+      "vectors": [
+        "time",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 194,
+      "text": "Which has a more divisive effect on humanity: religion or money?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 195,
+      "text": "Think about every desire within you. Let\u2019s pretend POOF, they are ALL realized. How do you feel now?",
+      "vectors": [
+        "hypothetical",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 196,
+      "text": "If you could design the perfect afterlife, what would it look like?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 197,
+      "text": "Would you accept $100/day for the rest of your life if it meant you could not feel drunk or high ever again?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 198,
+      "text": "If everyone in the world was suddenly implanted with your personality, what would the world look like in five years?",
+      "vectors": [
+        "hypothetical",
+        "perspective_shift",
+        "time",
+        "other_eyes"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 199,
+      "text": "Does closure actually make you feel better?",
+      "vectors": [
+        "subversion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 200,
+      "text": "Is it easy or difficult for you to imagine that when you are very old, you\u2019ll be physically attracted to another very old person?",
+      "vectors": [
+        "hypothetical",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 201,
+      "text": "Do you expect life to keep getting better, year after year?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 202,
+      "text": "Do you have full confidence that next year will be better than last year?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 203,
+      "text": "What are the essential characteristics of the place you call home?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 204,
+      "text": "Should the love of your life also be the best sex of your life?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 205,
+      "text": "What do you wish people noticed about you more?",
+      "vectors": [
+        "other_eyes"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 206,
+      "text": "What are you running toward?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 207,
+      "text": "Who has received the MOST of your forgiveness?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 208,
+      "text": "If 1 is resting on your laurels and 10 is the song \u201cEye of the Tiger\u201d from Rocky, what number are you currently?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 209,
+      "text": "There\u2019s a new restaurant called Karma. Instead of ordering from the menu, you get what you deserve. So, what are you getting?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 210,
+      "text": "One person professes to know everything about love. One person professes to know nothing about love. Which person would you rather marry?",
+      "vectors": [
+        "hypothetical",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 211,
+      "text": "When it comes to friendship at this point in your life, are you: looking to hire, or anticipating a few layoffs?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 212,
+      "text": "If you were a life coach and someone handed you your own anonymized file, what would be your first recommendation?",
+      "vectors": [
+        "hypothetical",
+        "perspective_shift",
+        "time",
+        "other_eyes"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 213,
+      "text": "Where did you lose your virginity?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 214,
+      "text": "What privilege do you enjoy the most but definitely don\u2019t deserve?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 215,
+      "text": "If 0 is \u201cgo with the flow,\u201d a canoe on the river of life without a paddle, and 100 is total self-determination, what number are you now?",
+      "vectors": [
+        "specificity",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 216,
+      "text": "Is FALLING in love more like winning the lottery or learning to play the piano?",
+      "vectors": [
+        "comparison",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 217,
+      "text": "Is it okay to consider someone to be YOUR best friend if they don\u2019t consider you THEIR best friend?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 218,
+      "text": "Should all best friending be mutual?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 219,
+      "text": "Imagine your life\u2019s pursuits are plants in a garden. By the time you realized the garden was YOURS, there were already a lot of things growing\u2014trees, flowers, grass, even weeds. Now, you\u2019re the gardener. You get to decide what plants go in it, how big they get, and the complexity of the ecosystem\u2014 and you must tend to it as it grows. Which plants in your garden need more space for growth?",
+      "vectors": [
+        "hypothetical",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 220,
+      "text": "Which ones need to be pruned back?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 221,
+      "text": "Which need to be removed?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 222,
+      "text": "When was the last time you were REALLY angry?",
+      "vectors": [
+        "time",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 223,
+      "text": "How did you express it?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 224,
+      "text": "Imagine a ladder with 10 rungs. 1 represents the worst possible version of your life. 10 represents the best possible version of your life. Which rung are you currently standing on?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 225,
+      "text": "Do you think it\u2019s important to study history?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 226,
+      "text": "When was the last time you slept in the same bed for 60 consecutive days?",
+      "vectors": [
+        "time",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 227,
+      "text": "One part of your body has just been named \u201cBest Body Part of the Year.\u201d Deliver the acceptance speech from the perspective of that body part. In most human stories, you will encounter the hero, villain, guide, and victim. We embody all these roles to SOMEONE, and various people embody all these roles to US. Who plays each of these archetypes in your life?",
+      "vectors": [
+        "perspective_shift",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 228,
+      "text": "What does your \u201cRich Life\u201d look like?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 229,
+      "text": "(Inspired by Ramit Sethi) What\u2019s a personal rule that you allow yourself to break occasionally?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 230,
+      "text": "What\u2019s a personal rule that you REFUSE to break?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 231,
+      "text": "Assuming the two will rarely happen simultaneously in your life, would you rather be right or liked?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 232,
+      "text": "Let\u2019s say your partner upgraded their operating system to include \u201cpuppet mode.\u201d Whenever you activated it, they would do everything you asked for 30 minutes. How many times per week do you estimate you would invoke \u201cpuppet mode?\u201d If it turned out that you were Truman inside The Truman Show\u2014you\u2019ve been starring in a reality show your whole life and everyone you know is an actor\u2014would you be mad?",
+      "vectors": [
+        "specificity",
+        "absurdity",
+        "hypothetical",
+        "metaphor"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 233,
+      "text": "Which casting decisions did the producers get right?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 234,
+      "text": "What did they get wrong?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 235,
+      "text": "As a woman\u2019s career improves, do her romantic options expand or contract?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 236,
+      "text": "What about for a man?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 237,
+      "text": "Which of your exes would you LEAST like to sit next to on a five hour flight?",
+      "vectors": [
+        "perspective_shift"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 238,
+      "text": "If the afterlife were a VIP club and you were the bouncer, what would be your entry requirements?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 239,
+      "text": "What do you hope your partner (or future partner) means when they say \u201cI love you?\u201d Agree or disagree: poor people are essentially to blame for being poor?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 240,
+      "text": "When pain is shared, is it doubled or halved?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 241,
+      "text": "What was your deepest heartbreak experience?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 242,
+      "text": "What did it teach you?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 243,
+      "text": "Are you doing an EXCELLENT job of taking care of yourself?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 244,
+      "text": "Why or why not?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 245,
+      "text": "I don\u2019t want to be perceived as , so I overcompensate by ing too much. (Fill in the blanks.) If your last relationship was a house plant, did it suffer from too much water, not enough water, or perhaps some back-stabbing cactus named Tammy/Tommy?",
+      "vectors": [
+        "metaphor",
+        "other_eyes"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 246,
+      "text": "Word association time! What\u2019s the first thing that comes to mind for the following words: vitamin medicine drug hard drug?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 247,
+      "text": "Which three people have had the greatest effect on your personal philosophy?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 248,
+      "text": "Is guilt an EFFECTIVE tool to prevent bad behavior?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 249,
+      "text": "What are you shocked that you used to believe?",
+      "vectors": [
+        "time",
+        "confirmation_trap",
+        "confession"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 250,
+      "text": "Why do you think you were misguided?",
+      "vectors": [
+        "self_assessment",
+        "confirmation_trap"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 251,
+      "text": "What\u2019s one good habit you are trying to add but for some reason cannot get to stick?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 252,
+      "text": "What\u2019s one bad habit you are trying to remove but for some reason cannot quit completely?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 253,
+      "text": "Philosopher and writer Fran\u00e7ois de La Rochefoucauld said, \u201cThere are some people who would never have fallen in love, if they had not heard there was such a thing.\u201d Do you think he\u2019s right?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 254,
+      "text": "Have you dated any of these people?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 255,
+      "text": "Do you approach the game of life more like a chess player or a poker player?",
+      "vectors": [
+        "comparison",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 256,
+      "text": "If your life suddenly depended on it, how quickly could you make cocaine appear?",
+      "vectors": [
+        "specificity",
+        "absurdity",
+        "hypothetical",
+        "permission"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 1,
+      "number": 257,
+      "text": "Do you think outer beauty is correlated with inner beauty OR are they inversely correlated?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 258,
+      "text": "What recent shift in your life was a long time coming?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 259,
+      "text": "What recent shift in your life appeared suddenly and unexpectedly?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 260,
+      "text": "Scientists just discovered how to make people live forever! You\u2019ve been appointed the Czar of Immortality, but you only have one million doses to administer. What are your selection criteria?",
+      "vectors": [
+        "absurdity",
+        "hypothetical"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 261,
+      "text": "If you could completely redesign the institution of marriage, what would be the new and improved features of Marriage 2.0?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 262,
+      "text": "Close your eyes and draw the letter E on your forehead. Did you draw it so you could see it, or so others could see it?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 263,
+      "text": "What do you think this implies?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 264,
+      "text": "Whose relationship advice do you think is more valuable\u2014a marriage counselor\u2019s or a divorce attorney\u2019s?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 265,
+      "text": "What percentage of who you ARE is derived by what you DO?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 266,
+      "text": "Why are we so obsessed with how we think things SHOULD be rather than just accepting things the way they really are?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 267,
+      "text": "Who would you rather tell your deepest, darkest secrets: your best friend or a stranger at the airport?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "emotion",
+        "false_binary",
+        "permission",
+        "confession"
+      ],
+      "vector_count": 6
+    },
+    {
+      "book": 1,
+      "number": 268,
+      "text": "Would you rather have one AMAZING love for 50 straight years or five AMAZING loves for 10 years each?",
+      "vectors": [
+        "specificity",
+        "hypothetical",
+        "time",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 5
+    },
+    {
+      "book": 1,
+      "number": 269,
+      "text": "If you walked into a room containing everyone you\u2019ve ever met, who would you be looking for?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 270,
+      "text": "What are you addicted to that is perfectly legal?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 271,
+      "text": "If that habit were declared illegal, would it change your consumption?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 272,
+      "text": "Who was your best friend 10 years ago?",
+      "vectors": [
+        "name_an_example",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 273,
+      "text": "Who is your best friend now?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 274,
+      "text": "Who is most likely to be your best friend 10 years from now?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 275,
+      "text": "On a scale of 1-10, how sure are you about what is going on in your freaking life right now?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 276,
+      "text": "(You cannot say 7.) \"Whoa, whoa, you got the best of my love\" are catchy love song lyrics by R&B group The Emotions. Who, unfortunately, got the WORST of your love?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 277,
+      "text": "On a scale of 1-10, if 1 is a completely dusty mirror and 10 is a crystal-clear mirror, how accurately do you see your true self when you look in your mirror?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 278,
+      "text": "What version do you show others?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 279,
+      "text": "If every promise kept represents a deposit, and every failed promise represents a withdrawal, what is the current balance in your personal bank account? intelligent kind beautiful rich great in bed Which THREE of these attributes do you choose for your life partner?",
+      "vectors": [
+        "comparison",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 280,
+      "text": "If you killed someone, would your best friend help you bury the body?",
+      "vectors": [
+        "absurdity",
+        "sensory_imagination",
+        "permission"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 281,
+      "text": "Do you make more decisions based on love or fear?",
+      "vectors": [
+        "comparison",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 282,
+      "text": "One of the cells in your body realizes it is just one tiny component of a greater being. It thinks you are God. It asks you very politely, \u201cGod, how would you like to be worshiped?\u201d How do you answer?",
+      "vectors": [
+        "absurdity",
+        "sensory_imagination",
+        "metaphor"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 283,
+      "text": "What are you running from?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 284,
+      "text": "In our pursuit of mastery, we often inhabit one of three characters: The Dabbler, known for getting very excited about a new training, buying lots of equipment, then losing interest at the first real grind; The Obsessive, who tries so hard that they burn themselves out quickly; or The Hacker, who finds a shortcut to competency, then stays on a plateau because they don\u2019t want to do the REAL work. Which of the three best describes you?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 285,
+      "text": "What do you do more\u2014THINK with your FEELINGS or FEEL with your THOUGHTS? \u201cWhat do you despise?",
+      "vectors": [
+        "comparison",
+        "confession"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 286,
+      "text": "By this you are truly known.\u201d \u2014Frank Herbert, Dune What do YOU despise?",
+      "vectors": [
+        "comparison",
+        "confession"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 287,
+      "text": "Do you fall in love easily?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 288,
+      "text": "Why or why not?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 289,
+      "text": "Do you have a plan in place for the end of your life?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 290,
+      "text": "If you were not allowed to meet new people, which one of your exes would you choose as a life partner?",
+      "vectors": [
+        "name_an_example",
+        "hypothetical",
+        "perspective_shift"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 291,
+      "text": "On a scale of 1-10, how much are YOU in charge of the ways you change?",
+      "vectors": [
+        "specificity",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 292,
+      "text": "Netflix, Spotify, Pinterest, or Pornhub: Which company\u2019s algorithm would you trust the most to choose your next partner?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 293,
+      "text": "Is the most transformative psychedelic experience of your life ahead of you or behind you?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 294,
+      "text": "Variable outcome systems are shown to hook people by delivering rewards in unpredictable patterns, leaving users craving more. (Think slot machines and Instagram.) If you are a good person with good intentions, would it be MORAL to utilize variable outcome theory to \u201chook\u201d a potential partner?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 1,
+      "number": 295,
+      "text": "Adam Smith said, \u201cThe desire for food is limited in every man by the narrow capacity of the human stomach, but the desire for the conveniences and ornaments of building, dress, and household furniture seems to have no limit or boundary.\u201d What annual salary SHOULD fulfill the necessities of life where you live?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 296,
+      "text": "Is love measured more by how much two people contribute to each other\u2019s happiness, or by their capacity to sacrifice for each other?",
+      "vectors": [
+        "specificity",
+        "comparison",
+        "emotion"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 297,
+      "text": "Do things mostly happen for a reason?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 298,
+      "text": "Or is the universe mostly indifferent?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 299,
+      "text": "Are you \u201cgood\u201d at love?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 300,
+      "text": "Share something that no one else knows about you. Which do you value more in a close friend: honesty or loyalty? \u201cWho cares?",
+      "vectors": [
+        "comparison",
+        "false_binary",
+        "confession"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 1,
+      "number": 301,
+      "text": "One day I\u2019ll be dead and no one will remember me anyway.\u201d Does this quote give you existential relief or existential anxiety?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 302,
+      "text": "Have you ever walked away from a relationship while you were still in love?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 303,
+      "text": "If you could communicate with your six-year-old self and tell them not to blame themselves for events that are happening outside of their control, what event would you be talking about?",
+      "vectors": [
+        "hypothetical",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 304,
+      "text": "If you were a teenager in 1930\u2019s Germany, what are the chances you would have been a Nazi?",
+      "vectors": [
+        "hypothetical",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 305,
+      "text": "If you were a rich landowner in the American South in the 1800s, what are the chances you would have owned slaves?",
+      "vectors": [
+        "hypothetical",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 306,
+      "text": "What do you believe will happen after you die?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 307,
+      "text": "Do you think anybody really KNOWS?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 308,
+      "text": "What belief do you hold very strongly?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 309,
+      "text": "What\u2019s the best argument against that belief?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 310,
+      "text": "If you were to die suddenly and meet your maker, would you be proud of the life you\u2019ve led?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 311,
+      "text": "What would be your biggest regret?",
+      "vectors": [
+        "emotion",
+        "confession"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 1,
+      "number": 312,
+      "text": "Hi, I\u2019m Cory Stout, and I'm an optimist. I\u2019m also a writer based in Venice Beach, California, which is mainly where I thought of these questions. I was treasurer of the student council in third grade, and I\u2019m the owner and captain of Woodies sunglasses. My favorite philosopher is Socrates. Find out more about my projects and adventures at corystout.com. Have a question for me?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 1,
+      "number": 313,
+      "text": "Text 407-301-8885",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 1,
+      "text": "Overall, do you think babies are happy or sad?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 2,
+      "text": "What\u2019s a city that you really like but you would NEVER live in?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 3,
+      "text": "Wednesday\u2019s meeting had to be moved forward by 2 days. What day is the meeting happening now?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 4,
+      "text": "If your life depended on it, could you complete a full Ironman triathlon with 1 month of training?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 5,
+      "text": "Humans working in large groups\u2014miraculous or disastrous?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 6,
+      "text": "What\u2019s your favorite COLOR?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 7,
+      "text": "What\u2019s your favorite SOUND?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 8,
+      "text": "What's your favorite SMELL?",
+      "vectors": [
+        "name_an_example",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 9,
+      "text": "The average human takes between 17,280 and 23,040 breaths per day. Which side of the spectrum do you probably lean toward, the slow breathers or the fast breathers?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 10,
+      "text": "What\u2019s more precious in youth\u2014the exhilarating looseness of complete possibility OR the steady grounding of growing up under a loving wing?",
+      "vectors": [
+        "time",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 11,
+      "text": "Which The Office character are you?",
+      "vectors": [
+        "identity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 12,
+      "text": "What\u2019s a world city to which you feel a particular attraction for no apparent reason?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 13,
+      "text": "What\u2019s worse: surrendering or losing?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 14,
+      "text": "Is the game of life more like Yahtzee, Monopoly, or Scrabble?",
+      "vectors": [
+        "comparison",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 15,
+      "text": "How many oysters do you estimate you\u2019ve eaten in your entire life?",
+      "vectors": [
+        "specificity",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 16,
+      "text": "Did you enjoy the taste of your first oyster?",
+      "vectors": [
+        "time",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 17,
+      "text": "Dust versus clutter: Which one can you live with?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 18,
+      "text": "Which one can you not tolerate?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 19,
+      "text": "What\u2019s your process for figuring out where to travel to next?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 20,
+      "text": "What\u2019s your absolute favorite body of water?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 21,
+      "text": "(Be specific.) Do you feel more like a Flintstone or a Jetson?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 22,
+      "text": "People are only rational % of the time. Where in the world do you want to visit JUST to eat their food?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 23,
+      "text": "Do you know your blood type?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 24,
+      "text": "Do you prefer intersections with traffic lights or roundabouts?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 25,
+      "text": "Who is your Mt. Rushmore* of female vocal artists?",
+      "vectors": [
+        "name_an_example",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 26,
+      "text": "* You can list ONLY four. No honorable mentions allowed. So, what is the stock market?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 27,
+      "text": "And what is the economy?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 28,
+      "text": "Where do you see yourself in 5 hours?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 29,
+      "text": "When the Cybertruck came out, did you love it or hate it?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 30,
+      "text": "During a gold rush, do you want to dig for gold or sell shovels?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 31,
+      "text": "Which kind of water are you right now: river, rain, or glacier?",
+      "vectors": [
+        "identity",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 32,
+      "text": "Do you play for Team Silly or Team Serious?",
+      "vectors": [
+        "identity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 33,
+      "text": "Which is more attractive: intelligence or beauty?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 34,
+      "text": "How long do you have to live in a place before you can call it HOME?",
+      "vectors": [
+        "specificity",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 35,
+      "text": "Is the future coming toward us, or are we moving along a timeline toward the future?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 36,
+      "text": "Are you an athlete or an exerciser?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 37,
+      "text": "Are you a flavor taster or a texture taster?",
+      "vectors": [
+        "self_assessment",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 38,
+      "text": "Are you more of a dreamer or a gambler?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 39,
+      "text": "Opposites attract, but do they also adhere?",
+      "vectors": [
+        "subversion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 40,
+      "text": "Are you more likely to climb a mountain or the social ladder?",
+      "vectors": [
+        "self_assessment",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 41,
+      "text": "Is attraction a courtroom or a bingo hall?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 42,
+      "text": "How much do you think you have paid for water over your entire life?",
+      "vectors": [
+        "specificity",
+        "self_assessment",
+        "scale"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 43,
+      "text": "Was it a good bargain?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 44,
+      "text": "What subject have you forgotten the most?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 45,
+      "text": "A group of geese is called a flock. A group of wolves is called a pack. A group of ravens is called a murder. A group of yous is called a ?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 46,
+      "text": "Do you live in a place that people go to or a place that people come from?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 47,
+      "text": "Can you imagine your rent being $100,00 per month in your lifetime?",
+      "vectors": [
+        "hypothetical",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 48,
+      "text": "What\u2019s more important to you: quality time or quantity time?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 49,
+      "text": "During a party, what are you most likely to be doing? talking listening eating Are you more like an oak tree, a tumbleweed, or a dandelion?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 50,
+      "text": "Ignorance is bliss. Knowledge is power. Which do you prefer: bliss or power?",
+      "vectors": [
+        "comparison",
+        "emotion",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 51,
+      "text": "If you arrived at your ideal party, what percentage of people are familiar to you and what percentage are new?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 52,
+      "text": "Do you see yourself more as David or Goliath?",
+      "vectors": [
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 53,
+      "text": "If you get ridiculously rich, your responsibility is to: be generous with your money invent something that helps humanity get richer How many babies have you held in your entire life?",
+      "vectors": [
+        "specificity",
+        "scale"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 54,
+      "text": "Is the news trying to educate you or convince you?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 55,
+      "text": "You can move to any city in the world, but you HAVE to open a cafe. Where do you go?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 56,
+      "text": "Which would you rather be? really interesting really funny really freaking good at what you do Does genius need to be understood to count as true genius?",
+      "vectors": [
+        "hypothetical",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 57,
+      "text": "On a scale of 1 to 10, how aligned are you with the fashion that\u2019s in your closet?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 58,
+      "text": "If you only love until the end of a relationship, did you even love at all?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 59,
+      "text": "Is your life more spartan or sybaritic?* * Sybaris was an ancient Greek city known for its wealth and the lavish lifestyles of its inhabitants, while the city of Sparta has become a symbol of discipline and simple, frugal living. Would you rather be impeccable with your word or somewhat flexible with your word?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 60,
+      "text": "Are you more of a workhorse, racehorse, or show horse?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 61,
+      "text": "What's your high school lore?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 62,
+      "text": "Do you prefer villains that are easy to hate or ones that evoke some sympathy?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 63,
+      "text": "What\u2019s a film that SHOULD make any person cry?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 64,
+      "text": "If you were offered a perfect health algorithm\u2014one that guaranteed maximum longevity and energy\u2014but you had to commit to following it exactly, would you opt in?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 65,
+      "text": "If someone you\u2019ve never met tries to hand you something, should you ever take it?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 66,
+      "text": "Would you rather make a worse decision ahead of schedule, or a better decision behind schedule?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 67,
+      "text": "Do you want more new or more familiar?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 68,
+      "text": "\"There are three kinds of men. The ones that learn by reading. The few who learn by observation. The rest of them have to pee on the electric fence for themselves.\" \u2015Will Rogers Which kind are you?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 69,
+      "text": "Are you more of a smart person or a funny person?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 70,
+      "text": "When would you vote for an AI candidate to be president?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 71,
+      "text": "If Spotify Shuffle is like going on lots of first dates, and Artist Radio is a serious relationship, which musician are you in a full-blown marriage with?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 72,
+      "text": "Do you have any notable music exes?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 73,
+      "text": "What\u2019s something you really love and want to do more of?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 74,
+      "text": "Where are you more focused: realities or possibilities?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 75,
+      "text": "Which is ever so slightly more pleasurable: learning something new or remembering something you forgot?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 76,
+      "text": "What is your best skill that you use the least?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 77,
+      "text": "Your mind is at peace when your body is: at rest in motion Is it possible to get really good at something you don\u2019t even like?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 78,
+      "text": "If you could put one country in charge of the whole world, which one would you choose?",
+      "vectors": [
+        "name_an_example",
+        "hypothetical",
+        "comparison"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 79,
+      "text": "When it comes to knowing when to shut up, are you a novice, pro, or master?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 80,
+      "text": "You have 2 feet. You have the past, the present, and the future. Where are your 2 feet?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 81,
+      "text": "What\u2019s more useful to know for a life in business: ethics or golfing?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 82,
+      "text": "How many items in your home have not been touched in a year?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 83,
+      "text": "Name a few of them. When it comes to motivation, are you a switch (on/off) or a dial (turns up and down)?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 84,
+      "text": "If I cast my net into the sea of your mind, what am I likely to catch?",
+      "vectors": [
+        "hypothetical",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 85,
+      "text": "Are you content to keep up with the Joneses, or do you want to be better than the Joneses?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 86,
+      "text": "If I Google you, what do I find?",
+      "vectors": [
+        "hypothetical",
+        "other_eyes"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 87,
+      "text": "If I ask ChatGPT for your bio, what does it say?",
+      "vectors": [
+        "hypothetical",
+        "sensory_imagination",
+        "other_eyes"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 88,
+      "text": "Why do you live where you live?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 89,
+      "text": "Why did you leave where you left?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 90,
+      "text": "Looking back, do you appreciate your parents lying to you about Santa?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 91,
+      "text": "Are emotions real like concrete, or do they require shared belief, like money?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 92,
+      "text": "Do you think the human capacity for creativity will atrophy with the development of artificial intelligence?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 93,
+      "text": "Or will it somehow strengthen in ways we can\u2019t imagine yet?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 94,
+      "text": "Do endless days of delight produce a life of happiness?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 95,
+      "text": "If you lost your memory, what knowledge would take the longest to relearn?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 96,
+      "text": "Are you looking to profit, or are you looking for a prophet?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 97,
+      "text": "Does life change by design, by effort, or by nature?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 98,
+      "text": "If we simulated your life 1,000 times, how many versions would end up better than this one, and how many would be worse?",
+      "vectors": [
+        "specificity",
+        "hypothetical"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 99,
+      "text": "Are you part of the end of the last generation?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 100,
+      "text": "Or part of the beginning of the next generation?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 101,
+      "text": "What\u2019s your favorite game?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 102,
+      "text": "Does the way you play match your personality?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 103,
+      "text": "How much do your desires govern you? not at all a little too much completely What\u2019s the best thing a person can do to make an idea take root in your mind?",
+      "vectors": [
+        "specificity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 104,
+      "text": "What\u2019s something that was funny when it happened to someone else, and NOT funny when it happened to you?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 105,
+      "text": "Which do you prefer: sense or nonsense?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 106,
+      "text": "Do you think transformative change should be made suddenly or gradually?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 107,
+      "text": "Are you the upper crust or the salt of the earth?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 108,
+      "text": "Do you carry on as if you\u2019ll never die?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 109,
+      "text": "Or do you carry on as if you\u2019ll die any second? 100 years ago, if you had a car you were rich, and if you had a horse you were poor. Today, that\u2019s exactly the opposite. What do rich people use today that only poor people will use in 100 years?",
+      "vectors": [
+        "hypothetical",
+        "time",
+        "subversion"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 110,
+      "text": "What do poor people use today that only rich people will use in 100 years?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 111,
+      "text": "Do you end most of your sentences with a period, an exclamation point, or a question mark?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 112,
+      "text": "Do children have more free will than adults?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 113,
+      "text": "How do you like your gods\u2014highly relatable or incomprehensible?",
+      "vectors": [
+        "absurdity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 114,
+      "text": "What\u2019s the difference between loving someone and having love for someone?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 115,
+      "text": "Does love have more to do with attraction and desire or with communication and commitment?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 116,
+      "text": "Do you think drugs distract, reveal, or enhance?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 117,
+      "text": "How does your \u201cgarden\u201d grow?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 118,
+      "text": "In the game of basketball, are you more of a shooter, passer, or defender?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 119,
+      "text": "In the game of life, are you a shooter, passer, or defender?",
+      "vectors": [
+        "self_assessment",
+        "identity",
+        "metaphor"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 120,
+      "text": "Do you believe that you can ATTRACT the award by rehearsing the acceptance speech?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 121,
+      "text": "Do you want to build a great empire or a lasting one?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 122,
+      "text": "Are you more likely to walk along, walk ahead, or walk alone?",
+      "vectors": [
+        "self_assessment",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 123,
+      "text": "What\u2019s the right amount of wrong for you?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 124,
+      "text": "Do you follow your instincts, or do you follow through on your plans?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 125,
+      "text": "Are you GOOD for the environment?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 126,
+      "text": "Starting now, if you gave up the internet for the rest of your life, do you think you\u2019d live longer than if you kept using it?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 127,
+      "text": "Where does the light go when the candle burns out?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 128,
+      "text": "A cat that dreams of becoming a lion must lose its appetite for rats. What is your \u201crats\u201d?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 129,
+      "text": "Which has had a greater impact on your life: all the books you\u2019ve read or all the music you\u2019ve listened to?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 130,
+      "text": "Why do so many good things happen for you?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 131,
+      "text": "What are your qualms?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 132,
+      "text": "Who has the majority vote for what you will do tomorrow\u2014you or your momentum?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 133,
+      "text": "Are you easy to describe?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 134,
+      "text": "What do you have entirely too much of?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 135,
+      "text": "How do you apply RESTRAINT to your creativity?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 136,
+      "text": "Are you giving your attention?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 137,
+      "text": "Or are \u201cthey\u201d stealing your attention?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 138,
+      "text": "Do you live the majority of your life in your head or your body?",
+      "vectors": [
+        "sensory_imagination"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 139,
+      "text": "What\u2019s the difference between pain and suffering?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 140,
+      "text": "If you keep this up, what are they going to call you the GOAT of?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 141,
+      "text": "Who is your best PIONEER friend?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 142,
+      "text": "What trail did they blaze?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 143,
+      "text": "Do the rules around you feel like chains or tools?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 144,
+      "text": "Do you prefer to race the sun, chase the sun, or face the sun?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 145,
+      "text": "When was the last time you were a Day 1 beginner of something?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 146,
+      "text": "At this point in your journey, is the accumulation of more things a burden or a treasure?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 147,
+      "text": "If some freedom is good, is more freedom always better?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 148,
+      "text": "Do you want more stability in your life or more wandering?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 149,
+      "text": "Can a strong person make a weak person strong?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 150,
+      "text": "Can you tell how honest a person is by how freely their words flow?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 151,
+      "text": "Is capitalism fair?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 152,
+      "text": "Does love have causes that can be identified?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 153,
+      "text": "Are YOU more like a block of marble whose form is revealed through a continual shaving off, or are you more like a mosaic, made of a carefully selected and combined collection of pieces?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity",
+        "metaphor"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 2,
+      "number": 154,
+      "text": "Should you judge people by who they are now or who they aspire to become?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 155,
+      "text": "What do you think the best thing is about being rich?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 156,
+      "text": "When was the last time you had true privacy?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 157,
+      "text": "Are you suffering from privacy deprivation syndrome?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 158,
+      "text": "Are you more attractive or seductive?",
+      "vectors": [
+        "self_assessment",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 159,
+      "text": "Other than your own, whose cause will you fight for?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 160,
+      "text": "Is good taste more a matter of access or preference?",
+      "vectors": [
+        "comparison",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 161,
+      "text": "Are you organizing your life toward expansion or contraction?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 162,
+      "text": "What were you pretty damn good at but haven't done in years?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 163,
+      "text": "Who has the power to SLOW your heartbeat?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 164,
+      "text": "Who needs to keep your name out of their mouth?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 165,
+      "text": "What\u2019s on your \u201cphase-out\u201d list?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 166,
+      "text": "Have you endured more or less than your fair share of challenges?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 167,
+      "text": "Which natural disaster had the most impact on your life?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 168,
+      "text": "What is the current state of your anchor?",
+      "vectors": [
+        "metaphor"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 169,
+      "text": "Is it coiled tightly aboard the ship?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 170,
+      "text": "Is it hanging loose?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 171,
+      "text": "Or is it fully deployed and sturdy?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 172,
+      "text": "Does your happiness grow by addition or subtraction?",
+      "vectors": [
+        "emotion",
+        "false_binary",
+        "trajectory"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 173,
+      "text": "Do you really ENJOY that thing,* or are you suppressing the emerging symptoms of withdrawal?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 174,
+      "text": "* Looking at you, coffee. Do you have a life motto?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 175,
+      "text": "(Attraction) - (Deal Breakers) = Relationship What else would you include in the equation?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 176,
+      "text": "Imagine you had no way of knowing your birthday\u2014how old would you guess you are?",
+      "vectors": [
+        "specificity",
+        "hypothetical"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 177,
+      "text": "Explore, maintain, or optimize\u2014how do you spend the majority of your time?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 178,
+      "text": "Are you living life to the fullest more when you are succeeding or when you are failing?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 179,
+      "text": "Which one of your frenemies really doesn\u2019t deserve the money they have?",
+      "vectors": [
+        "name_an_example",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 180,
+      "text": "Which would be more revealing, someone who could read everything in your mind or everything stored in your phone?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 181,
+      "text": "What\u2019s something you don\u2019t think you\u2019ll ever do again in your life?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 182,
+      "text": "What\u2019s something you make yourself do even though it feels like taking a cheese grater to your brain?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 183,
+      "text": "Is the United States still the best country in the world?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 184,
+      "text": "How much of your iceberg tip is showing?",
+      "vectors": [
+        "specificity",
+        "metaphor"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 185,
+      "text": "Are you more likely to join a cult or lead one?",
+      "vectors": [
+        "self_assessment",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 186,
+      "text": "Is it true that every couple needs someone who is primarily a giver of love and someone who is a receiver of love?",
+      "vectors": [
+        "confirmation_trap"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 187,
+      "text": "Choose one: an ugly ascension or a beautiful decline?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 188,
+      "text": "Is your awakening happening in small incremental ways or huge irreversible ones?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 189,
+      "text": "Is not cheating EXTREMELY easy?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 190,
+      "text": "What are some characteristics of your chosen lifestyle?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 191,
+      "text": "What are some characteristics of your involuntary lifestyle?",
+      "vectors": [
+        "contradiction"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 192,
+      "text": "What motivates you deep down inside?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 193,
+      "text": "Are you one of those people who has a lot of highs and lows, or do you occupy the steady middle?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 194,
+      "text": "What\u2019s your method for verifying incoming information?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 195,
+      "text": "What will be the purpose of humans after the AI superintelligence arrives?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 196,
+      "text": "Would you consent to being lied to as long as the lie is BEAUTIFUL?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 197,
+      "text": "What\u2019s a better representation of a person\u2019s character: how good they are on their good days or how bad they are on their bad days?",
+      "vectors": [
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 198,
+      "text": "What\u2019s the secret to success? correctly deciding what to do correctly deciding what not to do Are you more \u201cyourself\u201d when you\u2019re winning or when you\u2019re losing?",
+      "vectors": [
+        "self_assessment",
+        "comparison"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 199,
+      "text": "Would you rather kill the world to save your brother or kill your brother to save the world?",
+      "vectors": [
+        "absurdity",
+        "hypothetical",
+        "comparison",
+        "false_binary"
+      ],
+      "vector_count": 4
+    },
+    {
+      "book": 2,
+      "number": 200,
+      "text": "In this season of life, are you mostly living, grinding, or surviving?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 201,
+      "text": "Who needs your help, and why are they asking YOU?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 202,
+      "text": "Where do you need to GROW UP?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 203,
+      "text": "Credit where credit is due: What\u2019s something your ex was really good at?",
+      "vectors": [
+        "perspective_shift"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 204,
+      "text": "What would the world look like without right and wrong?",
+      "vectors": [
+        "perspective_shift",
+        "other_eyes"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 205,
+      "text": "If 10 is skydiving with a squirrel suit, and 1 is being assistant to the regional manager at a paper supply company, how fearlessly are you pursuing your own happiness?",
+      "vectors": [
+        "absurdity",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 206,
+      "text": "(You cannot say 7.) What\u2019s stopping you from moving to Thailand and living like absolute royalty?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 207,
+      "text": "What did you dip your toe in that you wish you had dived into?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 208,
+      "text": "What thing do you love that you\u2019re pretty sure is misunderstood by the people around you?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 209,
+      "text": "Achilles had his heel. What\u2019s your signature weakness?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 210,
+      "text": "Can you be in love without being in lust?",
+      "vectors": [
+        "emotion",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 211,
+      "text": "When did you first start waking up?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 212,
+      "text": "What\u2019s one whimsy that you show?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 213,
+      "text": "What\u2019s one whimsy that you conceal?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 214,
+      "text": "When people pass away, do you think their thoughts vanish?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 215,
+      "text": "What\u2019s your superpower?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 216,
+      "text": "What\u2019s your kryptonite?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 217,
+      "text": "Do you want a matching-outfits, tandem-bicycle kind of love?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 218,
+      "text": "Or would you rather be alone?",
+      "vectors": [
+        "hypothetical",
+        "false_binary"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 219,
+      "text": "Who did you shelter with during COVID-19?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 220,
+      "text": "How did that change your relationship?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 221,
+      "text": "Are you over-hated or under-hated?",
+      "vectors": [
+        "other_eyes"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 222,
+      "text": "Does money change people or reveal people?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 223,
+      "text": "Was there a time when you SHOULD have quit but didn\u2019t?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 224,
+      "text": "How\u2019d that work out?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 225,
+      "text": "Does dating feel more like shopping or more like a job interview?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 226,
+      "text": "WHERE is your bliss?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 227,
+      "text": "How do you plan for what you cannot anticipate?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 228,
+      "text": "Do you think you'll ever really UNDERSTAND love?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 229,
+      "text": "What\u2019s your return on investment for all the worrying you\u2019ve done in your life?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 230,
+      "text": "Do you have a dream that\u2019s coming true or close to coming true?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 231,
+      "text": "How well is your genius understood?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 232,
+      "text": "What was the most recent addiction that you overcame?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 233,
+      "text": "Are you a different person when you\u2019re in a different place?",
+      "vectors": [
+        "self_assessment",
+        "contradiction"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 234,
+      "text": "Do you cry enough?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 235,
+      "text": "Have you mostly treated your lovers as homes or hotels?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 236,
+      "text": "What percentage of your potential would you like to realize?",
+      "vectors": [
+        "specificity",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 237,
+      "text": "What do you excuse in yourself that you don\u2019t excuse in others?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 238,
+      "text": "What do you excuse in others that you don\u2019t excuse in yourself?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 239,
+      "text": "Who saw you clearly before you saw yourself?",
+      "vectors": [
+        "other_eyes"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 240,
+      "text": "Have you had any inconvenient attractions in the past year?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 241,
+      "text": "What would you do if you were God?",
+      "vectors": [
+        "absurdity",
+        "hypothetical"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 242,
+      "text": "When did you feel the most STUCK?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 243,
+      "text": "And how did you get unstuck?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 244,
+      "text": "What percentage is your heart open right now?",
+      "vectors": [
+        "specificity",
+        "emotion"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 245,
+      "text": "What\u2019s something true about you today that would have been almost impossible to imagine when you were half your current age?",
+      "vectors": [
+        "hypothetical",
+        "time"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 246,
+      "text": "Are you lighter or heavier in secrets than you were 6 years ago?",
+      "vectors": [
+        "time",
+        "trajectory",
+        "confession"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 247,
+      "text": "Some people say entitled rich kids are born on third base and think they hit a triple. What base were you born on?",
+      "vectors": [
+        "identity"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 248,
+      "text": "What base are you standing on now?",
+      "vectors": [
+        "identity",
+        "trajectory"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 249,
+      "text": "Imagine it\u2019s ancient Greece and you enter a wisdom contest. They ask you to write a sentence that will always be true. What do you write down?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 250,
+      "text": "Were you born for pleasure or for work?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 251,
+      "text": "Who were you 10 years ago?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 252,
+      "text": "The longer you stay on the wrong train, the more expensive it is to get home. Which train did you stay on too long?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 253,
+      "text": "Are strong orgasms a reliable predictor of a good relationship?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 254,
+      "text": "More often than not, do we get what we expect or what we deserve?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 255,
+      "text": "Which is accumulating faster in your life: your desires or your satisfactions?",
+      "vectors": [
+        "false_binary",
+        "trajectory"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 256,
+      "text": "Do you KNOW it?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 257,
+      "text": "Is a flawed marriage an acceptable price for avoiding loneliness?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 258,
+      "text": "Which do you regret more: the bad things you did or the good things you failed to do?",
+      "vectors": [
+        "comparison",
+        "emotion",
+        "false_binary"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 259,
+      "text": "Would you rather be having sex right now?",
+      "vectors": [
+        "hypothetical",
+        "false_binary",
+        "permission"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 260,
+      "text": "Which story, even if it\u2019s true, are you ready to retire?",
+      "vectors": [
+        "hypothetical",
+        "confession"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 261,
+      "text": "What's a difficult, necessary conversation you haven't had yet?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 262,
+      "text": "Have you always been like this?",
+      "vectors": [
+        "time"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 263,
+      "text": "When your present self and future self negotiate, who usually wins?",
+      "vectors": [
+        "trajectory"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 264,
+      "text": "What\u2019s the meanest thing you\u2019ve ever said to someone?",
+      "vectors": [
+        "permission"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 265,
+      "text": "What is something unpleasant that you believe everyone should experience at least once in their lifetime?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 266,
+      "text": "Which fears need facing?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 267,
+      "text": "Would you like to be tortured ONCE before you die?",
+      "vectors": [
+        "absurdity",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 268,
+      "text": "What is the biggest drama in your life right now?",
+      "vectors": [
+        "confession"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 269,
+      "text": "Are you defending any dead versions of yourself?",
+      "vectors": [
+        "contradiction",
+        "confession"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 270,
+      "text": "Why do some people not like you?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 2,
+      "number": 271,
+      "text": "If you could start your life over again, would you plan to live it the same way?",
+      "vectors": [
+        "hypothetical"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 272,
+      "text": "What event split your life into \u201cbefore\u201d and \u201cafter\u201d?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 273,
+      "text": "If you could see yourself as others see you, what would you see?",
+      "vectors": [
+        "hypothetical",
+        "perspective_shift",
+        "other_eyes"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 274,
+      "text": "Is there anybody out there who just hates your guts?",
+      "vectors": [
+        "sensory_imagination",
+        "permission"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 275,
+      "text": "On a scale of 1 to 10, how justified are they?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 276,
+      "text": "What scars do you have from failure?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 277,
+      "text": "If you could live life over again, would you sleep with more people or fewer?",
+      "vectors": [
+        "hypothetical",
+        "comparison",
+        "permission"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 2,
+      "number": 278,
+      "text": "What\u2019s something you promised yourself you\u2019d never become but ended up becoming?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 279,
+      "text": "If all your exes sat at a table to vent about you, what would they all agree on?",
+      "vectors": [
+        "perspective_shift",
+        "other_eyes"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 280,
+      "text": "Does the world seem more or less mysterious than you\u2019d like it to be?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 281,
+      "text": "Life is about stories. What story do you want to tell?",
+      "vectors": [
+        "name_an_example",
+        "self_assessment"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 2,
+      "number": 282,
+      "text": "Hi, I\u2019m Cory Stout, and I'm an optimist. I\u2019m also a writer based in Venice Beach, California, which is mainly where I thought of these questions. I was treasurer of the student council in third grade, and I\u2019m the owner and captain of Woodies sunglasses. My favorite philosopher is Socrates. Find out more about my projects and adventures at corystout.com. Have a question for me?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 2,
+      "number": 283,
+      "text": "Text 407-301-8885",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 3,
+      "number": 1,
+      "text": "\ufeffWould you prefer 1. have nothing to hide, preventing lying 2. Having secrets worth hiding, requiring some lies",
+      "vectors": [
+        "confession"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 3,
+      "number": 2,
+      "text": "In your circle, are your more like a freshman, sophomore, junior, or senior?",
+      "vectors": [
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 3,
+      "number": 3,
+      "text": "From Charles Bukowski\u2013 And when nobody wakes you in the morning, and when nobody waits for you at night, and what you can do whatever you want. What do you call it, freedom or loneliness?",
+      "vectors": [
+        "emotion",
+        "sensory_imagination"
+      ],
+      "vector_count": 2
+    },
+    {
+      "book": 3,
+      "number": 4,
+      "text": "Does it feel wrong to sit still?  Do you feel even slightly guilty if you allow nothing to occupy your mind?",
+      "vectors": [
+        "emotion"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 3,
+      "number": 5,
+      "text": "Is tomorrow going to be a good day?",
+      "vectors": [],
+      "vector_count": 0
+    },
+    {
+      "book": 3,
+      "number": 6,
+      "text": "Are you a maximizer (always chasing better) or a satisficer (contenting yourself with the best option available)?",
+      "vectors": [
+        "self_assessment",
+        "comparison",
+        "identity"
+      ],
+      "vector_count": 3
+    },
+    {
+      "book": 3,
+      "number": 7,
+      "text": "The point of work is to accumulate enough resources so you can go LIVE your life.  Agree or disagree?",
+      "vectors": [
+        "false_binary"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 3,
+      "number": 8,
+      "text": "What did you need to do in your family dynamic to get noticed, cared for, and loved?  Achievement, beauty, or obedience?",
+      "vectors": [
+        "name_an_example"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 3,
+      "number": 9,
+      "text": "Consider your life now. Is it better or worse than you wanted it to be?",
+      "vectors": [
+        "comparison"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 3,
+      "number": 10,
+      "text": "Have you had your best walks with a) absolutely nothing in your pockets or b) just an iPhone in your pockets?",
+      "vectors": [
+        "self_assessment"
+      ],
+      "vector_count": 1
+    },
+    {
+      "book": 3,
+      "number": 11,
+      "text": "In your lifetime of love, have you been more of the object or subject?",
+      "vectors": [
+        "time",
+        "comparison"
+      ],
+      "vector_count": 2
+    }
+  ],
+  "vector_distribution": {
+    "name_an_example": 142,
+    "self_assessment": 120,
+    "comparison": 93,
+    "hypothetical": 71,
+    "time": 52,
+    "false_binary": 50,
+    "emotion": 39,
+    "specificity": 37,
+    "sensory_imagination": 34,
+    "permission": 25,
+    "metaphor": 23,
+    "identity": 21,
+    "absurdity": 20,
+    "perspective_shift": 15,
+    "trajectory": 15,
+    "scale": 13,
+    "other_eyes": 13,
+    "confession": 13,
+    "confirmation_trap": 11,
+    "subversion": 7,
+    "contradiction": 5
+  },
+  "density_distribution": {
+    "0": 63,
+    "1": 342,
+    "2": 147,
+    "3": 41,
+    "4": 11,
+    "5": 3
+  }
+}

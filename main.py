@@ -420,8 +420,8 @@ VECTORS = [
         "id": "other_eyes",
         "name": "Other Eyes",
         "emoji": "👥",
-        "one_liner": "What would they say about you?",
-        "prompt_template": "Introduce another person's perspective on '{about}'. How does someone else experience you? The gap between self-image and how you land on others is where the truth lives."
+        "one_liner": "How do you see yourself through the contrast?",
+        "prompt_template": "Use the contrast between how the person sees themselves and how they might land on others to trigger self-reflection about '{about}'. Don't ask them to read someone else's mind — ask them to examine themselves through the gap between intention and impact."
     },
     {
         "id": "contradiction",
@@ -2654,9 +2654,10 @@ def find_corpus_match(vectors: list[str], themes: list[str], history: list[str],
         except Exception as e:
             logger.warning("Tagged corpus load failed: %s", e)
     
-    # Fallback: random from corpus
-    available = [q for q in _corpus if q.lower() not in set(h.lower() for h in history)]
-    return random.choice(available) if available else random.choice(_corpus)
+    # Fallback: return None so the caller uses the generation prompt instead
+    # Previously this picked a random question, leading to context-mismatched results
+    logger.info("No corpus match found for vectors=%s gap=%s — caller should use generation prompt", vectors, gap_targeted)
+    return None
 
 
 def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
@@ -2952,16 +2953,24 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                     top_performing_vectors=top_performing_vectors
                 )
             
+            # When no corpus match, signal to the agent to use the generation_prompt with its own LLM
+            fallback_note = None
+            if not corpus_question:
+                fallback_note = (
+                    "No corpus question matched these vectors. Use the generation_prompt field "
+                    "with your LLM to generate a contextual question for this human."
+                )
+            
             q = AskQuestion(
-                question=corpus_question or "What's something you wish people understood about you without having to explain it?",
+                question=corpus_question or f"[Use generation_prompt to create a {gap['label'].lower()} question for this person]",
                 follow_up=None,
                 vectors=selected,
                 vector_names=vector_names,
                 density=len(selected),
                 gap_targeted=gap["label"],
-                why=why,
+                why=why + (f" NOTE: {fallback_note}" if fallback_note else ""),
                 what_to_listen_for=listen_for,
-                source="corpus" if corpus_question else "fallback",
+                source="corpus" if corpus_question else "generate",
                 generation_prompt=gen_prompt,
                 personalized_prompt=personalized_prompt,  # BUILD 2: Include personalized prompt
             )
