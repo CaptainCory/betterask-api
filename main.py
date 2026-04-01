@@ -37,7 +37,9 @@ CORPUS_PATH = os.getenv(
 )
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GENERATION_MODEL = os.getenv("GENERATION_MODEL", "gemini-2.0-flash")
+GENERATION_MODEL = os.getenv("GENERATION_MODEL", "gemini-2.5-flash")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-20250514")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
 DATABASE_URL = os.getenv("BETTERASK_DATABASE_URL", os.getenv("DATABASE_URL", ""))
@@ -2689,30 +2691,62 @@ def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
 
 
 def generate_question_via_llm(prompt: str) -> str | None:
-    """Call Gemini to generate a novel question from the generation prompt."""
-    if not GEMINI_API_KEY:
-        logger.warning("No GEMINI_API_KEY set — cannot generate novel questions")
-        return None
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GENERATION_MODEL}:generateContent?key={GEMINI_API_KEY}"
-        payload = {
-            "contents": [{"parts": [{"text": prompt.split("== OUTPUT")[0].strip() + "\n\nNow generate the question. Reply with ONLY the question — no JSON, no explanation, no preamble. Just the question itself, complete and ready to ask. Make it specific, vivid, and impossible to ask anyone else on earth."}]}],
-            "generationConfig": {"temperature": 1.0, "maxOutputTokens": 500, "thinkingConfig": {"thinkingBudget": 0}}
-        }
-        with httpx.Client(timeout=12.0) as client:
-            resp = client.post(url, json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-            # Clean up: remove quotes, trailing periods that aren't question marks
-            text = text.strip('"\'')
-            if text and not text.endswith("?"):
-                text += "?"
-            logger.info(f"LLM generated question: {text[:80]}")
-            return text
-    except Exception as e:
-        logger.warning(f"LLM generation failed: {e}")
-        return None
+    """Generate a novel question. Tries Claude Opus first (beautiful reasoning), Gemini as fallback."""
+    clean_prompt = prompt.split("== OUTPUT")[0].strip()
+    instruction = "\n\nNow generate the question. Reply with ONLY the question — no JSON, no explanation, no preamble. Just the question itself, complete and ready to ask. Make it specific, vivid, and impossible to ask anyone else on earth."
+    
+    # Try Claude Opus first — the mentalist deserves the best model
+    if ANTHROPIC_API_KEY:
+        try:
+            with httpx.Client(timeout=25.0) as client:
+                resp = client.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": ANTHROPIC_API_KEY,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": ANTHROPIC_MODEL,
+                        "max_tokens": 300,
+                        "temperature": 1.0,
+                        "messages": [{"role": "user", "content": clean_prompt + instruction}],
+                    },
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                text = data["content"][0]["text"].strip()
+                text = text.strip('"\'')
+                if text and not text.endswith("?"):
+                    text += "?"
+                logger.info(f"Opus generated question: {text[:80]}")
+                return text
+        except Exception as e:
+            logger.warning(f"Opus generation failed, trying Gemini: {e}")
+    
+    # Fallback to Gemini
+    if GEMINI_API_KEY:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{GENERATION_MODEL}:generateContent?key={GEMINI_API_KEY}"
+            payload = {
+                "contents": [{"parts": [{"text": clean_prompt + instruction}]}],
+                "generationConfig": {"temperature": 1.0, "maxOutputTokens": 500, "thinkingConfig": {"thinkingBudget": 0}}
+            }
+            with httpx.Client(timeout=15.0) as client:
+                resp = client.post(url, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                text = text.strip('"\'')
+                if text and not text.endswith("?"):
+                    text += "?"
+                logger.info(f"Gemini generated question: {text[:80]}")
+                return text
+        except Exception as e:
+            logger.warning(f"Gemini generation also failed: {e}")
+    
+    logger.warning("No LLM available for question generation")
+    return None
 
 
 def build_personalized_generation_prompt(
