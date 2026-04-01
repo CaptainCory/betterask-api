@@ -16,6 +16,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import httpx
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import stripe
@@ -35,6 +36,8 @@ CORPUS_PATH = os.getenv(
     str(Path(__file__).parent / "questions-corpus.txt"),
 )
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GENERATION_MODEL = os.getenv("GENERATION_MODEL", "gemini-2.0-flash")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
 DATABASE_URL = os.getenv("BETTERASK_DATABASE_URL", os.getenv("DATABASE_URL", ""))
@@ -2685,6 +2688,33 @@ def build_agent_why(gap: dict, analysis: dict, vectors: list[str]) -> str:
     return " ".join(parts)
 
 
+def generate_question_via_llm(prompt: str) -> str | None:
+    """Call Gemini to generate a novel question from the generation prompt."""
+    if not GEMINI_API_KEY:
+        logger.warning("No GEMINI_API_KEY set — cannot generate novel questions")
+        return None
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GENERATION_MODEL}:generateContent?key={GEMINI_API_KEY}"
+        payload = {
+            "contents": [{"parts": [{"text": prompt + "\n\nRespond with ONLY the question itself. No preamble, no explanation, no quotes. Just the question."}]}],
+            "generationConfig": {"temperature": 0.9, "maxOutputTokens": 200}
+        }
+        with httpx.Client(timeout=12.0) as client:
+            resp = client.post(url, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+            text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            # Clean up: remove quotes, trailing periods that aren't question marks
+            text = text.strip('"\'')
+            if text and not text.endswith("?"):
+                text += "?"
+            logger.info(f"LLM generated question: {text[:80]}")
+            return text
+    except Exception as e:
+        logger.warning(f"LLM generation failed: {e}")
+        return None
+
+
 def build_personalized_generation_prompt(
     human_profile: dict,   # everything from the profile
     gap: dict,             # the gap being targeted  
@@ -2953,8 +2983,23 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                     top_performing_vectors=top_performing_vectors
                 )
             
+            # Determine the question: corpus match > LLM generation > fallback
+            final_question = corpus_question
+            question_source = "corpus"
+            if not final_question:
+                # Try LLM generation with personalized prompt (preferred) or generation prompt
+                llm_prompt = personalized_prompt or gen_prompt
+                if llm_prompt:
+                    final_question = generate_question_via_llm(llm_prompt)
+                    if final_question:
+                        question_source = "generated"
+                        logger.info(f"Novel question generated for gap={gap['label']}: {final_question[:60]}")
+            if not final_question:
+                final_question = "What's something you wish people understood about you without having to explain it?"
+                question_source = "fallback"
+            
             q = AskQuestion(
-                question=corpus_question or "What's something you wish people understood about you without having to explain it?",
+                question=final_question,
                 follow_up=None,
                 vectors=selected,
                 vector_names=vector_names,
@@ -2962,9 +3007,9 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                 gap_targeted=gap["label"],
                 why=why,
                 what_to_listen_for=listen_for,
-                source="corpus" if corpus_question else "fallback",
+                source=question_source,
                 generation_prompt=gen_prompt,
-                personalized_prompt=personalized_prompt,  # BUILD 2: Include personalized prompt
+                personalized_prompt=personalized_prompt,
             )
             questions.append(q)
             gaps_targeted.append(gap["label"])
