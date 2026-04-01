@@ -1622,7 +1622,7 @@ def promote_high_performing_questions(question_text: str):
         """, (question_text,))
         stats = cur.fetchone()
         
-        if stats and stats["times_asked"] >= 5 and stats["avg_delta"] > 0.05:
+        if stats and stats["times_asked"] >= 2 and stats["avg_delta"] > 0.02:
             # Check if already in corpus
             cur.execute(
                 "SELECT id FROM questions WHERE question = %s", (question_text,)
