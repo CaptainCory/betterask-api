@@ -2993,17 +2993,27 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                     top_performing_vectors=top_performing_vectors
                 )
             
-            # Determine the question: corpus match > LLM generation > fallback
-            final_question = corpus_question
-            question_source = "corpus"
-            if not final_question:
-                # Try LLM generation with personalized prompt (preferred) or generation prompt
-                llm_prompt = personalized_prompt or gen_prompt
-                if llm_prompt:
-                    final_question = generate_question_via_llm(llm_prompt)
-                    if final_question:
-                        question_source = "generated"
-                        logger.info(f"Novel question generated for gap={gap['label']}: {final_question[:60]}")
+            # Determine the question: Mentalist (LLM) is PRIMARY, corpus is inspiration/fallback
+            final_question = None
+            question_source = "generated"
+            
+            # Try Mentalist Method first (LLM generation with personalized or base prompt)
+            llm_prompt = personalized_prompt or gen_prompt
+            if llm_prompt:
+                # Inject a corpus example as inspiration (not the answer, just a reference)
+                if corpus_question:
+                    llm_prompt += f"\n\n== CORPUS INSPIRATION (do NOT copy, use only as a style reference) ==\n\"{corpus_question}\"\nBeat this question. Make it more personal, more specific, more impossible to ask anyone else."
+                final_question = generate_question_via_llm(llm_prompt)
+                if final_question:
+                    logger.info(f"Mentalist question generated for gap={gap['label']}: {final_question[:60]}")
+            
+            # Fallback to corpus if LLM fails or no key
+            if not final_question and corpus_question:
+                final_question = corpus_question
+                question_source = "corpus"
+                logger.info(f"Fell back to corpus for gap={gap['label']}")
+            
+            # Last resort fallback
             if not final_question:
                 final_question = "What's something you wish people understood about you without having to explain it?"
                 question_source = "fallback"
