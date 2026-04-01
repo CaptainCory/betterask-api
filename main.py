@@ -3036,7 +3036,7 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
             if llm_prompt:
                 # Inject a corpus example as inspiration (not the answer, just a reference)
                 if corpus_question:
-                    llm_prompt += f"\n\n== CORPUS INSPIRATION (do NOT copy, use only as a style reference) ==\n\"{corpus_question}\"\nBeat this question. Make it more personal, more specific, more impossible to ask anyone else."
+                    llm_prompt += f"\n\n== STYLE REFERENCE ==\nHere's a question with the right shape and tone:\n\"{corpus_question}\"\nAsk a DIFFERENT question that uses the same structure and energy, but aimed at this specific person's life. Don't try to be cleverer than this example. Match its simplicity."
                 final_question = generate_question_via_llm(llm_prompt)
                 if final_question:
                     logger.info(f"Mentalist question generated for gap={gap['label']}: {final_question[:60]}")
