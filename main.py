@@ -2776,9 +2776,9 @@ def build_personalized_generation_prompt(
     # Get conversation history
     conversation_history = ""
     if "conversation_history" in known_data:
-        recent_convos = known_data["conversation_history"][-5:]  # Last 5 exchanges
+        recent_convos = known_data["conversation_history"][-8:]  # Last 8 exchanges — the full arc
         for convo in recent_convos:
-            conversation_history += f"Q: {convo.get('question', '')}\nA: {convo.get('answer', '')[:200]}...\n\n"
+            conversation_history += f"Q: {convo.get('question', '')}\nA: {convo.get('answer', '')}\n\n"
     
     # Format domains covered
     domains_info = []
@@ -2834,8 +2834,9 @@ Domains covered: {', '.join(domains_info) if domains_info else 'None yet'}
 Questions asked: {len(questions_asked)} total
 Previous questions: {', '.join(questions_asked[-3:]) if questions_asked else 'None'}
 
-== RECENT CONVERSATION ==
-{conversation_history if conversation_history else 'No recent conversation history'}
+== THEIR ACTUAL WORDS (this is your most important input — build on these) ==
+{conversation_history if conversation_history else 'No conversation history yet.'}
+Read their answers carefully. The next question should PULL A THREAD from something they said above — go deeper on a specific phrase, challenge an assumption they made, or ask the follow-up a good friend would ask after hearing that answer.
 
 == THE GAP TO FILL ==
 Gap: {gap.get('label', 'Unknown')}
