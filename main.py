@@ -2852,33 +2852,33 @@ What to listen for: {gap.get('listen_for', 'General information about this domai
 {"Top performing questions for this gap:" if top_questions else "No historical performance data for this gap yet."}
 {chr(10).join([f"'{q['question']}' (delta: {q['avg_delta']:.3f}, depth: {q['depth']})" for q in top_questions]) if top_questions else "This is an opportunity to pioneer effective questions for this gap."}
 
-== THE MENTALIST METHOD ==
-Your job is to ask a question this person has NEVER been asked. Not a template. Not a rephrased corpus question. Something that could only exist because you know THIS person.
+== HOW TO ASK ==
+Ask like a close friend who's known them for years. Not a therapist. Not a journalist. Not a quiz show host.
 
-THE FORMULA:
-1. FIND THE TENSION — Look at what they've revealed. Find two truths that pull in opposite directions. Walk into that crack.
-2. USE A SPECIFIC SCENE — Don't ask "how do you feel about X?" Name a moment from their actual life. Put them back in it. "Standing at [place], holding [thing], when [event happened]..."
-3. OFFER A MIRROR, NOT A QUESTION — Give them a false binary, a comparison, a lens that forces them to see themselves. The answer reveals more than the question asks.
+The best questions sound like they just occurred to you over a drink. Short. Casual. But they land.
 
-EXAMPLES OF THE METHOD:
-- BAD: "How do you feel about risk?" (generic, boring, therapy-speak)
-- GOOD: "When you held Columbo's watch hostage on Kilimanjaro, were you scared or were you finally in your element?" (specific scene + tension + mirror)
-- BAD: "What's important to you in relationships?" (could ask anyone)
-- GOOD: "You said Bambi's message at the summit felt like cotton candy. When was the last time someone's words hit you that hard — and did it scare you?" (their words back at them + emotional probe)
+WHAT MAKES IT GOOD:
+- It touches something real about THIS person — not a generic human
+- It sounds like something you'd actually say out loud
+- The person pauses before answering. Not because it's clever. Because it's true.
+- It's SHORT. 8-15 words is the sweet spot. 20 max.
 
-THE QUESTION MUST:
-- Fill the {gap.get('label', 'gap')} gap using {' + '.join([VECTOR_MAP[v]['name'] for v in vectors if v in VECTOR_MAP])} vectors
-- Reference at least ONE specific detail from their life (a place, a person, a moment, a thing they said)
-- Create a moment where they think "...how did you know to ask THAT?"
-- Be impossible to ask anyone else on earth. This question has ONE audience.
+WHAT MAKES IT BAD:
+- It tries to sound smart or poetic
+- It references too many things at once (don't cram their whole life into one sentence)
+- It sounds like a writing prompt or a therapy exercise
+- It uses words like "journey," "resonate," "navigate," or "unpack"
+- It's longer than two lines
 
-== RULES ==
-- Everyday language, never academic or clinical
-- Specific scenes > abstract concepts (always)
-- The question presents; it never judges
-- Find the tension between things they've said — that's where the gold is
-- If you can't find a tension, use a specific scene + an unexpected angle
-- One sentence. Maybe two. Never three.
+EXAMPLES:
+- BAD: "You've built OpenClaw, written END SMALL TALK, and stand at Uhuru Peak reading cotton candy love notes — so why..." (too much, too cute, too long)
+- GOOD: "What's the last thing you quit that you should've quit sooner?"
+- GOOD: "Do your friends know you're tired of traveling?"
+- GOOD: "When's the last time you were bored? Like actually bored?"
+- GOOD: "What would Aygemang say is your biggest blind spot?"
+
+TARGET: {gap.get('label', 'gap')} gap.
+TONE: Bar conversation, not TED talk. One sentence.
 
 == OUTPUT (JSON) ==
 {{
