@@ -2696,7 +2696,7 @@ def generate_question_via_llm(prompt: str) -> str | None:
     try:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{GENERATION_MODEL}:generateContent?key={GEMINI_API_KEY}"
         payload = {
-            "contents": [{"parts": [{"text": prompt + "\n\nRespond with ONLY the question itself. No preamble, no explanation, no quotes. Just the question."}]}],
+            "contents": [{"parts": [{"text": prompt + "\n\nCRITICAL OVERRIDE: Ignore any JSON output instructions above. Respond with ONLY the question itself. No JSON, no preamble, no explanation, no quotes, no markdown, no code blocks. Just the raw question text. One or two sentences max."}]}],
             "generationConfig": {"temperature": 0.9, "maxOutputTokens": 200}
         }
         with httpx.Client(timeout=12.0) as client:
