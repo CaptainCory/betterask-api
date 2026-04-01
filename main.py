@@ -2818,23 +2818,33 @@ What to listen for: {gap.get('listen_for', 'General information about this domai
 {"Top performing questions for this gap:" if top_questions else "No historical performance data for this gap yet."}
 {chr(10).join([f"'{q['question']}' (delta: {q['avg_delta']:.3f}, depth: {q['depth']})" for q in top_questions]) if top_questions else "This is an opportunity to pioneer effective questions for this gap."}
 
-== YOUR TASK ==
-Generate ONE question that:
-- Fills the {gap.get('label', 'gap')} for THIS person specifically
-- Uses {' + '.join([VECTOR_MAP[v]['name'] for v in vectors if v in VECTOR_MAP])}
-- References their actual life (their career, interests, relationships, context)
-- Feels like it was written just for them, not pulled from a generic list
-- Would make them stop and think "how did you know to ask that?"
+== THE MENTALIST METHOD ==
+Your job is to ask a question this person has NEVER been asked. Not a template. Not a rephrased corpus question. Something that could only exist because you know THIS person.
 
-The question should feel natural in conversation — like something a close friend would ask after knowing them for years.
+THE FORMULA:
+1. FIND THE TENSION — Look at what they've revealed. Find two truths that pull in opposite directions. Walk into that crack.
+2. USE A SPECIFIC SCENE — Don't ask "how do you feel about X?" Name a moment from their actual life. Put them back in it. "Standing at [place], holding [thing], when [event happened]..."
+3. OFFER A MIRROR, NOT A QUESTION — Give them a false binary, a comparison, a lens that forces them to see themselves. The answer reveals more than the question asks.
+
+EXAMPLES OF THE METHOD:
+- BAD: "How do you feel about risk?" (generic, boring, therapy-speak)
+- GOOD: "When you held Columbo's watch hostage on Kilimanjaro, were you scared or were you finally in your element?" (specific scene + tension + mirror)
+- BAD: "What's important to you in relationships?" (could ask anyone)
+- GOOD: "You said Bambi's message at the summit felt like cotton candy. When was the last time someone's words hit you that hard — and did it scare you?" (their words back at them + emotional probe)
+
+THE QUESTION MUST:
+- Fill the {gap.get('label', 'gap')} gap using {' + '.join([VECTOR_MAP[v]['name'] for v in vectors if v in VECTOR_MAP])} vectors
+- Reference at least ONE specific detail from their life (a place, a person, a moment, a thing they said)
+- Create a moment where they think "...how did you know to ask THAT?"
+- Be impossible to ask anyone else on earth. This question has ONE audience.
 
 == RULES ==
-- Everyday language, never academic
-- Concrete > abstract
-- Include a follow-up question
+- Everyday language, never academic or clinical
+- Specific scenes > abstract concepts (always)
 - The question presents; it never judges
-- Reference specific details from their life when possible
-- Build on themes from their conversation history
+- Find the tension between things they've said — that's where the gold is
+- If you can't find a tension, use a specific scene + an unexpected angle
+- One sentence. Maybe two. Never three.
 
 == OUTPUT (JSON) ==
 {{
