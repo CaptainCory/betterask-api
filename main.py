@@ -1757,7 +1757,8 @@ def add_conversation_turn(session_id: str, turn_number: int, question_text: str,
             VALUES (%s, %s, %s, %s, %s)
             RETURNING id
         """, (session_id, turn_number, question_text, json.dumps(vectors), gap_targeted))
-        turn_id = cur.fetchone()[0]
+        row = cur.fetchone()
+        turn_id = row['id'] if row else 0
         conn.commit()
         return turn_id
     finally:
