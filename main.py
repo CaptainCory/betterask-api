@@ -43,8 +43,13 @@ ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-20250514")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
 DATABASE_URL = os.getenv("BETTERASK_DATABASE_URL", os.getenv("DATABASE_URL", ""))
+ADMIN_API_KEY = os.getenv("BETTERASK_ADMIN_KEY", "ba_admin_cory_stout_2026")
 
 stripe.api_key = STRIPE_SECRET_KEY
+
+def is_admin_request(api_key: str) -> bool:
+    """Check if the request is from an admin (gets full internal response)."""
+    return api_key == ADMIN_API_KEY
 
 logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("betterask")
@@ -1517,13 +1522,17 @@ async def health():
 
 
 @app.get("/vectors", response_model=VectorResponse)
-async def get_vectors():
+async def get_vectors(x_api_key: str | None = Header(None)):
+    if not is_admin_request(x_api_key or ""):
+        raise HTTPException(403, "This endpoint requires admin access")
     return {"vectors": VECTORS, "total": len(VECTORS)}
 
 
 @app.get("/archetypes", response_model=ArchetypeResponse)
-async def get_archetypes():
+async def get_archetypes(x_api_key: str | None = Header(None)):
     """Legacy endpoint - use /vectors instead"""
+    if not is_admin_request(x_api_key or ""):
+        raise HTTPException(403, "This endpoint requires admin access")
     # Convert vectors to archetype-like format for backward compatibility
     legacy_archetypes = []
     for vector in VECTORS[:6]:  # Return first 6 for compatibility
@@ -1678,6 +1687,44 @@ class AskResponse(BaseModel):
     gaps_detected: list[str]
     predictive_insights: list[PredictiveInsight] = []
     promo: str | None = None
+
+
+# Public-facing models that strip proprietary methodology
+class PublicQuestion(BaseModel):
+    """Stripped-down question response for public API consumers."""
+    question: str
+    follow_up: str | None = None
+
+
+class PublicAskResponse(BaseModel):
+    """Public-facing response that hides proprietary methodology."""
+    questions: list[PublicQuestion]
+    promo: str | None = None
+
+
+class PublicSessionStartResponse(BaseModel):
+    session_id: str
+    question: PublicQuestion
+    question_number: int
+    total_planned: int
+
+
+class PublicSessionAnswerResponse(BaseModel):
+    session_id: str
+    insight: dict  # Keep insights but strip internal methodology
+    next_question: PublicQuestion | None
+    question_number: int
+    conversation_depth: str
+    non_answer: Optional[dict] = None
+
+
+class PublicSessionSummaryResponse(BaseModel):
+    session_id: str
+    session_status: str
+    questions_answered: int
+    structural_insights: list[str]
+    personality_sketch: str
+    suggested_followup: list[str]
 
 
 class LearnRequest(BaseModel):
@@ -3576,7 +3623,7 @@ TONE: Bar conversation, not TED talk. One sentence.
 # Conversation Mode Endpoints
 # ---------------------------------------------------------------------------
 
-@app.post("/session/start", response_model=SessionStartResponse)
+@app.post("/session/start")
 async def start_conversation_session(req: SessionStartRequest, x_api_key: str = Header(...)):
     """Start a new conversation session."""
     
@@ -3687,6 +3734,17 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
         # Record the first turn
         add_conversation_turn(session_id, 1, question.question, vectors, question.gap_targeted)
         
+        # Check if admin - if not, strip proprietary methodology
+        if not is_admin_request(x_api_key or ""):
+            public_question = PublicQuestion(question=question.question, follow_up=question.follow_up)
+            return PublicSessionStartResponse(
+                session_id=session_id,
+                question=public_question,
+                question_number=1,
+                total_planned=req.session_length
+            )
+        
+        # Admin gets full response
         return SessionStartResponse(
             session_id=session_id,
             question=question,
@@ -3704,7 +3762,7 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
         raise HTTPException(500, f"Failed to start conversation: {type(e).__name__}: {str(e)}")
 
 
-@app.post("/session/answer", response_model=SessionAnswerResponse)
+@app.post("/session/answer")
 async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str = Header(...)):
     """Process an answer and generate the next question."""
     
@@ -3880,6 +3938,33 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
     vectors_engaged = list(set(all_used_vectors))
     vectors_untouched = [v for v in all_vectors if v not in vectors_engaged]
     
+    # Check if admin - if not, strip proprietary methodology
+    if not is_admin_request(x_api_key or ""):
+        # Strip internal methodology from insight
+        public_insight = {
+            "revealed": analysis.get("revealed", [])[:3],  # Keep some insights but limit
+            "depth_score": analysis.get("depth_score", 5.0),
+            "themes_identified": analysis.get("themes_identified", [])[:2]  # Limit themes
+        }
+        
+        # Strip question internals if next question exists
+        public_next_question = None
+        if next_question:
+            public_next_question = PublicQuestion(
+                question=next_question.question,
+                follow_up=next_question.follow_up
+            )
+        
+        return PublicSessionAnswerResponse(
+            session_id=req.session_id,
+            insight=public_insight,
+            next_question=public_next_question,
+            question_number=questions_answered,
+            conversation_depth=conversation_depth,
+            non_answer=non_answer_result if non_answer_result["is_non_answer"] else None
+        )
+    
+    # Admin gets full response
     return SessionAnswerResponse(
         session_id=req.session_id,
         insight=ConversationInsight(
@@ -3898,7 +3983,7 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
     )
 
 
-@app.get("/session/{session_id}/summary", response_model=SessionSummaryResponse)
+@app.get("/session/{session_id}/summary")
 async def get_conversation_summary(session_id: str, x_api_key: str = Header(...)):
     """Get comprehensive session insights and summary."""
     
@@ -4034,6 +4119,18 @@ Be specific and insightful, not generic. Write like you really understand this p
             except:
                 continue
     
+    # Check if admin - if not, strip proprietary methodology
+    if not is_admin_request(x_api_key or ""):
+        return PublicSessionSummaryResponse(
+            session_id=session_id,
+            session_status=session["status"],
+            questions_answered=session["questions_answered"],
+            structural_insights=structural_insights,
+            personality_sketch=personality_sketch,
+            suggested_followup=suggested_followup
+        )
+    
+    # Admin gets full response
     return SessionSummaryResponse(
         session_id=session_id,
         session_status=session["status"],
@@ -4056,7 +4153,7 @@ Be specific and insightful, not generic. Write like you really understand this p
     )
 
 
-@app.post("/ask", response_model=AskResponse)
+@app.post("/ask")
 async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(None)):
     """Agent self-improvement engine. Agent sends what it knows, gets the question that fills its biggest gap."""
     
@@ -4294,6 +4391,30 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
         response_analysis = {k: v for k, v in analysis.items() if k != "memory_text"}
         all_gap_labels = [g["label"] for g in gaps]
         
+        # Check if admin - if not, strip proprietary methodology
+        if not is_admin_request(x_api_key or ""):
+            # Strip proprietary fields from questions
+            for q in questions:
+                q.vectors = []
+                q.vector_names = []
+                q.generation_prompt = None
+                q.personalized_prompt = None
+                q.why = ""
+                q.what_to_listen_for = ""
+                q.gap_targeted = ""
+                q.source = ""
+                q.recallability = None
+            
+            # Strip analysis from response
+            response_analysis = {}
+            all_gap_labels = []
+            predictive_insights = []
+            
+            # Return public response format
+            public_questions = [PublicQuestion(question=q.question, follow_up=q.follow_up) for q in questions]
+            return PublicAskResponse(questions=public_questions, promo=promo)
+        
+        # Admin gets full response
         return AskResponse(
             questions=questions,
             analysis=response_analysis,
@@ -4549,6 +4670,8 @@ async def get_top_corpus_questions(
     x_api_key: str | None = Header(None)
 ):
     """Returns the top-performing questions for a given gap, sorted by avg_delta."""
+    if not is_admin_request(x_api_key or ""):
+        raise HTTPException(403, "This endpoint requires admin access")
     api_key_record = validate_api_key(x_api_key)
     
     try:
@@ -5429,6 +5552,8 @@ async def get_effective_patterns(
     Get the most effective question patterns from global learning.
     These patterns have been validated across multiple human interactions.
     """
+    if not is_admin_request(x_api_key or ""):
+        raise HTTPException(403, "This endpoint requires admin access")
     api_key_record = validate_api_key(x_api_key)
     
     try:
@@ -5507,6 +5632,8 @@ async def get_global_insights(x_api_key: str | None = Header(None)):
     Global insights about what makes questions effective across all humans.
     The collective intelligence of every BetterAsk interaction.
     """
+    if not is_admin_request(x_api_key or ""):
+        raise HTTPException(403, "This endpoint requires admin access")
     api_key_record = validate_api_key(x_api_key)
     
     try:
