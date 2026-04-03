@@ -393,6 +393,31 @@ OUTPUT (JSON):
 - **Database indexing** - Optimize for session lookup patterns
 - **LLM batching** - Group analysis calls when possible
 
+## Recallability Scoring
+
+Every generated question is scored for recallability (0-10) before being presented.
+
+### Principle
+"The best questions are easy to answer but hard to answer shallowly."
+
+### Scoring Factors
+| Factor | Effect | Example |
+|--------|--------|---------|
+| Exact counts | -4.0 | "How many times have you..." |
+| Percentages | -3.5 | "What percentage of your day..." |
+| Ranked lists beyond #1 | -3.0 | "What's the third most..." |
+| Aggregated stats | -2.5 | "On average, how many..." |
+| Specific dates | -2.0 | "When exactly did you first..." |
+| Opinions/feelings | +1.5 | "What do you think about..." |
+| Current state | +1.0 | "Right now, what..." |
+| Identity questions | +1.5 | "Are you someone who..." |
+| Softeners | +1.5 | "Roughly how..." |
+
+### Thresholds
+- Score < 4.0: Attempt regeneration or corpus fallback
+- Score 4.0-7.0: Acceptable
+- Score > 7.0: Ideal
+
 ---
 
 This spec provides the foundation for transforming BetterAsk from a stateless question API into a conversation product that reveals deep insights about people through strategic, multi-turn dialogue.

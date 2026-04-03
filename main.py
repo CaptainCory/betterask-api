@@ -944,6 +944,10 @@ RULES:
 - Test: Would you want to answer this at a bar? If no, rewrite.
 - Test: Could this start a 20-minute conversation? If no, sharpen.
 - The question must activate ALL listed vectors simultaneously.
+- Questions must be EASY TO RECALL. Never ask for exact counts, percentages, or ranked lists.
+- Ask for single memories, feelings, opinions, or habitual behaviors instead.
+- "Who do you call first when something good happens?" is better than "How many close friends do you have?"
+- "What's the last thing that made you laugh out loud?" is better than "How many times a day do you laugh?"
 
 OUTPUT FORMAT (JSON):
 {{
@@ -953,6 +957,123 @@ OUTPUT FORMAT (JSON):
   "signal": "What this question reveals about the answerer",
   "depth": "{depth}"
 }}"""
+
+
+def score_recallability(question_text: str) -> dict:
+    """
+    Score how easily a human can recall the information needed to answer this question.
+    Returns score 0-10 (10 = instantly recallable) and reasoning.
+    
+    High recallability (8-10):
+    - Opinions and feelings ("What do you think about...")
+    - Single salient memories ("What's the last time you...")
+    - Current state ("What are you excited about right now...")
+    - Habitual behavior ("Who do you call first when...")
+    - Identity questions ("What kind of person...")
+    
+    Medium recallability (4-7):
+    - Recent events ("This week, what...")
+    - Comparisons ("Which of your friends...")
+    - Approximate quantities ("roughly how often...")
+    
+    Low recallability (0-3):
+    - Exact counts over time ("How many times have you...")
+    - Precise percentages ("What percentage of your day...")
+    - Ranked lists beyond #1 ("What's the third most important...")
+    - Distant specific dates ("When exactly did you first...")
+    - Aggregated statistics about behavior ("On average, how many hours...")
+    """
+    q = question_text.lower()
+    
+    score = 7.0  # Default: most questions are reasonably recallable
+    reasons = []
+    
+    # === LOW RECALLABILITY SIGNALS ===
+    
+    # Exact count patterns
+    exact_count_phrases = [
+        "how many times", "exact number", "exactly how many", 
+        "how many people", "count the number", "total number of",
+        "how many hours", "how many days", "how many years"
+    ]
+    if any(phrase in q for phrase in exact_count_phrases):
+        score -= 4.0
+        reasons.append("Asks for exact count — humans don't track this")
+    
+    # Percentage/ratio patterns
+    pct_phrases = ["what percentage", "what fraction", "what proportion", "what ratio"]
+    if any(phrase in q for phrase in pct_phrases):
+        score -= 3.5
+        reasons.append("Asks for percentage — requires mental math nobody does")
+    
+    # Ranked lists beyond first
+    rank_phrases = ["third most", "second most", "fourth", "fifth", "rank the", "list all"]
+    if any(phrase in q for phrase in rank_phrases):
+        score -= 3.0
+        reasons.append("Asks for ranked list beyond #1 — fuzzy recall")
+    
+    # Distant specific dates
+    date_phrases = ["when exactly", "what date", "what year did you first", "how old were you when"]
+    if any(phrase in q for phrase in date_phrases):
+        score -= 2.0
+        reasons.append("Asks for specific date in the past — hard to pinpoint")
+    
+    # Aggregated stats
+    agg_phrases = ["on average", "typically how", "usually how many", "per week", "per month", "per year"]
+    if any(phrase in q for phrase in agg_phrases):
+        score -= 2.5
+        reasons.append("Asks for aggregated behavior stats — nobody tracks this")
+    
+    # === HIGH RECALLABILITY SIGNALS ===
+    
+    # Opinions and feelings
+    opinion_phrases = ["what do you think", "how do you feel", "what's your opinion", 
+                       "do you believe", "what matters most", "what's important"]
+    if any(phrase in q for phrase in opinion_phrases):
+        score += 1.5
+        reasons.append("Asks for opinion/feeling — always accessible")
+    
+    # Current state
+    current_phrases = ["right now", "these days", "currently", "at the moment", "today"]
+    if any(phrase in q for phrase in current_phrases):
+        score += 1.0
+        reasons.append("Asks about current state — immediately available")
+    
+    # Single salient memory
+    salient_phrases = ["the last time", "most recent", "the first time", "the best", 
+                       "the worst", "your favorite", "the most"]
+    if any(phrase in q for phrase in salient_phrases):
+        score += 1.0
+        reasons.append("Asks for single salient memory — peak memories stick")
+    
+    # Identity questions
+    identity_phrases = ["what kind of person", "what type of", "are you someone who",
+                        "would you rather", "what would you"]
+    if any(phrase in q for phrase in identity_phrases):
+        score += 1.5
+        reasons.append("Identity/preference question — self-knowledge is instant")
+    
+    # Habitual behavior (who/what, not how many)
+    habit_phrases = ["who do you call", "where do you go", "what do you do when",
+                     "who's the first person"]
+    if any(phrase in q for phrase in habit_phrases):
+        score += 1.0
+        reasons.append("Habitual behavior — ingrained patterns are easy to recall")
+    
+    # "Roughly" or "about" softeners improve recallability
+    softener_phrases = ["roughly", "about how", "approximately", "more or less", "give or take"]
+    if any(phrase in q for phrase in softener_phrases):
+        score += 1.5
+        reasons.append("Uses softener — removes pressure for exact recall")
+    
+    # Clamp to 0-10
+    score = max(0.0, min(10.0, score))
+    
+    return {
+        "recallability_score": round(score, 1),
+        "recallability_level": "high" if score >= 7 else "medium" if score >= 4 else "low",
+        "reasons": reasons if reasons else ["Standard question — reasonably recallable"]
+    }
 
 
 def build_scoring_prompt(question: str) -> str:
@@ -1548,6 +1669,7 @@ class AskQuestion(BaseModel):
     source: str  # "corpus" or "generated"
     generation_prompt: str | None = None
     personalized_prompt: str | None = None  # BUILD 2: Context-aware generation prompt
+    recallability: Optional[dict] = None
 
 
 class AskResponse(BaseModel):
@@ -2104,6 +2226,10 @@ RULES:
 - 8-15 words max. Short and conversational.
 - Don't use therapy-speak or interview language
 - Make it impossible for anyone else to get this exact question
+- Questions must be EASY TO RECALL. Never ask for exact counts, percentages, or ranked lists.
+- Ask for single memories, feelings, opinions, or habitual behaviors instead.
+- "Who do you call first when something good happens?" is better than "How many close friends do you have?"
+- "What's the last thing that made you laugh out loud?" is better than "How many times a day do you laugh?"
 
 Generate ONLY the question text. No JSON, no explanation."""
 
@@ -3514,6 +3640,20 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
             
             question_text = generate_question_via_llm(gen_prompt) or corpus_question or "What's something you're excited about right now that you wish more people asked you about?"
             
+            # Score recallability
+            recall = score_recallability(question_text)
+            if recall["recallability_score"] < 4.0:
+                # Try corpus fallback — likely more conversational
+                alt_question = find_corpus_match(vectors, analysis.get("themes", []), [], gap.get("label", ""))
+                if alt_question:
+                    alt_recall = score_recallability(alt_question)
+                    if alt_recall["recallability_score"] > recall["recallability_score"]:
+                        question_text = alt_question
+                        recall = alt_recall
+                # If still low, add softener instruction to LLM prompt
+                if recall["recallability_score"] < 4.0:
+                    logger.info(f"Low recallability question ({recall['recallability_score']}): {question_text[:60]}")
+            
             question = AskQuestion(
                 question=question_text,
                 follow_up=None,
@@ -3524,12 +3664,15 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
                 why="Opening question to build rapport and establish conversation baseline",
                 what_to_listen_for="Personality markers, communication style, current emotional state",
                 source="generated",
-                generation_prompt=gen_prompt
+                generation_prompt=gen_prompt,
+                recallability=recall
             )
         else:
             # Fallback question
+            fallback_text = "What's something you're excited about right now that you wish more people asked you about?"
+            fallback_recall = score_recallability(fallback_text)
             question = AskQuestion(
-                question="What's something you're excited about right now that you wish more people asked you about?",
+                question=fallback_text,
                 follow_up="What makes that particularly meaningful to you?",
                 vectors=vectors,
                 vector_names=[VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP],
@@ -3537,7 +3680,8 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
                 gap_targeted="self_expression",
                 why="Opening question to build rapport and establish conversation baseline",
                 what_to_listen_for="Interests, values, communication style",
-                source="fallback"
+                source="fallback",
+                recallability=fallback_recall
             )
         
         # Record the first turn
@@ -3672,6 +3816,20 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
             else:
                 question_text = "What's behind that answer?"
         
+        # Score recallability
+        recall = score_recallability(question_text)
+        if recall["recallability_score"] < 4.0:
+            # Try corpus fallback — likely more conversational
+            alt_question = find_corpus_match(next_vectors, analysis.get("themes_identified", []), [], analysis.get("themes_identified", ["unknown"])[0] if analysis.get("themes_identified") else "unknown")
+            if alt_question:
+                alt_recall = score_recallability(alt_question)
+                if alt_recall["recallability_score"] > recall["recallability_score"]:
+                    question_text = alt_question
+                    recall = alt_recall
+            # If still low, add softener instruction to LLM prompt
+            if recall["recallability_score"] < 4.0:
+                logger.info(f"Low recallability question ({recall['recallability_score']}): {question_text[:60]}")
+        
         vector_names = [VECTOR_MAP[v]["name"] for v in next_vectors if v in VECTOR_MAP]
         
         next_question = AskQuestion(
@@ -3683,7 +3841,8 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
             gap_targeted=analysis.get("themes_identified", ["unknown"])[0] if analysis.get("themes_identified") else "unknown",
             why=f"Following thread from previous answer: {analysis.get('thread_opportunities', ['general follow-up'])[0]}",
             what_to_listen_for="Deeper exploration of previous themes, new revelations",
-            source="generated"
+            source="generated",
+            recallability=recall
         )
         
         # Record next turn
@@ -4058,6 +4217,21 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                 final_question = "What's something you wish people understood about you without having to explain it?"
                 question_source = "fallback"
             
+            # Score recallability and try to improve if needed
+            recall = score_recallability(final_question)
+            if recall["recallability_score"] < 4.0:
+                # Try corpus fallback — likely more conversational
+                alt_question = find_corpus_match(selected, analysis["themes"], req.history + list(used_questions), gap["label"])
+                if alt_question:
+                    alt_recall = score_recallability(alt_question)
+                    if alt_recall["recallability_score"] > recall["recallability_score"]:
+                        final_question = alt_question
+                        recall = alt_recall
+                        question_source = "corpus"
+                # If still low, log for debugging
+                if recall["recallability_score"] < 4.0:
+                    logger.info(f"Low recallability question ({recall['recallability_score']}): {final_question[:60]}")
+            
             q = AskQuestion(
                 question=final_question,
                 follow_up=None,
@@ -4070,6 +4244,7 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
                 source=question_source,
                 generation_prompt=gen_prompt,
                 personalized_prompt=personalized_prompt,
+                recallability=recall
             )
             questions.append(q)
             gaps_targeted.append(gap["label"])
