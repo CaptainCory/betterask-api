@@ -2,3 +2,4 @@
 stripe-credentials.env
 __pycache__/
 *.pyc
+betterask.db

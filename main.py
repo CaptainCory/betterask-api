@@ -43,7 +43,7 @@ ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-20250514")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
 DATABASE_URL = os.getenv("BETTERASK_DATABASE_URL", os.getenv("DATABASE_URL", ""))
-ADMIN_API_KEY = os.getenv("BETTERASK_ADMIN_KEY", "ba_admin_cory_stout_2026")
+ADMIN_API_KEY = os.getenv("BETTERASK_ADMIN_KEY", "")
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -1348,7 +1348,7 @@ async def stripe_webhook(request: Request):
 # ---------------------------------------------------------------------------
 # Admin — Question Management (requires admin key)
 # ---------------------------------------------------------------------------
-ADMIN_KEY = os.getenv("BETTERASK_ADMIN_KEY", "ba_admin_cory_2026")
+ADMIN_KEY = os.getenv("BETTERASK_ADMIN_KEY", "")
 
 
 def require_admin(key: str | None):
