@@ -1717,7 +1717,8 @@ def get_conversation_session(session_id: str) -> dict | None:
     try:
         cur = conn.cursor()
         cur.execute("SELECT * FROM conversation_sessions WHERE session_id = %s", (session_id,))
-        return dict(cur.fetchone()) if cur.fetchone() else None
+        row = cur.fetchone()
+        return dict(row) if row else None
     finally:
         conn.close()
 
@@ -3466,7 +3467,8 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
             SELECT COUNT(*) FROM conversation_sessions 
             WHERE api_key = %s AND status = 'active'
         """, (api_key_record["key"],))
-        active_count = cur.fetchone()[0]
+        result = cur.fetchone()
+        active_count = result['count'] if result else 0
         if active_count >= 3:
             raise HTTPException(429, "Maximum 3 active conversation sessions allowed")
     finally:
