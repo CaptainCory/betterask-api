@@ -199,6 +199,58 @@ def init_db():
         cur.execute("CREATE INDEX IF NOT EXISTS idx_el_domain ON effectiveness_logs(domain)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_el_context ON effectiveness_logs(context_type)")
         
+        # ---------------------------------------------------------------------------
+        # Conversation Mode Tables
+        # ---------------------------------------------------------------------------
+        
+        # Conversation sessions for multi-turn dialogue
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS conversation_sessions (
+                session_id TEXT PRIMARY KEY,
+                human_id TEXT,
+                api_key TEXT,
+                status TEXT DEFAULT 'active',          -- active, complete, abandoned
+                total_planned INTEGER DEFAULT 7,
+                questions_answered INTEGER DEFAULT 0,
+                context TEXT DEFAULT 'discovery',
+                strategy TEXT DEFAULT 'progressive',   -- progressive, targeted, exploratory
+                started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                completed_at TEXT,
+                expires_at TEXT,                       -- 24 hours from creation
+                
+                -- Session state (JSON columns)
+                conversation_data TEXT DEFAULT '{}',   -- all Q&As, insights, themes
+                vector_progress TEXT DEFAULT '{}',     -- which vectors used, scores
+                insights_cumulative TEXT DEFAULT '{}', -- running insights analysis
+                
+                FOREIGN KEY (api_key) REFERENCES api_keys(key)
+            )
+        """)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_sessions_human_id ON conversation_sessions(human_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_sessions_status ON conversation_sessions(status)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_sessions_expires ON conversation_sessions(expires_at)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_sessions_api_key ON conversation_sessions(api_key)")
+        
+        # Individual conversation turns
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS conversation_turns (
+                id SERIAL PRIMARY KEY,
+                session_id TEXT NOT NULL,
+                turn_number INTEGER NOT NULL,
+                question_text TEXT NOT NULL,
+                question_vectors TEXT DEFAULT '[]',
+                answer_text TEXT,
+                answer_analysis TEXT DEFAULT '{}',     -- JSON: revealed, avoided, depth_score
+                gap_targeted TEXT,
+                insights_generated TEXT DEFAULT '[]',
+                answered_at TEXT,
+                
+                FOREIGN KEY (session_id) REFERENCES conversation_sessions(session_id) ON DELETE CASCADE
+            )
+        """)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_turns_session ON conversation_turns(session_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_turns_answered ON conversation_turns(session_id, answered_at)")
+        
         # Add vectors column to existing tables (safe migration)
         conn.commit()  # Commit everything above first
         try:
@@ -1514,6 +1566,62 @@ class LearnRequest(BaseModel):
     new_knowledge: dict = Field(default={}, description="Structured knowledge extracted from the answer")
 
 
+# ---------------------------------------------------------------------------
+# Conversation Mode Models
+# ---------------------------------------------------------------------------
+
+class SessionStartRequest(BaseModel):
+    context: str = Field("discovery", description="Context for question strategy")
+    human_id: str | None = Field(None, description="Optional human identifier for persistence")
+    session_length: int = Field(7, ge=1, le=20, description="Total questions planned for session")
+    starting_vectors: list[str] = Field(default=[], description="Override default warm start vectors")
+
+
+class SessionStartResponse(BaseModel):
+    session_id: str
+    question: AskQuestion
+    question_number: int
+    total_planned: int
+    strategy: str
+
+
+class SessionAnswerRequest(BaseModel):
+    session_id: str = Field(..., description="Session UUID")
+    answer: str = Field(..., max_length=5000, description="User's answer to the current question")
+
+
+class ConversationInsight(BaseModel):
+    revealed: list[str] = Field(description="Things the answer revealed about the person")
+    avoided: list[str] = Field(description="Topics or details that were skipped/deflected")
+    contradictions: list[str] = Field(description="Tensions with prior answers")
+    depth_score: float = Field(ge=0, le=10, description="How deeply they engaged (0-10)")
+    themes_identified: list[str] = Field(description="Emerging life themes/patterns")
+
+
+class SessionAnswerResponse(BaseModel):
+    session_id: str
+    insight: ConversationInsight
+    next_question: AskQuestion | None  # None if session complete
+    question_number: int
+    vectors_engaged: list[str]
+    vectors_untouched: list[str]
+    conversation_depth: str  # "building", "deepening", "exploring", "completing"
+
+
+class SessionSummaryResponse(BaseModel):
+    session_id: str
+    session_status: str  # complete, in_progress, abandoned
+    questions_answered: int
+    duration_minutes: float | None
+    structural_insights: list[str]
+    ephemeral_insights: list[str]
+    personality_sketch: str
+    vectors_engaged: dict[str, float]
+    vectors_avoided: dict[str, float]
+    suggested_followup: list[str]
+    conversation_quality: dict  # engagement_score, depth_achieved, etc.
+
+
 def get_question_performance_stats(question_text: str, gap: str) -> dict:
     """Get empirical performance data for a question."""
     conn = get_db()
@@ -1571,6 +1679,286 @@ def classify_answer_depth(answer: str, agent_interpretation: str | None = None) 
         return "medium"
     else:
         return "shallow"
+
+
+# ---------------------------------------------------------------------------
+# Conversation Mode Utilities  
+# ---------------------------------------------------------------------------
+
+def create_conversation_session(human_id: str | None, api_key: str, context: str, session_length: int) -> str:
+    """Create a new conversation session and return session_id."""
+    import uuid
+    from datetime import datetime, timedelta
+    
+    session_id = str(uuid.uuid4())
+    expires_at = (datetime.now() + timedelta(hours=24)).isoformat()
+    
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO conversation_sessions 
+            (session_id, human_id, api_key, context, total_planned, expires_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (session_id, human_id, api_key, context, session_length, expires_at))
+        conn.commit()
+        return session_id
+    finally:
+        conn.close()
+
+
+def get_conversation_session(session_id: str) -> dict | None:
+    """Retrieve a conversation session by ID."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM conversation_sessions WHERE session_id = %s", (session_id,))
+        return dict(cur.fetchone()) if cur.fetchone() else None
+    finally:
+        conn.close()
+
+
+def update_session_state(session_id: str, **updates):
+    """Update session state with arbitrary fields."""
+    if not updates:
+        return
+    
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        set_clauses = []
+        values = []
+        
+        for key, value in updates.items():
+            set_clauses.append(f"{key} = %s")
+            values.append(value)
+        
+        values.append(session_id)
+        sql = f"UPDATE conversation_sessions SET {', '.join(set_clauses)} WHERE session_id = %s"
+        cur.execute(sql, values)
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def add_conversation_turn(session_id: str, turn_number: int, question_text: str, vectors: list[str], gap_targeted: str) -> int:
+    """Add a new conversation turn and return turn id."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO conversation_turns 
+            (session_id, turn_number, question_text, question_vectors, gap_targeted)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (session_id, turn_number, question_text, json.dumps(vectors), gap_targeted))
+        turn_id = cur.fetchone()[0]
+        conn.commit()
+        return turn_id
+    finally:
+        conn.close()
+
+
+def update_turn_answer(session_id: str, turn_number: int, answer_text: str, analysis: dict):
+    """Update a conversation turn with the user's answer and analysis."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE conversation_turns 
+            SET answer_text = %s, answer_analysis = %s, answered_at = CURRENT_TIMESTAMP
+            WHERE session_id = %s AND turn_number = %s
+        """, (answer_text, json.dumps(analysis), session_id, turn_number))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_conversation_history(session_id: str) -> list[dict]:
+    """Get all conversation turns for a session."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT * FROM conversation_turns 
+            WHERE session_id = %s 
+            ORDER BY turn_number
+        """, (session_id,))
+        return [dict(row) for row in cur.fetchall()]
+    finally:
+        conn.close()
+
+
+def analyze_answer_with_llm(answer: str, question_asked: str, conversation_context: list[dict]) -> dict:
+    """Analyze an answer using LLM to extract insights."""
+    
+    # Build context from conversation history
+    context_lines = []
+    for turn in conversation_context[-3:]:  # Last 3 turns for context
+        if turn.get('answer_text'):
+            context_lines.append(f"Q: {turn['question_text']}")
+            context_lines.append(f"A: {turn['answer_text'][:200]}...")
+    
+    context_text = "\n".join(context_lines) if context_lines else "No prior conversation history."
+    
+    prompt = f"""You are analyzing a conversation answer to generate insights and guide the next question.
+
+CURRENT QUESTION: "{question_asked}"
+ANSWER: "{answer}"
+
+CONVERSATION CONTEXT:
+{context_text}
+
+ANALYZE the answer and provide insights in JSON format:
+
+{{
+  "revealed": ["specific insight about person", "another insight"],
+  "avoided": ["topic they seemed to skip", "detail they deflected"],
+  "contradictions": ["any tensions with prior answers"],
+  "depth_score": 7.5,
+  "themes_identified": ["theme_1", "theme_2"],
+  "emotional_markers": ["marker_1"],
+  "thread_opportunities": ["follow_up_angle_1", "specific_detail_to_explore"]
+}}
+
+Focus on:
+1. REVEALED: What did this specifically tell us about WHO this person is?
+2. AVOIDED: What did they gloss over, deflect, or skip entirely?
+3. DEPTH_SCORE: Rate 0-10 how deeply/genuinely they engaged
+4. THREAD_OPPORTUNITIES: Specific phrases or ideas to follow up on
+
+Be specific, not generic. Focus on this particular human."""
+
+    # Try Claude first, then Gemini fallback
+    if ANTHROPIC_API_KEY:
+        try:
+            with httpx.Client(timeout=25.0) as client:
+                resp = client.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": ANTHROPIC_API_KEY,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": ANTHROPIC_MODEL,
+                        "max_tokens": 500,
+                        "temperature": 0.3,
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                text = data["content"][0]["text"].strip()
+                
+                # Parse JSON response
+                import json
+                return json.loads(text)
+        except Exception as e:
+            logger.warning(f"Claude analysis failed: {e}")
+    
+    # Fallback analysis if LLM fails
+    return {
+        "revealed": ["Answer provided"],
+        "avoided": [],
+        "contradictions": [],
+        "depth_score": 5.0,
+        "themes_identified": [],
+        "emotional_markers": [],
+        "thread_opportunities": ["Follow up on their answer"]
+    }
+
+
+def get_conversation_progression_vectors(question_number: int, total_planned: int) -> list[str]:
+    """Select vectors based on conversation progression strategy."""
+    
+    if question_number <= 2:  # Warm start
+        return ["specificity", "name_an_example", "permission"]
+    elif question_number <= total_planned - 2:  # Deep dive
+        return ["confession", "perspective_shift", "other_eyes", "contradiction"]
+    else:  # Reflective close
+        return ["time", "trajectory", "cumulation"]
+
+
+def select_next_question_vectors(question_number: int, total_planned: int, analysis: dict, used_vectors: list[str]) -> list[str]:
+    """Intelligently select vectors for the next question based on analysis and progression."""
+    
+    # Get progression-appropriate vectors
+    progression_vectors = get_conversation_progression_vectors(question_number, total_planned)
+    
+    # Remove already heavily-used vectors
+    available_vectors = [v for v in progression_vectors if used_vectors.count(v) < 2]
+    
+    # If we have thread opportunities, bias toward vectors that can explore them
+    if analysis.get("thread_opportunities"):
+        # Prefer vectors that can dig deeper
+        exploration_vectors = ["specificity", "confession", "perspective_shift", "time"]
+        available_vectors = [v for v in available_vectors if v in exploration_vectors] or available_vectors
+    
+    # If they avoided something, use vectors that can approach it differently  
+    if analysis.get("avoided"):
+        approach_vectors = ["permission", "other_eyes", "hypothetical"]
+        available_vectors = [v for v in available_vectors if v in approach_vectors] or available_vectors
+    
+    # Return 2-3 vectors for this question
+    return available_vectors[:3] if available_vectors else ["specificity", "permission"]
+
+
+def build_conversation_question_prompt(analysis: dict, vectors: list[str], question_number: int, conversation_history: list[dict]) -> str:
+    """Build a specialized prompt for generating conversation questions."""
+    
+    # Extract thread opportunities from analysis
+    threads = analysis.get("thread_opportunities", [])
+    avoided = analysis.get("avoided", [])
+    last_answer = conversation_history[-1].get("answer_text", "") if conversation_history else ""
+    
+    vector_instructions = []
+    for v in vectors:
+        if v in VECTOR_MAP:
+            vec = VECTOR_MAP[v]
+            vector_instructions.append(f"- {vec['name']}: {vec['prompt_template']}")
+    
+    prompt = f"""Generate a conversation question that follows the thread from their last answer.
+
+THEIR LAST ANSWER: "{last_answer[:300]}"
+
+ANALYSIS:
+- Revealed: {', '.join(analysis.get('revealed', [])[:2])}
+- Avoided: {', '.join(avoided[:2]) if avoided else 'Nothing obvious'}
+- Thread opportunities: {', '.join(threads[:2]) if threads else 'None identified'}
+
+CONVERSATION POSITION: Question {question_number} - {"Building rapport" if question_number <= 2 else "Going deeper" if question_number <= 5 else "Wrapping up"}
+
+VECTORS TO USE:
+{chr(10).join(vector_instructions)}
+
+RULES:
+- PULL A THREAD from their last answer - reference something specific they said
+- Ask like a friend who's genuinely curious about that detail
+- 8-15 words max. Short and conversational.
+- Don't use therapy-speak or interview language
+- Make it impossible for anyone else to get this exact question
+
+Generate ONLY the question text. No JSON, no explanation."""
+
+    return prompt
+
+
+def cleanup_expired_sessions():
+    """Remove expired conversation sessions (24+ hours old)."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            DELETE FROM conversation_sessions 
+            WHERE expires_at < CURRENT_TIMESTAMP
+        """)
+        conn.commit()
+        logger.info(f"Cleaned up expired conversation sessions")
+    except Exception as e:
+        logger.error(f"Error cleaning up sessions: {e}")
+    finally:
+        conn.close()
 
 
 def record_question_performance(
@@ -2890,6 +3278,397 @@ TONE: Bar conversation, not TED talk. One sentence.
 }}"""
 
     return prompt
+
+
+# ---------------------------------------------------------------------------
+# Conversation Mode Endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/session/start", response_model=SessionStartResponse)
+async def start_conversation_session(req: SessionStartRequest, x_api_key: str = Header(...)):
+    """Start a new conversation session."""
+    
+    # Validate API key
+    api_key_record = validate_api_key(x_api_key)
+    
+    # Cleanup expired sessions first
+    cleanup_expired_sessions()
+    
+    # Check session limits (max 3 active sessions per API key)
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT COUNT(*) FROM conversation_sessions 
+            WHERE api_key = %s AND status = 'active'
+        """, (api_key_record["key"],))
+        active_count = cur.fetchone()[0]
+        if active_count >= 3:
+            raise HTTPException(429, "Maximum 3 active conversation sessions allowed")
+    finally:
+        conn.close()
+    
+    # Create new session
+    session_id = create_conversation_session(
+        req.human_id, 
+        api_key_record["key"], 
+        req.context, 
+        req.session_length
+    )
+    
+    # Generate first question using warm start strategy
+    vectors = req.starting_vectors or ["specificity", "name_an_example", "permission"][:2]
+    
+    # Build a simplified AskRequest for the first question
+    ask_req = AskRequest(
+        memory="Starting new conversation session",
+        agent_role="conversation facilitator",
+        history=[],
+        count=1,
+        human_id=req.human_id
+    )
+    
+    try:
+        # Use existing ask logic to generate first question
+        analysis = analyze_for_agent(ask_req)
+        gaps = analysis["gaps"]
+        
+        if gaps:
+            gap = gaps[0]
+            # Generate question using conversation-optimized approach
+            vector_names = [VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP]
+            
+            # Use corpus question as base
+            corpus_question = find_corpus_match(vectors, analysis.get("themes", []), [], gap["label"])
+            
+            # Try LLM generation for more conversational tone
+            gen_prompt = build_generation_prompt(req.context, "this person", "light", vectors, [])
+            gen_prompt += "\n\nThis is the FIRST question in a conversation. Make it warm, approachable, and impossible to answer badly."
+            
+            question_text = generate_question_via_llm(gen_prompt) or corpus_question or "What's something you're excited about right now that you wish more people asked you about?"
+            
+            question = AskQuestion(
+                question=question_text,
+                follow_up=None,
+                vectors=vectors,
+                vector_names=vector_names,
+                density=len(vectors),
+                gap_targeted=gap.get("label", "self_expression"),
+                why="Opening question to build rapport and establish conversation baseline",
+                what_to_listen_for="Personality markers, communication style, current emotional state",
+                source="generated",
+                generation_prompt=gen_prompt
+            )
+        else:
+            # Fallback question
+            question = AskQuestion(
+                question="What's something you're excited about right now that you wish more people asked you about?",
+                follow_up="What makes that particularly meaningful to you?",
+                vectors=vectors,
+                vector_names=[VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP],
+                density=len(vectors),
+                gap_targeted="self_expression",
+                why="Opening question to build rapport and establish conversation baseline",
+                what_to_listen_for="Interests, values, communication style",
+                source="fallback"
+            )
+        
+        # Record the first turn
+        add_conversation_turn(session_id, 1, question.question, vectors, question.gap_targeted)
+        
+        return SessionStartResponse(
+            session_id=session_id,
+            question=question,
+            question_number=1,
+            total_planned=req.session_length,
+            strategy="warm_start"
+        )
+        
+    except Exception as e:
+        logger.exception("Error starting conversation session")
+        raise HTTPException(500, f"Failed to start conversation: {str(e)}")
+
+
+@app.post("/session/answer", response_model=SessionAnswerResponse)
+async def answer_conversation_question(req: SessionAnswerRequest):
+    """Process an answer and generate the next question."""
+    
+    # Rate limiting: max 1 answer per 5 seconds per session
+    import time
+    session_rate_key = f"session_rate:{req.session_id}"
+    last_answer_time = rate_limiter_store.get(session_rate_key, 0)
+    if time.time() - last_answer_time < 5:
+        raise HTTPException(429, "Rate limit: maximum 1 answer per 5 seconds per session")
+    rate_limiter_store[session_rate_key] = time.time()
+    
+    # Get session
+    session = get_conversation_session(req.session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+    
+    if session["status"] != "active":
+        raise HTTPException(400, f"Session is {session['status']}, not active")
+    
+    # Get conversation history
+    history = get_conversation_history(req.session_id)
+    if not history:
+        raise HTTPException(400, "No questions found for this session")
+    
+    current_turn = history[-1]
+    question_number = len(history)
+    
+    # Analyze the answer
+    analysis = analyze_answer_with_llm(
+        req.answer, 
+        current_turn["question_text"],
+        history[:-1]  # Previous turns for context
+    )
+    
+    # Update the current turn with answer and analysis
+    update_turn_answer(req.session_id, question_number, req.answer, analysis)
+    
+    # Update session state
+    questions_answered = question_number
+    update_session_state(
+        req.session_id,
+        questions_answered=questions_answered
+    )
+    
+    # Determine if session is complete
+    is_complete = questions_answered >= session["total_planned"]
+    
+    next_question = None
+    conversation_depth = "completing"
+    
+    if not is_complete:
+        # Generate next question
+        used_vectors = []
+        for turn in history:
+            if turn.get("question_vectors"):
+                used_vectors.extend(json.loads(turn["question_vectors"]))
+        
+        # Select vectors for next question
+        next_vectors = select_next_question_vectors(
+            question_number + 1, 
+            session["total_planned"],
+            analysis,
+            used_vectors
+        )
+        
+        # Generate question using conversation context
+        question_prompt = build_conversation_question_prompt(
+            analysis, 
+            next_vectors,
+            question_number + 1,
+            history + [{"answer_text": req.answer}]
+        )
+        
+        question_text = generate_question_via_llm(question_prompt)
+        if not question_text:
+            # Fallback based on analysis
+            if analysis.get("thread_opportunities"):
+                question_text = f"Tell me more about {analysis['thread_opportunities'][0]}."
+            else:
+                question_text = "What's behind that answer?"
+        
+        vector_names = [VECTOR_MAP[v]["name"] for v in next_vectors if v in VECTOR_MAP]
+        
+        next_question = AskQuestion(
+            question=question_text,
+            follow_up=None,
+            vectors=next_vectors,
+            vector_names=vector_names,
+            density=len(next_vectors),
+            gap_targeted=analysis.get("themes_identified", ["unknown"])[0] if analysis.get("themes_identified") else "unknown",
+            why=f"Following thread from previous answer: {analysis.get('thread_opportunities', ['general follow-up'])[0]}",
+            what_to_listen_for="Deeper exploration of previous themes, new revelations",
+            source="generated"
+        )
+        
+        # Record next turn
+        add_conversation_turn(
+            req.session_id, 
+            question_number + 1,
+            next_question.question,
+            next_vectors,
+            next_question.gap_targeted
+        )
+        
+        # Determine conversation depth
+        if question_number + 1 <= 2:
+            conversation_depth = "building"
+        elif question_number + 1 <= session["total_planned"] - 1:
+            conversation_depth = "deepening"
+        else:
+            conversation_depth = "exploring"
+    
+    else:
+        # Session is complete
+        update_session_state(
+            req.session_id,
+            status="complete",
+            completed_at=datetime.now().isoformat()
+        )
+    
+    # Calculate vector engagement
+    all_used_vectors = []
+    for turn in history:
+        if turn.get("question_vectors"):
+            all_used_vectors.extend(json.loads(turn["question_vectors"]))
+    
+    all_vectors = list(VECTOR_MAP.keys())
+    vectors_engaged = list(set(all_used_vectors))
+    vectors_untouched = [v for v in all_vectors if v not in vectors_engaged]
+    
+    return SessionAnswerResponse(
+        session_id=req.session_id,
+        insight=ConversationInsight(
+            revealed=analysis.get("revealed", []),
+            avoided=analysis.get("avoided", []),
+            contradictions=analysis.get("contradictions", []),
+            depth_score=analysis.get("depth_score", 5.0),
+            themes_identified=analysis.get("themes_identified", [])
+        ),
+        next_question=next_question,
+        question_number=questions_answered,
+        vectors_engaged=vectors_engaged,
+        vectors_untouched=vectors_untouched,
+        conversation_depth=conversation_depth
+    )
+
+
+@app.get("/session/{session_id}/summary", response_model=SessionSummaryResponse)
+async def get_conversation_summary(session_id: str):
+    """Get comprehensive session insights and summary."""
+    
+    # Get session
+    session = get_conversation_session(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+    
+    # Get conversation history
+    history = get_conversation_history(session_id)
+    if not history:
+        raise HTTPException(404, "No conversation data found")
+    
+    # Calculate duration
+    duration_minutes = None
+    if session.get("completed_at") and session.get("started_at"):
+        from datetime import datetime
+        start = datetime.fromisoformat(session["started_at"])
+        end = datetime.fromisoformat(session["completed_at"])
+        duration_minutes = (end - start).total_seconds() / 60
+    
+    # Aggregate all insights
+    all_revealed = []
+    all_avoided = []
+    all_themes = []
+    depth_scores = []
+    
+    for turn in history:
+        if turn.get("answer_analysis"):
+            try:
+                analysis = json.loads(turn["answer_analysis"])
+                all_revealed.extend(analysis.get("revealed", []))
+                all_avoided.extend(analysis.get("avoided", []))
+                all_themes.extend(analysis.get("themes_identified", []))
+                if analysis.get("depth_score"):
+                    depth_scores.append(analysis["depth_score"])
+            except:
+                continue
+    
+    # Build personality sketch using LLM
+    conversation_text = "\n\n".join([
+        f"Q: {turn['question_text']}\nA: {turn.get('answer_text', 'No answer')}" 
+        for turn in history if turn.get('answer_text')
+    ])
+    
+    sketch_prompt = f"""Based on this conversation, write a 2-3 paragraph personality sketch of this person:
+
+{conversation_text}
+
+Write in third person, focusing on:
+- Core personality traits and patterns
+- Values and motivations that emerged  
+- How they communicate and relate to others
+- What makes them unique
+
+Be specific and insightful, not generic. Write like you really understand this person."""
+    
+    personality_sketch = "Personality analysis not available."
+    if ANTHROPIC_API_KEY:
+        try:
+            with httpx.Client(timeout=25.0) as client:
+                resp = client.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": ANTHROPIC_API_KEY,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": ANTHROPIC_MODEL,
+                        "max_tokens": 600,
+                        "temperature": 0.7,
+                        "messages": [{"role": "user", "content": sketch_prompt}],
+                    },
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                personality_sketch = data["content"][0]["text"].strip()
+        except Exception as e:
+            logger.warning(f"Personality sketch generation failed: {e}")
+    
+    # Calculate vector engagement scores
+    vector_counts = {}
+    all_vectors = list(VECTOR_MAP.keys())
+    
+    for turn in history:
+        if turn.get("question_vectors"):
+            vectors = json.loads(turn["question_vectors"])
+            for v in vectors:
+                vector_counts[v] = vector_counts.get(v, 0) + 1
+    
+    total_questions = len([t for t in history if t.get("answer_text")])
+    
+    vectors_engaged = {v: count / total_questions for v, count in vector_counts.items()}
+    vectors_avoided = {v: 0.0 for v in all_vectors if v not in vector_counts}
+    
+    # Generate structural vs ephemeral insights
+    structural_insights = list(set([insight for insight in all_revealed if len(insight) > 20]))[:5]
+    ephemeral_insights = list(set(all_revealed))[-3:] if all_revealed else []
+    
+    # Generate follow-up questions
+    untouched_vectors = [v for v in all_vectors if v not in vector_counts]
+    suggested_followup = []
+    
+    if untouched_vectors:
+        for vector in untouched_vectors[:3]:
+            vector_info = VECTOR_MAP[vector]
+            suggested_followup.append(f"Next session could explore {vector_info['name']}: {vector_info['one_liner']}")
+    
+    # Conversation quality metrics
+    avg_depth = sum(depth_scores) / len(depth_scores) if depth_scores else 5.0
+    engagement_score = min(10.0, total_questions * 1.2 + avg_depth * 0.3)
+    
+    return SessionSummaryResponse(
+        session_id=session_id,
+        session_status=session["status"],
+        questions_answered=session["questions_answered"],
+        duration_minutes=duration_minutes,
+        structural_insights=structural_insights,
+        ephemeral_insights=ephemeral_insights,
+        personality_sketch=personality_sketch,
+        vectors_engaged=vectors_engaged,
+        vectors_avoided=vectors_avoided,
+        suggested_followup=suggested_followup,
+        conversation_quality={
+            "engagement_score": round(engagement_score, 1),
+            "depth_achieved": round(avg_depth, 1),
+            "breakthrough_moments": len([s for s in depth_scores if s > 8]),
+            "avoidance_instances": len(all_avoided)
+        }
+    )
 
 
 @app.post("/ask", response_model=AskResponse)
