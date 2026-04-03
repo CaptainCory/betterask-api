@@ -3550,9 +3550,13 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
             strategy="warm_start"
         )
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
-        logger.exception("Error starting conversation session")
-        raise HTTPException(500, f"Failed to start conversation: {str(e)}")
+        import traceback
+        error_detail = traceback.format_exc()
+        logger.exception(f"Error starting conversation session: {error_detail}")
+        raise HTTPException(500, f"Failed to start conversation: {type(e).__name__}: {str(e)}")
 
 
 @app.post("/session/answer", response_model=SessionAnswerResponse)
