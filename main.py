@@ -613,6 +613,7 @@ def load_corpus():
 
 _request_log: dict[str, list[float]] = {}
 _generate_call_count: int = 0
+rate_limiter_store: dict[str, float] = {}
 PROMO_EVERY_N = int(os.getenv("PROMO_EVERY_N", "6"))
 BOOK_PROMO = "📖 These questions use the 21 Vectors from END SMALL TALK by Cory Stout — endsmalltalknow.com"
 
@@ -1606,6 +1607,7 @@ class SessionAnswerResponse(BaseModel):
     vectors_engaged: list[str]
     vectors_untouched: list[str]
     conversation_depth: str  # "building", "deepening", "exploring", "completing"
+    non_answer: Optional[dict] = None
 
 
 class SessionSummaryResponse(BaseModel):
@@ -1620,6 +1622,8 @@ class SessionSummaryResponse(BaseModel):
     vectors_avoided: dict[str, float]
     suggested_followup: list[str]
     conversation_quality: dict  # engagement_score, depth_achieved, etc.
+    avoidance_topics: list[str] = []
+    question_misses: int = 0
 
 
 def get_question_performance_stats(question_text: str, gap: str) -> dict:
@@ -1841,7 +1845,7 @@ Be specific, not generic. Focus on this particular human."""
                         "content-type": "application/json",
                     },
                     json={
-                        "model": ANTHROPIC_MODEL,
+                        "model": "claude-sonnet-4-20250514",
                         "max_tokens": 500,
                         "temperature": 0.3,
                         "messages": [{"role": "user", "content": prompt}],
@@ -1851,9 +1855,23 @@ Be specific, not generic. Focus on this particular human."""
                 data = resp.json()
                 text = data["content"][0]["text"].strip()
                 
-                # Parse JSON response
-                import json
-                return json.loads(text)
+                # Robust JSON extraction - handle markdown wrappers and extra text
+                import re
+                json_match = re.search(r'\{[\s\S]*\}', text)
+                if json_match:
+                    return json.loads(json_match.group())
+                else:
+                    logger.warning(f"Could not extract JSON from LLM response: {text[:200]}")
+                    # Return fallback
+                    return {
+                        "revealed": ["Answer provided"],
+                        "avoided": [],
+                        "contradictions": [],
+                        "depth_score": 5.0,
+                        "themes_identified": [],
+                        "emotional_markers": [],
+                        "thread_opportunities": ["Follow up on their answer"]
+                    }
         except Exception as e:
             logger.warning(f"Claude analysis failed: {e}")
     
@@ -1866,6 +1884,152 @@ Be specific, not generic. Focus on this particular human."""
         "themes_identified": [],
         "emotional_markers": [],
         "thread_opportunities": ["Follow up on their answer"]
+    }
+
+
+def detect_non_answer(answer: str, question_text: str, question_vectors: list[str], 
+                       question_number: int, total_planned: int,
+                       conversation_history: list[dict]) -> dict:
+    """
+    Detect if an answer is a non-answer, and classify it as avoidance vs miss.
+    
+    Returns:
+        {
+            "is_non_answer": bool,
+            "interpretation": "avoidance" | "miss" | "engaged" | "uncertain",
+            "confidence": 0.0-1.0,
+            "reasoning": "explanation"
+        }
+    """
+    
+    # Step 1: Detect if it IS a non-answer
+    answer_stripped = answer.strip().lower()
+    answer_words = len(answer.split())
+    
+    # Explicit non-answer phrases
+    explicit_deflections = [
+        "i don't know", "i dunno", "idk", "not sure", "no idea",
+        "pass", "skip", "next", "i can't answer", "dunno",
+        "hmm", "meh", "whatever", "n/a", "na", "nah"
+    ]
+    
+    is_explicit_deflection = any(phrase in answer_stripped for phrase in explicit_deflections)
+    is_very_short = answer_words <= 5
+    
+    # If they wrote a substantial answer, it's not a non-answer
+    if answer_words > 20 and not is_explicit_deflection:
+        return {
+            "is_non_answer": False,
+            "interpretation": "engaged",
+            "confidence": 0.9,
+            "reasoning": "Substantive answer provided"
+        }
+    
+    if not is_explicit_deflection and not is_very_short:
+        return {
+            "is_non_answer": False,
+            "interpretation": "engaged", 
+            "confidence": 0.8,
+            "reasoning": "Answer appears engaged"
+        }
+    
+    # Step 2: It IS a non-answer. Now classify: avoidance vs miss
+    
+    # Factor A: Vector depth — deep vectors expect engagement
+    deep_vectors = {"confession", "perspective_shift", "time", "trajectory", 
+                    "other_eyes", "permission", "confirmation_trap"}
+    shallow_vectors = {"specificity", "name_an_example", "hypothetical", "comparison"}
+    
+    question_vector_set = set(question_vectors)
+    is_deep_question = bool(question_vector_set & deep_vectors)
+    is_shallow_question = bool(question_vector_set & shallow_vectors) and not is_deep_question
+    
+    # Factor B: Conversation position — later = more likely avoidance
+    progress_ratio = question_number / total_planned  # 0.0 to 1.0
+    
+    # Factor C: Answer length ratio — compare to their average
+    prior_lengths = []
+    for turn in conversation_history:
+        if turn.get("answer_text"):
+            prior_lengths.append(len(turn["answer_text"].split()))
+    
+    avg_prior_length = sum(prior_lengths) / len(prior_lengths) if prior_lengths else 30
+    length_ratio = answer_words / max(avg_prior_length, 1)
+    is_dramatic_drop = length_ratio < 0.2 and len(prior_lengths) >= 2
+    
+    # Factor D: Theme proximity — did prior answers engage with related themes?
+    prior_themes = set()
+    for turn in conversation_history:
+        analysis = turn.get("answer_analysis")
+        if analysis and isinstance(analysis, dict):
+            prior_themes.update(analysis.get("themes_identified", []))
+        elif analysis and isinstance(analysis, str):
+            try:
+                import json
+                parsed = json.loads(analysis)
+                prior_themes.update(parsed.get("themes_identified", []))
+            except:
+                pass
+    
+    # Questions about identity, relationships, family, fear = high emotional proximity
+    emotional_topics = {"family", "love", "fear", "identity", "loss", "commitment", 
+                        "authentic_self", "vulnerability", "relationships", "purpose"}
+    touches_emotional = bool(prior_themes & emotional_topics) or is_deep_question
+    
+    # Score it
+    avoidance_score = 0.0
+    reasons = []
+    
+    if is_deep_question:
+        avoidance_score += 0.3
+        reasons.append("Deep vector question expected engagement")
+    
+    if progress_ratio > 0.5:
+        avoidance_score += 0.2
+        reasons.append(f"Late in conversation (question {question_number}/{total_planned})")
+    
+    if is_dramatic_drop:
+        avoidance_score += 0.25
+        reasons.append(f"Dramatic length drop ({answer_words} words vs avg {avg_prior_length:.0f})")
+    
+    if touches_emotional:
+        avoidance_score += 0.15
+        reasons.append("Question touches emotional territory")
+    
+    if is_explicit_deflection:
+        avoidance_score += 0.1
+        reasons.append(f"Explicit deflection phrase detected")
+    
+    # Miss indicators (reduce avoidance score)
+    if is_shallow_question:
+        avoidance_score -= 0.2
+        reasons.append("Shallow vector — may just be a bad question fit")
+    
+    if progress_ratio < 0.3:
+        avoidance_score -= 0.15
+        reasons.append("Early in conversation — still warming up")
+    
+    if not prior_lengths:  # First question
+        avoidance_score -= 0.2
+        reasons.append("No prior answers to compare — could be cold start")
+    
+    # Clamp
+    avoidance_score = max(0.0, min(1.0, avoidance_score))
+    
+    # Classify
+    if avoidance_score >= 0.5:
+        interpretation = "avoidance"
+    elif avoidance_score <= 0.25:
+        interpretation = "miss"
+    else:
+        interpretation = "uncertain"
+    
+    return {
+        "is_non_answer": True,
+        "interpretation": interpretation,
+        "confidence": round(abs(avoidance_score - 0.375) * 2 + 0.3, 2),  # Higher confidence at extremes
+        "reasoning": "; ".join(reasons),
+        "avoidance_score": round(avoidance_score, 2)
     }
 
 
@@ -3390,7 +3554,7 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
 
 
 @app.post("/session/answer", response_model=SessionAnswerResponse)
-async def answer_conversation_question(req: SessionAnswerRequest):
+async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str = Header(...)):
     """Process an answer and generate the next question."""
     
     # Rate limiting: max 1 answer per 5 seconds per session
@@ -3405,6 +3569,9 @@ async def answer_conversation_question(req: SessionAnswerRequest):
     session = get_conversation_session(req.session_id)
     if not session:
         raise HTTPException(404, "Session not found")
+    
+    if session["api_key"] != x_api_key:
+        raise HTTPException(403, "API key does not match session creator")
     
     if session["status"] != "active":
         raise HTTPException(400, f"Session is {session['status']}, not active")
@@ -3423,6 +3590,33 @@ async def answer_conversation_question(req: SessionAnswerRequest):
         current_turn["question_text"],
         history[:-1]  # Previous turns for context
     )
+    
+    # Detect non-answers before LLM analysis
+    non_answer_result = detect_non_answer(
+        answer=req.answer,
+        question_text=current_turn["question_text"],
+        question_vectors=json.loads(current_turn.get("question_vectors", "[]")),
+        question_number=question_number,
+        total_planned=session["total_planned"],
+        conversation_history=history[:-1]
+    )
+    
+    # If avoidance detected, come back at the topic from a softer angle
+    if non_answer_result["is_non_answer"] and non_answer_result["interpretation"] == "avoidance":
+        # Override vector selection to use approach vectors
+        analysis["avoided"] = analysis.get("avoided", []) + [f"Deflected question about: {current_turn['question_text'][:50]}"]
+        # Don't count this toward their depth score
+        if "depth_score" in analysis:
+            analysis["depth_score"] = max(analysis["depth_score"] - 2, 0)
+
+    # If miss detected, move on — don't penalize depth score
+    if non_answer_result["is_non_answer"] and non_answer_result["interpretation"] == "miss":
+        # Restore depth score — bad question, not bad answer
+        if "depth_score" in analysis:
+            analysis["depth_score"] = min(analysis["depth_score"] + 1, 10)
+    
+    # Add non-answer result to analysis for storage
+    analysis["non_answer_result"] = non_answer_result
     
     # Update the current turn with answer and analysis
     update_turn_answer(req.session_id, question_number, req.answer, analysis)
@@ -3533,18 +3727,22 @@ async def answer_conversation_question(req: SessionAnswerRequest):
         question_number=questions_answered,
         vectors_engaged=vectors_engaged,
         vectors_untouched=vectors_untouched,
-        conversation_depth=conversation_depth
+        conversation_depth=conversation_depth,
+        non_answer=non_answer_result if non_answer_result["is_non_answer"] else None
     )
 
 
 @app.get("/session/{session_id}/summary", response_model=SessionSummaryResponse)
-async def get_conversation_summary(session_id: str):
+async def get_conversation_summary(session_id: str, x_api_key: str = Header(...)):
     """Get comprehensive session insights and summary."""
     
     # Get session
     session = get_conversation_session(session_id)
     if not session:
         raise HTTPException(404, "Session not found")
+    
+    if session["api_key"] != x_api_key:
+        raise HTTPException(403, "API key does not match session creator")
     
     # Get conversation history
     history = get_conversation_history(session_id)
@@ -3651,6 +3849,25 @@ Be specific and insightful, not generic. Write like you really understand this p
     avg_depth = sum(depth_scores) / len(depth_scores) if depth_scores else 5.0
     engagement_score = min(10.0, total_questions * 1.2 + avg_depth * 0.3)
     
+    # Count avoidance topics and question misses
+    avoidance_topics = []
+    question_misses = 0
+    
+    for turn in history:
+        if turn.get("answer_analysis"):
+            try:
+                analysis = json.loads(turn["answer_analysis"])
+                # Check if this was a non-answer (stored in analysis if we had it)
+                non_answer_data = analysis.get("non_answer_result")
+                if non_answer_data and non_answer_data.get("is_non_answer"):
+                    if non_answer_data.get("interpretation") == "avoidance":
+                        topic = turn["question_text"][:50] + "..." if len(turn["question_text"]) > 50 else turn["question_text"]
+                        avoidance_topics.append(f"Avoided: {topic}")
+                    elif non_answer_data.get("interpretation") == "miss":
+                        question_misses += 1
+            except:
+                continue
+    
     return SessionSummaryResponse(
         session_id=session_id,
         session_status=session["status"],
@@ -3667,7 +3884,9 @@ Be specific and insightful, not generic. Write like you really understand this p
             "depth_achieved": round(avg_depth, 1),
             "breakthrough_moments": len([s for s in depth_scores if s > 8]),
             "avoidance_instances": len(all_avoided)
-        }
+        },
+        avoidance_topics=avoidance_topics,
+        question_misses=question_misses
     )
 
 
