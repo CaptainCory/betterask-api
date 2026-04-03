@@ -829,6 +829,60 @@
     <div class="hero-hint"><span>●</span> The best questions are easy to answer but hard to answer shallowly</div>
 </section>
 
+<!-- ═══ OPENCLAW INSTALL ═══ -->
+<section style="padding: 5rem 4rem; background: var(--bg-elevated); border-top: 2px solid #FF3333; position: relative;">
+    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <!-- Prominent claw emoji -->
+        <div style="font-size: 4rem; margin-bottom: 2rem; text-shadow: 0 0 30px rgba(255, 51, 51, 0.4);">🦞</div>
+        
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: #FF3333; margin-bottom: 1.5rem; font-weight: 600;">For OpenClaw Users</div>
+        
+        <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; margin-bottom: 1.5rem; color: var(--text);">
+            One line. That's it.
+        </h2>
+        
+        <!-- Install command block -->
+        <div style="background: #1a1a1a; border: 2px solid #FF3333; border-radius: 8px; padding: 2rem; margin: 2rem auto; max-width: 600px; position: relative; box-shadow: 0 8px 32px rgba(255, 51, 51, 0.15);">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: #FF3333; font-weight: 600; text-align: center; line-height: 1.5;">
+                openclaw skill install betterask
+            </div>
+            <button onclick="copyInstallCommand()" id="copy-install-btn" style="
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: none;
+                border: 1px solid #FF3333;
+                color: #FF3333;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                border-radius: 4px;
+            ">copy</button>
+        </div>
+        
+        <div style="max-width: 600px; margin: 2rem auto 2.5rem; color: var(--text-dim); font-size: 1.1rem; line-height: 1.8;">
+            Your agent instantly gets the power to ask questions that make people think.<br>
+            <strong style="color: #FF3333;">607 questions. 21 vectors. Conversation Mode built in.</strong><br>
+            No API key needed. No setup. Just install and your agent gets smarter.
+        </div>
+        
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2rem;">
+            Works with OpenClaw v0.9+
+        </div>
+        
+        <div style="background: rgba(255, 51, 51, 0.08); border: 1px solid rgba(255, 51, 51, 0.2); padding: 1.5rem; border-radius: 6px; max-width: 500px; margin: 0 auto;">
+            <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">
+                <strong style="color: #FF3333;">Built for the OpenClaw community</strong> — not just a feature, but a nod to the ecosystem that's redefining AI-human collaboration.
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">
+                OpenClaw native. One command away.
+            </p>
+        </div>
+    </div>
+</section>
+
 <!-- ═══ VALUE PROPS ═══ -->
 <section class="value-props" id="conversation-mode">
     <div class="value-prop-grid">
@@ -932,37 +986,7 @@
     </div>
 </section>
 
-<!-- ═══ API ═══ -->
-<section class="api" id="api">
-    <div class="section-tag">// api</div>
-    <h2>Three endpoints. Total control.</h2>
 
-    <div class="endpoints">
-        <div class="endpoint">
-            <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/session/start</div>
-            <div class="endpoint-desc">Begin a structured 7-question conversation. Returns first question optimized for warm start.</div>
-        </div>
-        
-        <div class="endpoint">
-            <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/session/answer</div>
-            <div class="endpoint-desc">Submit answer, get AI-powered insight + next targeted question that pulls threads from the response.</div>
-        </div>
-        
-        <div class="endpoint">
-            <div class="endpoint-method get">GET</div>
-            <div class="endpoint-path">/session/{id}/summary</div>
-            <div class="endpoint-desc">Get comprehensive personality synthesis after conversation completion.</div>
-        </div>
-
-        <div class="endpoint">
-            <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/ask</div>
-            <div class="endpoint-desc">Original stateless question generation from 605-question corpus + LLM reasoning.</div>
-        </div>
-    </div>
-</section>
 
 <!-- ═══ PRICING ═══ -->
 <section class="pricing" id="pricing">
@@ -1087,6 +1111,38 @@
     </div>
 </section>
 
+<!-- ═══ API ═══ -->
+<section class="api" id="api" style="border-top: 1px solid var(--border);">
+    <div class="section-tag" style="color: var(--accent);">🔧 for developers</div>
+    <h2>Three endpoints. Total control.</h2>
+
+    <div class="endpoints">
+        <div class="endpoint">
+            <div class="endpoint-method post">POST</div>
+            <div class="endpoint-path">/session/start</div>
+            <div class="endpoint-desc">Begin a structured 7-question conversation. Returns first question optimized for warm start.</div>
+        </div>
+        
+        <div class="endpoint">
+            <div class="endpoint-method post">POST</div>
+            <div class="endpoint-path">/session/answer</div>
+            <div class="endpoint-desc">Submit answer, get AI-powered insight + next targeted question that pulls threads from the response.</div>
+        </div>
+        
+        <div class="endpoint">
+            <div class="endpoint-method get">GET</div>
+            <div class="endpoint-path">/session/{id}/summary</div>
+            <div class="endpoint-desc">Get comprehensive personality synthesis after conversation completion.</div>
+        </div>
+
+        <div class="endpoint">
+            <div class="endpoint-method post">POST</div>
+            <div class="endpoint-path">/ask</div>
+            <div class="endpoint-desc">Original stateless question generation from 605-question corpus + LLM reasoning.</div>
+        </div>
+    </div>
+</section>
+
 <!-- ═══ FOOTER ═══ -->
 <footer>
     <div class="footer-left">© 2026 betterask.dev · built by <a href="https://endsmalltalknow.com">cory stout</a></div>
@@ -1110,6 +1166,22 @@ function copyCode(codeId) {
     btn.style.borderColor = 'var(--green)';
     btn.style.color = 'var(--green)';
     setTimeout(() => { btn.textContent = 'copy'; btn.style.borderColor = ''; btn.style.color = ''; }, 2000);
+}
+
+function copyInstallCommand() {
+    navigator.clipboard.writeText('openclaw skill install betterask');
+    
+    const btn = document.getElementById('copy-install-btn');
+    btn.textContent = 'copied!';
+    btn.style.borderColor = '#FF3333';
+    btn.style.color = '#FF3333';
+    btn.style.backgroundColor = 'rgba(255, 51, 51, 0.1)';
+    setTimeout(() => { 
+        btn.textContent = 'copy'; 
+        btn.style.borderColor = '#FF3333'; 
+        btn.style.color = '#FF3333'; 
+        btn.style.backgroundColor = 'transparent';
+    }, 2000);
 }
 </script>
 
@@ -1221,6 +1293,12 @@ function copyCode(codeId) {
             left: 0.8rem;
             max-width: none;
         }
+    }
+    
+    /* OpenClaw install button hover */
+    #copy-install-btn:hover {
+        background-color: rgba(255, 51, 51, 0.1) !important;
+        transform: translateY(-1px);
     }
 </style>
 
