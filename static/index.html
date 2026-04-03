@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BetterAsk — How well does your AI know you?</title>
-    <meta name="description" content="The human understanding layer for AI agents. BetterAsk maps your agent's understanding of its human across 12 life domains. Every question fills a gap. Every answer raises the score.">
+    <title>BetterAsk — 7 questions. 12 minutes. A mirror you didn't know you needed.</title>
+    <meta name="description" content="Conversation Mode: Turn any conversation into structured understanding. Give your AI agent the ability to truly understand its human through 7 targeted questions.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -114,9 +114,9 @@
 
         h1 {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(3rem, 8vw, 6rem);
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
             font-weight: 700;
-            line-height: 1.0;
+            line-height: 1.1;
             letter-spacing: -0.04em;
             margin-bottom: 1.5rem;
         }
@@ -126,12 +126,74 @@
         .hero-sub {
             font-size: 1.2rem;
             color: var(--text-dim);
-            max-width: 580px;
+            max-width: 620px;
             margin-bottom: 3rem;
             line-height: 1.8;
         }
 
         .hero-sub strong { color: var(--accent); font-weight: 500; }
+
+        /* ─── Conversation Flow Visualization ─── */
+        .conversation-flow {
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem 0;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            position: relative;
+        }
+
+        .flow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .flow-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .flow-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .flow-desc {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin: 0 0.5rem;
+        }
 
         /* ─── Code Block (hero) ─── */
         .code-block {
@@ -206,6 +268,137 @@
         }
 
         .hero-hint span { color: var(--green); }
+
+        /* ─── CTA Buttons ─── */
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-fill {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+        }
+
+        .btn-fill:hover { opacity: 0.85; }
+
+        .btn-outline {
+            background: none;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ─── Value Props ─── */
+        .value-props {
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--border);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .value-prop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .value-prop {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .value-prop-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .value-prop-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .value-prop-desc {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* ─── Use Cases ─── */
+        .use-cases {
+            padding: 6rem 4rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 3rem auto;
+        }
+
+        .use-case {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            text-align: left;
+            transition: border-color 0.2s;
+        }
+
+        .use-case:hover {
+            border-color: var(--border-active);
+        }
+
+        .use-case-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .use-case-desc {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .use-case-example {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
 
         /* ─── Problem Statement ─── */
         .problem {
@@ -370,70 +563,6 @@
             margin: 0 auto 3rem;
         }
 
-        /* ─── Vectors ─── */
-        .vectors {
-            padding: 6rem 4rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .vectors .section-tag,
-        .vectors h2 { text-align: center; }
-
-        .vectors h2 { margin-bottom: 1rem; }
-
-        .vectors-sub {
-            text-align: center;
-            color: var(--text-dim);
-            max-width: 650px;
-            margin: 0 auto 4rem;
-            font-size: 1.05rem;
-            line-height: 1.8;
-        }
-
-        .vectors-sub em { color: var(--accent); font-style: normal; font-weight: 500; }
-
-        .vector-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1px;
-            max-width: 1200px;
-            margin: 0 auto;
-            background: var(--border);
-        }
-
-        .vector-cell {
-            background: var(--bg);
-            padding: 2rem 1.5rem;
-            transition: background 0.2s;
-            position: relative;
-        }
-
-        .vector-cell:hover { background: var(--bg-elevated); }
-
-        .vector-idx {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            position: absolute;
-            top: 1rem;
-            right: 1.2rem;
-        }
-
-        .vector-name {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 0.8rem;
-        }
-
-        .vector-desc {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            line-height: 1.6;
-            font-style: italic;
-        }
-
         /* ─── API ─── */
         .api {
             padding: 6rem 4rem;
@@ -445,9 +574,9 @@
 
         .endpoints {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1px;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 3rem auto 0;
             background: var(--border);
         }
@@ -455,6 +584,7 @@
         .endpoint {
             padding: 1.5rem;
             background: var(--bg);
+            text-align: left;
         }
 
         .endpoint-method {
@@ -474,12 +604,14 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
             color: var(--text);
+            margin-bottom: 0.5rem;
         }
 
         .endpoint-desc {
             font-size: 0.75rem;
             color: var(--text-muted);
             margin-top: 0.4rem;
+            line-height: 1.4;
         }
 
         /* ─── Pricing ─── */
@@ -533,28 +665,6 @@
             margin-bottom: 1.5rem;
         }
 
-        .btn {
-            display: inline-block;
-            padding: 1rem 2.5rem;
-            text-align: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-fill {
-            background: var(--accent);
-            color: var(--bg);
-            border: none;
-        }
-
-        .btn-fill:hover { opacity: 0.85; }
-
         /* ─── Footer ─── */
         footer {
             padding: 3rem 4rem;
@@ -588,146 +698,47 @@
 
         .footer-right a:hover { color: var(--accent); }
 
+        /* ─── Testimonial ─── */
+        .testimonial {
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            background: var(--bg-elevated);
+        }
+
+        .testimonial-quote {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.5rem, 4vw, 2.8rem);
+            font-weight: 300;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+            margin-bottom: 2rem;
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .testimonial-source {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            letter-spacing: 0.05em;
+        }
+
         /* ─── Responsive ─── */
         @media (max-width: 768px) {
             nav { padding: 1rem 1.5rem; }
             .nav-links a { margin-left: 1rem; }
-            .hero, .problem, .vectors, .how, .pricing, .api { padding: 3rem 1.5rem; }
-            .vector-grid { grid-template-columns: 1fr; }
+            .hero, .problem, .use-cases, .how, .pricing, .api, .value-props { padding: 3rem 1.5rem; }
             .before-after { grid-template-columns: 1fr; }
             .before-after-side.bad { border-right: none; border-bottom: 1px solid var(--border); }
             footer { flex-direction: column; text-align: center; }
-            /* Life domains responsive */
-            .vectors section:first-of-type > div:last-child { grid-template-columns: 1fr !important; }
+            .flow-steps { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); margin: 1rem 0; }
+            .cta-buttons { flex-direction: column; align-items: center; }
         }
 
         @media (max-width: 500px) {
             .endpoints { grid-template-columns: 1fr; }
-        }
-
-        @media (min-width: 769px) {
-            .vector-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        @media (max-width: 1100px) and (min-width: 769px) {
-            .vector-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* Life domains responsive */
-        @media (max-width: 900px) {
-            section[style*="grid-template-columns: repeat(4, 1fr)"] > div {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-        }
-
-        @media (max-width: 500px) {
-            section[style*="grid-template-columns: repeat(4, 1fr)"] > div {
-                grid-template-columns: 1fr !important;
-            }
-        }
-
-        /* ─── Understanding Score Styles ─── */
-        .score-display {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 4.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            line-height: 1;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 30px rgba(0, 172, 230, 0.3);
-            animation: scoreGlow 3s ease-in-out infinite;
-        }
-
-        @keyframes scoreGlow {
-            0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(0, 172, 230, 0.3); }
-            50% { transform: scale(1.05); text-shadow: 0 0 40px rgba(0, 172, 230, 0.5); }
-        }
-
-        .chat-conversation {
-            max-width: 500px;
-            margin: 2rem auto;
-            text-align: left;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-
-        .chat-message {
-            display: flex;
-            margin-bottom: 1rem;
-            align-items: flex-start;
-        }
-
-        .chat-message.human {
-            justify-content: flex-end;
-        }
-
-        .chat-message.agent {
-            justify-content: flex-start;
-        }
-
-        .chat-bubble {
-            max-width: 80%;
-            padding: 0.8rem 1.2rem;
-            border-radius: 18px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .chat-bubble.human {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text);
-            border-bottom-right-radius: 6px;
-        }
-
-        .chat-bubble.agent {
-            background: var(--cerulean);
-            color: #000;
-            border-bottom-left-radius: 6px;
-        }
-
-        .stage-score {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .domain-bar {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-        }
-
-        .domain-name {
-            width: 140px;
-            color: var(--text);
-        }
-
-        .progress-bar {
-            flex: 1;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            margin: 0 1rem;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent);
-            border-radius: 4px;
-        }
-
-        .domain-percent {
-            color: var(--text-dim);
-            width: 40px;
-            text-align: right;
         }
     </style>
 </head>
@@ -736,8 +747,8 @@
 <nav>
     <div class="logo">betterask<span>.dev</span></div>
     <div class="nav-links">
-        <a href="#how-it-works">how it works</a>
-        <a href="#the-21">the 21</a>
+        <a href="#conversation-mode">conversation mode</a>
+        <a href="#use-cases">use cases</a>
         <a href="#api">api</a>
         <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank">📖 book</a>
     </div>
@@ -745,39 +756,45 @@
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
-    <div class="hero-tag">the human understanding layer for AI agents</div>
+    <div class="hero-tag">NEW: conversation mode</div>
 
-    <h1>How well does your AI know you?</h1>
-
-    <div class="score-display">34%</div>
+    <h1>7 questions. 12 minutes.<br><span class="dim">A mirror you didn't know you needed.</span></h1>
     
     <p class="hero-sub">
-        <strong>Now there's a number.</strong> BetterAsk maps your agent's understanding of its human across 12 life domains. Every question fills a gap. Every answer raises the score.
+        <strong>Conversation Mode</strong> turns any chat into structured understanding. Your AI doesn't just ask random questions — it builds a complete picture through 7 targeted questions that get progressively deeper.
     </p>
 
-    <div class="chat-conversation">
-        <div class="chat-message human">
-            <div class="chat-bubble human">"How well do you actually know me?"</div>
-        </div>
-        
-        <div class="chat-message agent">
-            <div class="chat-bubble agent">"34%. I know your career and routines. But I have blind spots — your relationship with money, your inner life, what you're running from. Want me to ask something that helps?"</div>
-        </div>
-        
-        <div class="chat-message human">
-            <div class="chat-bubble human">"...yeah. Go ahead."</div>
-        </div>
-        
-        <div class="chat-message agent">
-            <div class="chat-bubble agent">"If you repeated yesterday 365 times, where would you be?"</div>
-        </div>
-        
-        <div class="chat-message human">
-            <div class="chat-bubble human">[answers]</div>
-        </div>
-        
-        <div class="chat-message agent">
-            <div class="chat-bubble agent">"I understand you 41% now."</div>
+    <div class="conversation-flow">
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="flow-icon">🎯</div>
+                <div class="flow-label">START</div>
+                <div class="flow-desc">Begin structured conversation</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="flow-icon">💬</div>
+                <div class="flow-label">ANSWER</div>
+                <div class="flow-desc">Human responds naturally</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="flow-icon">💡</div>
+                <div class="flow-label">INSIGHT</div>
+                <div class="flow-desc">AI analyzes & understands</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="flow-icon">🎭</div>
+                <div class="flow-label">NEXT Q</div>
+                <div class="flow-desc">Pulls thread from answer</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="flow-icon">🪞</div>
+                <div class="flow-label">SUMMARY</div>
+                <div class="flow-desc">Complete personality sketch</div>
+            </div>
         </div>
     </div>
 
@@ -786,406 +803,163 @@
             <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
             <button class="copy-btn" onclick="copyCode()" id="copy-btn">copy</button>
         </div>
-        <pre class="code-body" id="code-block"><span class="c-comment">// Step 1: Ask</span>
-<span class="c-method">POST</span> <span class="c-url">/ask</span> → {
-  <span class="c-key">"question"</span>: <span class="c-string">"..."</span>,
-  <span class="c-key">"gap_targeted"</span>: <span class="c-string">"Financial Reality"</span>,
-  <span class="c-key">"understanding_score"</span>: <span class="c-num">0.34</span>
+        <pre class="code-body" id="code-block"><span class="c-comment">// Start a 7-question conversation</span>
+<span class="c-method">POST</span> <span class="c-url">/session/start</span> → {
+  <span class="c-key">"session_id"</span>: <span class="c-string">"conv_abc123"</span>,
+  <span class="c-key">"question"</span>: <span class="c-string">"What's driving your creative surge right now?"</span>
 }
 
-<span class="c-comment">// Step 2: Human answers...</span>
+<span class="c-comment">// Submit answer, get insight + next question</span>
+<span class="c-method">POST</span> <span class="c-url">/session/answer</span> → {
+  <span class="c-key">"insight"</span>: { <span class="c-key">"revealed"</span>: [<span class="c-string">"Values creative freedom over stability"</span>] },
+  <span class="c-key">"next_question"</span>: <span class="c-string">"What would you regret not exploring while you have this energy?"</span>
+}
 
-<span class="c-comment">// Step 3: Learn</span>
-<span class="c-method">POST</span> <span class="c-url">/learn</span> → {
-  <span class="c-key">"understanding_score"</span>: <span class="c-num">0.41</span>,
-  <span class="c-key">"next_gap"</span>: <span class="c-string">"Financial Reality"</span>
+<span class="c-comment">// After 7 questions: full personality synthesis</span>
+<span class="c-method">GET</span> <span class="c-url">/session/{id}/summary</span> → {
+  <span class="c-key">"personality_sketch"</span>: <span class="c-string">"This person is fundamentally driven by..."</span>
 }</pre>
     </div>
-    <div class="hero-hint"><span>●</span> The /ask → /learn cycle — every answer is a level-up</div>
+    
+    <div class="cta-buttons">
+        <a href="/api-key/free" class="btn btn-fill">Get Your API Key — Free</a>
+        <a href="/docs" class="btn btn-outline">Read the Docs</a>
+    </div>
+
+    <div class="hero-hint"><span>●</span> The best questions are easy to answer but hard to answer shallowly</div>
 </section>
 
-<!-- ═══ PROBLEM ═══ -->
-<section class="problem">
-    <div class="section-tag">// the problem</div>
-    <h2>Your agent is a stranger wearing a helpful mask.</h2>
+<!-- ═══ VALUE PROPS ═══ -->
+<section class="value-props" id="conversation-mode">
+    <div class="value-prop-grid">
+        <div class="value-prop">
+            <span class="value-prop-icon">🧵</span>
+            <div class="value-prop-title">Thread Pulling</div>
+            <div class="value-prop-desc">Each question references specific details from prior answers. No generic follow-ups — every question builds on what was just revealed.</div>
+        </div>
+        
+        <div class="value-prop">
+            <span class="value-prop-icon">🎯</span>
+            <div class="value-prop-title">Avoidance Detection</div>
+            <div class="value-prop-desc">Distinguishes between deflection (meaningful signal) and bad questions (our miss). Comes back at avoided topics from softer angles.</div>
+        </div>
+        
+        <div class="value-prop">
+            <span class="value-prop-icon">⚡</span>
+            <div class="value-prop-title">Progressive Depth</div>
+            <div class="value-prop-desc">Starts warm and approachable, then dives deep. Recallability scoring ensures questions are easy to answer but impossible to answer shallowly.</div>
+        </div>
+    </div>
+</section>
 
-    <p>
-        It knows your calendar. Your to-do list. Your location. But it doesn't know what keeps you up at night, what you're avoiding, or whether you're actually happy. The understanding score measures the gap between <em>'useful'</em> and <em>'known'</em>.
-    </p>
+<!-- ═══ TESTIMONIAL ═══ -->
+<section class="testimonial">
+    <div class="testimonial-quote">"7 questions. 12 minutes. A mirror you didn't know you needed."</div>
+    <div class="testimonial-source">What every conversation becomes with BetterAsk</div>
+</section>
+
+<!-- ═══ USE CASES ═══ -->
+<section class="use-cases" id="use-cases">
+    <div class="section-tag">// use cases</div>
+    <h2>Turn every interaction into understanding</h2>
+
+    <div class="use-case-grid">
+        <div class="use-case">
+            <div class="use-case-title">🤖 AI Agents</div>
+            <div class="use-case-desc">Give your agent the ability to truly understand its human through structured conversation. Replace surface-level chitchat with deep comprehension.</div>
+            <div class="use-case-example">"Now I know what drives you, what you avoid, and what you're protecting."</div>
+        </div>
+
+        <div class="use-case">
+            <div class="use-case-title">📋 Onboarding</div>
+            <div class="use-case-desc">Replace boring forms with engaging questions that reveal what matters. Turn data collection into relationship building.</div>
+            <div class="use-case-example">"Tell me about the last time you felt truly productive" vs "Rate your productivity 1-10"</div>
+        </div>
+
+        <div class="use-case">
+            <div class="use-case-title">🎯 Coaching & Therapy</div>
+            <div class="use-case-desc">Structured conversation that surfaces avoidance patterns and contradictions. Perfect for breakthrough sessions and assessment.</div>
+            <div class="use-case-example">"What are you protecting by keeping your relationships surface-level?"</div>
+        </div>
+
+        <div class="use-case">
+            <div class="use-case-title">💕 Dating & Social</div>
+            <div class="use-case-desc">Icebreakers that actually work, personalized to the conversation. Skip small talk and get to what matters.</div>
+            <div class="use-case-example">"When was the last time you laughed so hard you couldn't breathe?"</div>
+        </div>
+
+        <div class="use-case">
+            <div class="use-case-title">🏢 Team Building</div>
+            <div class="use-case-desc">Deeper connections between coworkers in 7 questions. Perfect for remote teams and new employee integration.</div>
+            <div class="use-case-example">"What's something you believe strongly that you've completely changed your mind about?"</div>
+        </div>
+
+        <div class="use-case">
+            <div class="use-case-title">🪞 Self-Discovery</div>
+            <div class="use-case-desc">Turn the mirror on yourself. Perfect for journaling apps, reflection tools, and personal development platforms.</div>
+            <div class="use-case-example">"What would 10-year-old you think of your life right now?"</div>
+        </div>
+    </div>
 </section>
 
 <!-- ═══ HOW IT WORKS ═══ -->
-<section class="how" id="how-it-works">
-    <div class="section-tag">// how it works</div>
-    <h2>Watch the score climb</h2>
+<section class="how">
+    <div class="section-tag">// how conversation mode works</div>
+    <h2>Progressive depth, intelligent threading</h2>
 
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; max-width: 1000px; margin: 3rem auto 0; text-align: center;">
         
         <!-- Stage 1 -->
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
-            <div class="stage-score">0%</div>
-            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">First question</h3>
-            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Agent sends what it knows. BetterAsk finds the blind spots. First question targets the biggest gap.</p>
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--accent); margin-bottom: 1rem;">1-2</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Warm Start</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Easy, approachable questions that anyone can answer. Build trust and establish communication style.</p>
         </div>
 
         <!-- Stage 2 -->
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
-            <div class="stage-score">34%</div>
-            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Building understanding</h3>
-            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Each answer feeds back through /learn. The profile grows. Questions get deeper as trust builds.</p>
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--accent); margin-bottom: 1rem;">3-6</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Deep Dive</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Pull specific threads from previous answers. Surface contradictions, avoidance patterns, and core values.</p>
         </div>
 
         <!-- Stage 3 -->
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2.5rem 2rem;">
-            <div class="stage-score">85%+</div>
-            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">The agent gets it</h3>
-            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Your AI stops asking surface questions and starts asking the ones that make you feel known.</p>
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--accent); margin-bottom: 1rem;">7</div>
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: var(--text);">Reflective Close</h3>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.7;">Final question that ties everything together. Often the most revealing — "What question do you wish I'd asked?"</p>
         </div>
     </div>
-</section>
-
-<!-- ═══ 12 LIFE DOMAINS ═══ -->
-<section style="padding: 6rem 4rem; border-top: 1px solid var(--border); text-align: center;">
-    <div class="section-tag">// 12 life domains</div>
-    <h2>12 Domains. One map of a human.</h2>
-    <p style="color: var(--text-dim); font-size: 1.05rem; max-width: 700px; margin: 0 auto 4rem; line-height: 1.8;">
-        BetterAsk fills each domain through targeted questions. High-priority gaps get addressed first.
-    </p>
-    
-    <div style="max-width: 600px; margin: 0 auto; text-align: left;">
-        <div class="domain-bar">
-            <div class="domain-name">Daily Routines</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
-            <div class="domain-percent">40%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Career Direction</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
-            <div class="domain-percent">60%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Relationship Quality</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
-            <div class="domain-percent">0%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Family Dynamics</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 15%"></div></div>
-            <div class="domain-percent">15%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Financial Reality</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
-            <div class="domain-percent">0%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Health & Body</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 25%"></div></div>
-            <div class="domain-percent">25%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Social Life</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 80%"></div></div>
-            <div class="domain-percent">80%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Inner Life & Meaning</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 5%"></div></div>
-            <div class="domain-percent">5%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Creative Expression</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 30%"></div></div>
-            <div class="domain-percent">30%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Growth Edge</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 45%"></div></div>
-            <div class="domain-percent">45%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Fun & Play</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 70%"></div></div>
-            <div class="domain-percent">70%</div>
-        </div>
-        
-        <div class="domain-bar">
-            <div class="domain-name">Past & Wounds</div>
-            <div class="progress-bar"><div class="progress-fill" style="width: 10%"></div></div>
-            <div class="domain-percent">10%</div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ VECTORS ═══ -->
-<section class="vectors" id="the-21">
-    <div class="section-tag">// the 21 vectors</div>
-    <h2>21 vectors under the hood.</h2>
-    <p class="vectors-sub">
-        The engine selects the right combination automatically. The agent never touches them.
-    </p>
-
-    <div class="vector-grid">
-        <div class="vector-cell">
-            <div class="vector-idx">01</div>
-            <div class="vector-name">Specificity</div>
-            <div class="vector-desc">"How many?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">02</div>
-            <div class="vector-name">Name an Example</div>
-            <div class="vector-desc">"Like what?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">03</div>
-            <div class="vector-name">Absurdity</div>
-            <div class="vector-desc">"Wait, seriously?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">04</div>
-            <div class="vector-name">Self-Assessment</div>
-            <div class="vector-desc">"How honest are you being?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">05</div>
-            <div class="vector-name">Hypothetical</div>
-            <div class="vector-desc">"What if?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">06</div>
-            <div class="vector-name">Perspective Shift</div>
-            <div class="vector-desc">"Seen from where?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">07</div>
-            <div class="vector-name">Time</div>
-            <div class="vector-desc">"When? How long? What changed?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">08</div>
-            <div class="vector-name">Comparison</div>
-            <div class="vector-desc">"Which one wins?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">09</div>
-            <div class="vector-name">Emotion</div>
-            <div class="vector-desc">"What did that feel like?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">10</div>
-            <div class="vector-name">Subversion</div>
-            <div class="vector-desc">"But what if it's actually…"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">11</div>
-            <div class="vector-name">Sensory / Imagination</div>
-            <div class="vector-desc">"What does it look/smell/sound like?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">12</div>
-            <div class="vector-name">Identity</div>
-            <div class="vector-desc">"Who are you in this?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">13</div>
-            <div class="vector-name">False Binary</div>
-            <div class="vector-desc">"This or that?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">14</div>
-            <div class="vector-name">Metaphor</div>
-            <div class="vector-desc">"What are you LIKE?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">15</div>
-            <div class="vector-name">Confirmation Trap</div>
-            <div class="vector-desc">"Ever tried to prove yourself wrong?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">16</div>
-            <div class="vector-name">Permission</div>
-            <div class="vector-desc">"You can say it here."</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">17</div>
-            <div class="vector-name">Other Eyes</div>
-            <div class="vector-desc">"What would they say about you?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">18</div>
-            <div class="vector-name">Contradiction</div>
-            <div class="vector-desc">"Then why don't you?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">19</div>
-            <div class="vector-name">Trajectory</div>
-            <div class="vector-desc">"Which direction are you moving?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">20</div>
-            <div class="vector-name">Confession</div>
-            <div class="vector-desc">"What are you hiding, even from yourself?"</div>
-        </div>
-
-        <div class="vector-cell">
-            <div class="vector-idx">21</div>
-            <div class="vector-name">Scale</div>
-            <div class="vector-desc">"Add it all up — now how does it feel?"</div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ BOOK TIE-IN ═══ -->
-<section style="padding: 6rem 4rem; border-top: 1px solid var(--border); text-align: center; max-width: 800px; margin: 0 auto;">
-    <div class="section-tag">// the expansion pack</div>
-    <h2>607 questions. The expansion pack.</h2>
-    <p style="color: var(--text-dim); font-size: 1.05rem; max-width: 600px; margin: 0 auto 3rem; line-height: 1.8;">
-        When the engine runs out of questions for a domain, there are 607 more in END SMALL TALK. The book is the research behind the score.
-    </p>
-    
-    <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" class="btn btn-fill">Get the Book →</a>
 </section>
 
 <!-- ═══ API ═══ -->
 <section class="api" id="api">
     <div class="section-tag">// api</div>
-    <h2>One endpoint. Zero config.</h2>
+    <h2>Three endpoints. Total control.</h2>
 
     <div class="endpoints">
         <div class="endpoint">
             <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/ask</div>
-            <div class="endpoint-desc">Send context, get perfect question</div>
+            <div class="endpoint-path">/session/start</div>
+            <div class="endpoint-desc">Begin a structured 7-question conversation. Returns first question optimized for warm start.</div>
         </div>
+        
         <div class="endpoint">
             <div class="endpoint-method post">POST</div>
-            <div class="endpoint-path">/learn</div>
-            <div class="endpoint-desc">Update understanding score</div>
+            <div class="endpoint-path">/session/answer</div>
+            <div class="endpoint-desc">Submit answer, get AI-powered insight + next targeted question that pulls threads from the response.</div>
         </div>
+        
         <div class="endpoint">
             <div class="endpoint-method get">GET</div>
-            <div class="endpoint-path">/score</div>
-            <div class="endpoint-desc">Get current understanding level</div>
+            <div class="endpoint-path">/session/{id}/summary</div>
+            <div class="endpoint-desc">Get comprehensive personality synthesis after conversation completion.</div>
         </div>
-    </div>
-</section>
 
-<!-- ═══ GET STARTED ═══ -->
-<section style="padding: 6rem 4rem; border-top: 1px solid var(--border); text-align: center;">
-    <div class="section-tag">// get started</div>
-    <h2>Three steps. Five minutes. Start understanding.</h2>
-    
-    <div style="max-width: 900px; margin: 3rem auto; text-align: left;">
-        
-        <!-- Step 1 -->
-        <div style="margin-bottom: 4rem;">
-            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); margin-right: 1rem;">1.</div>
-                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--text); margin: 0;">Get your API key</h3>
-            </div>
-            
-            <div class="code-block">
-                <div class="code-header">
-                    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-                    <button class="copy-btn" onclick="copyCode('step1-code')" id="step1-copy">copy</button>
-                </div>
-                <pre class="code-body" id="step1-code"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/api-key/free</span></pre>
-            </div>
-            
-            <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1rem;">
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.5rem;">Response:</div>
-                <pre style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); margin: 0;">{
-  <span class="c-key">"api_key"</span>: <span class="c-string">"ba_live_xxx..."</span>,
-  <span class="c-key">"tier"</span>: <span class="c-string">"free"</span>
-}</pre>
-            </div>
-        </div>
-        
-        <!-- Step 2 -->
-        <div style="margin-bottom: 4rem;">
-            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); margin-right: 1rem;">2.</div>
-                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--text); margin: 0;">Ask your first question</h3>
-            </div>
-            
-            <div class="code-block">
-                <div class="code-header">
-                    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-                    <button class="copy-btn" onclick="copyCode('step2-code')" id="step2-copy">copy</button>
-                </div>
-                <pre class="code-body" id="step2-code"><span class="c-method">curl</span> <span class="c-url">https://betterask.dev/ask</span> \
-  <span class="c-flag">-H</span> <span class="c-string">"X-API-Key: YOUR_KEY"</span> \
-  <span class="c-flag">-H</span> <span class="c-string">"Content-Type: application/json"</span> \
-  <span class="c-flag">-d</span> <span class="c-string">'{"human_id": "user-1", "memory": "Likes hiking, works in tech"}'</span></pre>
-            </div>
-            
-            <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1rem;">
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.5rem;">Returns the perfect question:</div>
-                <div style="font-size: 1rem; color: var(--text); font-style: italic; line-height: 1.6;">"If you repeated yesterday 365 times, where would you be?"</div>
-            </div>
-        </div>
-        
-        <!-- Step 3 -->
-        <div style="margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-                <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); margin-right: 1rem;">3.</div>
-                <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 600; color: var(--text); margin: 0;">Learn from the answer</h3>
-            </div>
-            
-            <div class="code-block">
-                <div class="code-header">
-                    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-                    <button class="copy-btn" onclick="copyCode('step3-code')" id="step3-copy">copy</button>
-                </div>
-                <pre class="code-body" id="step3-code"><span class="c-method">curl</span> <span class="c-flag">-X POST</span> <span class="c-url">https://betterask.dev/learn</span> \
-  <span class="c-flag">-H</span> <span class="c-string">"X-API-Key: YOUR_KEY"</span> \
-  <span class="c-flag">-H</span> <span class="c-string">"Content-Type: application/json"</span> \
-  <span class="c-flag">-d</span> <span class="c-string">'{"human_id": "user-1", "question_asked": "...", "answer": "..."}'</span></pre>
-            </div>
-            
-            <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1rem;">
-                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1rem;">Understanding score climbs:</div>
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--accent);">34%</div>
-                    <div style="color: var(--text-dim); font-size: 1.2rem;">→</div>
-                    <div style="font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--green);">41%</div>
-                    <div style="color: var(--tangerine); font-size: 0.9rem; font-weight: 600;">+7% understanding</div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 3rem;">
-            <p style="color: var(--text-dim); font-size: 1.1rem; margin-bottom: 2rem;">That's it. Your AI now understands its human 7% better.</p>
-            <a href="/docs" style="display: inline-block; padding: 1rem 2.5rem; background: var(--accent); color: var(--bg); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Try It Now →</a>
+        <div class="endpoint">
+            <div class="endpoint-method post">POST</div>
+            <div class="endpoint-path">/ask</div>
+            <div class="endpoint-desc">Original stateless question generation from 605-question corpus + LLM reasoning.</div>
         </div>
     </div>
 </section>
@@ -1201,11 +975,11 @@
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2rem; text-align: center;">
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 1rem;">FREE</div>
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1;">$0</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">100 questions/day</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">100 calls/day</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Start mapping your first human</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Conversation Mode + /ask</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ All 21 vectors</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Understanding score tracking</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Personality synthesis</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim);">✓ No credit card</div>
             </div>
         </div>
@@ -1215,12 +989,12 @@
             <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--cerulean, #00ACE6); color: #000; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 1rem;">MOST POPULAR</div>
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--cerulean, #00ACE6); margin-bottom: 1rem;">PRO</div>
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1;">$29</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">5,000 questions/day</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">5,000 calls/day</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ For agents in production building real understanding</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Priority response</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Production conversation intelligence</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Priority response times</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Advanced analytics</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Understanding score API</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Thread-pulling insights</div>
             </div>
         </div>
 
@@ -1228,11 +1002,11 @@
         <div style="background: var(--bg-elevated); border: 1px solid var(--border); padding: 2rem; text-align: center;">
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--tangerine, #FF8C42); margin-bottom: 1rem;">SCALE</div>
             <div style="font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; color: var(--text); line-height: 1;">$0.005</div>
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">/question</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin: 0.5rem 0 1.5rem;">/call</div>
             <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: left;">
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Unlimited — for agents serving thousands of humans</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Volume discounts</div>
-                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Custom domain mapping</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Enterprise conversation intelligence</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Volume discounts available</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem;">✓ Custom integrations</div>
                 <div style="font-size: 0.85rem; color: var(--text-dim);">✓ Dedicated support</div>
             </div>
         </div>
@@ -1241,9 +1015,9 @@
     <div style="text-align: center; margin-top: 2rem;">
         <div class="book-promo">
             <div class="book-promo-icon">📖</div>
-            <div class="book-promo-title">Built on 607 questions from END SMALL TALK</div>
+            <div class="book-promo-title">Built on END SMALL TALK methodology</div>
             <p class="book-promo-desc">
-                by Cory Stout — the research behind the engine.
+                605 questions across 21 vectors — the research behind the conversation engine.
             </p>
             <a href="https://www.amazon.com/End-Small-Talk-Questions-Conversations/dp/B0CH25NFZM?tag=woodies-20" target="_blank" class="btn btn-fill">Get the Book →</a>
         </div>
@@ -1255,7 +1029,7 @@
     <div style="max-width: 640px; margin: 0 auto;">
         <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2rem;">// our mission</div>
         <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 300; line-height: 1.3; letter-spacing: -0.02em; margin-bottom: 2rem;">
-            Illuminate human consciousness<br><span style="color: var(--accent);">through questioning.</span>
+            Turn every conversation<br><span style="color: var(--accent);">into a mirror.</span>
         </h2>
         <p style="color: var(--text-dim); font-size: 1rem; line-height: 1.8; max-width: 520px; margin: 0 auto;">
             As AI becomes ubiquitous, every human will have constant AI companions. The quality of those relationships will determine whether AI enhances human flourishing or becomes sophisticated small talk. We're building the bridge between artificial intelligence and human understanding — one question at a time.
@@ -1267,7 +1041,7 @@
 <footer>
     <div class="footer-left">© 2026 betterask.dev · built on <a href="https://endsmalltalknow.com">END SMALL TALK</a> by cory stout</div>
     <div class="footer-right">
-        <a href="#api">docs</a>
+        <a href="/docs">docs</a>
         <a href="/privacy.html">privacy</a>
         <a href="/terms.html">terms</a>
         <a href="mailto:hello@betterask.dev">contact</a>
@@ -1281,13 +1055,7 @@ function copyCode(codeId) {
     const el = document.getElementById(codeId);
     navigator.clipboard.writeText(el.textContent);
     
-    // Handle button feedback
-    let btnId = 'copy-btn';
-    if (codeId === 'step1-code') btnId = 'step1-copy';
-    else if (codeId === 'step2-code') btnId = 'step2-copy';
-    else if (codeId === 'step3-code') btnId = 'step3-copy';
-    
-    const btn = document.getElementById(btnId);
+    const btn = document.getElementById('copy-btn');
     btn.textContent = 'copied';
     btn.style.borderColor = 'var(--green)';
     btn.style.color = 'var(--green)';
@@ -1317,6 +1085,7 @@ function copyCode(codeId) {
             transform: translateY(100vh) rotate(0deg) scale(0.8);
             opacity: 0;
         }
+
         8% {
             opacity: var(--peak-opacity, 0.15);
         }
@@ -1385,7 +1154,7 @@ function copyCode(codeId) {
     <span style="font-size: 1.8rem; line-height: 1;">📕</span>
     <div>
         <div style="font-weight: 600; font-size: 0.85rem; color: var(--accent);">END SMALL TALK</div>
-        <div style="color: var(--text-dim); font-size: 0.7rem;">The book behind the engine — 607 questions on Amazon</div>
+        <div style="color: var(--text-dim); font-size: 0.7rem;">The book behind the engine — 605 questions on Amazon</div>
     </div>
 </a>
 
