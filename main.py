@@ -103,6 +103,17 @@ TIERS = {
 # Per-call rate for metered billing (cents)
 METERED_RATE = 0.005
 
+# Key lifetime per tier (days)
+KEY_LIFETIME_DAYS = {
+    "free": 30,
+    "pro": 365,
+    "scale": 365,
+    "builder": 365,  # legacy alias
+    "metered": 365,  # legacy alias
+}
+KEY_GRACE_PERIOD_DAYS = 7  # keys still work this many days past expiry (with warnings)
+KEY_WARNING_DAYS = 14  # start warning this many days before expiry
+
 # Reverse lookup: stripe product -> tier
 PRODUCT_TO_TIER = {v["stripe_product_id"]: k for k, v in TIERS.items() if v["stripe_product_id"]}
 
@@ -334,6 +345,28 @@ def init_db():
             conn.commit()
             logger.info("Backfilled %d API key hashes", len(unhashed))
 
+        # --- Migration: add expires_at column for key rotation ---
+        try:
+            cur.execute("ALTER TABLE api_keys ADD COLUMN expires_at TEXT")
+            conn.commit()
+            logger.info("Added expires_at column to api_keys")
+        except psycopg2.Error:
+            conn.rollback()
+
+        # Backfill expiry for existing keys that don't have one
+        cur.execute("SELECT key, tier, created_at FROM api_keys WHERE expires_at IS NULL")
+        no_expiry = cur.fetchall()
+        if no_expiry:
+            from datetime import datetime, timedelta
+            for row in no_expiry:
+                tier = row.get("tier", "free")
+                lifetime = KEY_LIFETIME_DAYS.get(tier, 30)
+                # Set expiry relative to now (gives existing users a fresh start)
+                expires = (datetime.utcnow() + timedelta(days=lifetime)).isoformat()
+                cur.execute("UPDATE api_keys SET expires_at = %s WHERE key = %s", (expires, row["key"]))
+            conn.commit()
+            logger.info("Backfilled expiry dates for %d API keys", len(no_expiry))
+
     finally:
         conn.close()
     logger.info("Database initialized with PostgreSQL")
@@ -357,20 +390,23 @@ def generate_api_key() -> str:
 
 def create_api_key(tier: str = "free", stripe_customer_id: str | None = None,
                    stripe_subscription_id: str | None = None) -> str:
+    from datetime import datetime, timedelta
     key = generate_api_key()
     hashed = hash_api_key(key)
     prefix = key_prefix(key)
+    lifetime = KEY_LIFETIME_DAYS.get(tier, 30)
+    expires_at = (datetime.utcnow() + timedelta(days=lifetime)).isoformat()
     conn = get_db()
     try:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO api_keys (key, key_hash, key_prefix, stripe_customer_id, stripe_subscription_id, tier, calls_today, calls_date) VALUES (%s, %s, %s, %s, %s, %s, 0, %s)",
-            (key, hashed, prefix, stripe_customer_id, stripe_subscription_id, tier, date.today().isoformat()),
+            "INSERT INTO api_keys (key, key_hash, key_prefix, stripe_customer_id, stripe_subscription_id, tier, calls_today, calls_date, expires_at) VALUES (%s, %s, %s, %s, %s, %s, 0, %s, %s)",
+            (key, hashed, prefix, stripe_customer_id, stripe_subscription_id, tier, date.today().isoformat(), expires_at),
         )
         conn.commit()
     finally:
         conn.close()
-    logger.info("Created API key for tier=%s customer=%s prefix=%s", tier, stripe_customer_id, prefix)
+    logger.info("Created API key for tier=%s customer=%s prefix=%s expires=%s", tier, stripe_customer_id, prefix, expires_at)
     return key
 
 
@@ -736,12 +772,44 @@ def check_rate_limit(client_ip: str):
 # ---------------------------------------------------------------------------
 
 def validate_api_key(x_api_key: str | None) -> dict:
-    """Validate API key and check tier rate limit. Returns the key record."""
+    """Validate API key and check tier rate limit + expiry. Returns the key record."""
+    from datetime import datetime, timedelta
     if not x_api_key:
         raise HTTPException(401, detail="Missing X-API-Key header. Get one at /api-key/free or subscribe at /plans.")
     record = get_api_key_record(x_api_key)
     if not record:
         raise HTTPException(401, detail="Invalid or deactivated API key.")
+
+    # Check key expiry
+    expires_at = record.get("expires_at")
+    if expires_at:
+        try:
+            expiry = datetime.fromisoformat(expires_at)
+            now = datetime.utcnow()
+            grace_deadline = expiry + timedelta(days=KEY_GRACE_PERIOD_DAYS)
+
+            if now > grace_deadline:
+                # Hard expired — past grace period
+                tier = record.get("tier", "free")
+                raise HTTPException(
+                    401,
+                    detail=f"API key expired on {expiry.strftime('%Y-%m-%d')}. Generate a new one at {BASE_URL}/api-key/free"
+                    + (f" or upgrade to Pro for annual keys at {BASE_URL}/#pricing" if tier == "free" else ""),
+                )
+
+            if now > expiry:
+                # In grace period — still works but flagged
+                record["_expired"] = True
+                record["_grace_days_remaining"] = (grace_deadline - now).days
+
+            elif (expiry - now).days <= KEY_WARNING_DAYS:
+                # Warning window — key works fine, heads up
+                record["_expiry_warning"] = True
+                record["_days_until_expiry"] = (expiry - now).days
+
+        except (ValueError, TypeError):
+            pass  # Malformed date — skip expiry check
+
     if not increment_usage(x_api_key):
         tier = record["tier"]
         limit = TIERS.get(tier, {}).get("calls_per_day", 0)
@@ -1308,11 +1376,15 @@ async def create_free_key(request: Request):
     _free_key_timestamps[client_ip] = timestamps
 
     key = create_api_key(tier="free")
+    from datetime import datetime, timedelta
+    expires = (datetime.utcnow() + timedelta(days=KEY_LIFETIME_DAYS["free"])).strftime("%Y-%m-%d")
     return {
         "api_key": key,
         "tier": "free",
         "calls_per_day": TIERS["free"]["calls_per_day"],
-        "message": "Store this key securely — it won't be shown again.",
+        "expires": expires,
+        "lifetime_days": KEY_LIFETIME_DAYS["free"],
+        "message": f"Store this key securely — it won't be shown again. Expires in {KEY_LIFETIME_DAYS['free']} days. Upgrade to Pro for annual keys.",
     }
 
 

@@ -1301,7 +1301,8 @@ async function getApiKey(btn) {
             await navigator.clipboard.writeText(key).catch(() => {});
             const msg = document.createElement('div');
             msg.style.cssText = 'margin-top:12px;padding:16px;background:#1a1a2e;border:1px solid #e94560;border-radius:8px;font-family:monospace;font-size:14px;word-break:break-all;color:#fff;text-align:left;';
-            msg.innerHTML = '<strong style="color:#e94560;">Your API Key (save it!):</strong><br>' + key + '<br><br><span style="color:#888;font-size:12px;">100 calls/day · Store securely — won\'t be shown again</span>';
+            const expires = data.expires || 'N/A';
+            msg.innerHTML = '<strong style="color:#e94560;">Your API Key (save it!):</strong><br>' + key + '<br><br><span style="color:#888;font-size:12px;">100 calls/day · Expires ' + expires + ' · <a href="#pricing" style="color:#e94560;">Upgrade to Pro for annual keys →</a></span>';
             btn.parentNode.appendChild(msg);
         } else {
             btn.textContent = data.detail || 'Error — try again';
