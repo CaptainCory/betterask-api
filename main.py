@@ -271,9 +271,50 @@ def init_db():
         cur.execute("CREATE INDEX IF NOT EXISTS idx_questions_archetype ON questions(archetype)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_questions_source ON questions(source)")
         conn.commit()
+
+        # --- Migration: add key_hash and key_prefix columns for hashed key storage ---
+        try:
+            cur.execute("ALTER TABLE api_keys ADD COLUMN key_hash TEXT")
+            conn.commit()
+            logger.info("Added key_hash column to api_keys")
+        except psycopg2.Error:
+            conn.rollback()
+        try:
+            cur.execute("ALTER TABLE api_keys ADD COLUMN key_prefix TEXT")
+            conn.commit()
+            logger.info("Added key_prefix column to api_keys")
+        except psycopg2.Error:
+            conn.rollback()
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(key_hash)")
+        conn.commit()
+
+        # Backfill hashes for any existing plaintext keys
+        cur.execute("SELECT key FROM api_keys WHERE key_hash IS NULL AND key IS NOT NULL AND key != ''")
+        unhashed = cur.fetchall()
+        if unhashed:
+            import hashlib
+            for row in unhashed:
+                k = row["key"]
+                h = hashlib.sha256(k.encode()).hexdigest()
+                p = k[:12]
+                cur.execute("UPDATE api_keys SET key_hash = %s, key_prefix = %s WHERE key = %s", (h, p, k))
+            conn.commit()
+            logger.info("Backfilled %d API key hashes", len(unhashed))
+
     finally:
         conn.close()
     logger.info("Database initialized with PostgreSQL")
+
+
+def hash_api_key(key: str) -> str:
+    """SHA-256 hash of an API key for secure storage."""
+    import hashlib
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+def key_prefix(key: str) -> str:
+    """First 12 chars of a key for display/lookup."""
+    return key[:12]
 
 
 def generate_api_key() -> str:
@@ -284,26 +325,34 @@ def generate_api_key() -> str:
 def create_api_key(tier: str = "free", stripe_customer_id: str | None = None,
                    stripe_subscription_id: str | None = None) -> str:
     key = generate_api_key()
+    hashed = hash_api_key(key)
+    prefix = key_prefix(key)
     conn = get_db()
     try:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO api_keys (key, stripe_customer_id, stripe_subscription_id, tier, calls_today, calls_date) VALUES (%s, %s, %s, %s, 0, %s)",
-            (key, stripe_customer_id, stripe_subscription_id, tier, date.today().isoformat()),
+            "INSERT INTO api_keys (key, key_hash, key_prefix, stripe_customer_id, stripe_subscription_id, tier, calls_today, calls_date) VALUES (%s, %s, %s, %s, %s, %s, 0, %s)",
+            (key, hashed, prefix, stripe_customer_id, stripe_subscription_id, tier, date.today().isoformat()),
         )
         conn.commit()
     finally:
         conn.close()
-    logger.info("Created API key for tier=%s customer=%s", tier, stripe_customer_id)
+    logger.info("Created API key for tier=%s customer=%s prefix=%s", tier, stripe_customer_id, prefix)
     return key
 
 
 def get_api_key_record(key: str) -> dict | None:
+    hashed = hash_api_key(key)
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM api_keys WHERE key = %s AND active = 1", (key,))
+        # Try hash lookup first (new keys), fall back to plaintext (legacy keys)
+        cur.execute("SELECT * FROM api_keys WHERE key_hash = %s AND active = 1", (hashed,))
         row = cur.fetchone()
+        if not row:
+            # Fallback for pre-migration keys still stored in plaintext
+            cur.execute("SELECT * FROM api_keys WHERE key = %s AND active = 1", (key,))
+            row = cur.fetchone()
         return dict(row) if row else None
     finally:
         conn.close()
@@ -312,32 +361,44 @@ def get_api_key_record(key: str) -> dict | None:
 def increment_usage(key: str) -> bool:
     """Increment call count. Returns True if within limit, False if rate-limited."""
     today = date.today().isoformat()
+    hashed = hash_api_key(key)
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT tier, calls_today, calls_date FROM api_keys WHERE key = %s AND active = 1", (key,))
+        # Try hash lookup first, fall back to plaintext for legacy keys
+        cur.execute("SELECT tier, calls_today, calls_date, key_hash FROM api_keys WHERE key_hash = %s AND active = 1", (hashed,))
         row = cur.fetchone()
         if not row:
+            cur.execute("SELECT tier, calls_today, calls_date, key_hash FROM api_keys WHERE key = %s AND active = 1", (key,))
+            row = cur.fetchone()
+        if not row:
             return False
+
+        # Determine the WHERE clause for updates
+        if row.get("key_hash"):
+            where_clause, where_val = "key_hash = %s", hashed
+        else:
+            where_clause, where_val = "key = %s", key
+
         tier = row["tier"]
         limit = TIERS.get(tier, {}).get("calls_per_day")
 
         # Reset counter if new day
         if row["calls_date"] != today:
-            cur.execute("UPDATE api_keys SET calls_today = 1, calls_date = %s WHERE key = %s", (today, key))
+            cur.execute(f"UPDATE api_keys SET calls_today = 1, calls_date = %s WHERE {where_clause}", (today, where_val))
             conn.commit()
             return True
 
         # Unlimited tier
         if limit is None:
-            cur.execute("UPDATE api_keys SET calls_today = calls_today + 1 WHERE key = %s", (key,))
+            cur.execute(f"UPDATE api_keys SET calls_today = calls_today + 1 WHERE {where_clause}", (where_val,))
             conn.commit()
             return True
 
         if row["calls_today"] >= limit:
             return False
 
-        cur.execute("UPDATE api_keys SET calls_today = calls_today + 1 WHERE key = %s", (key,))
+        cur.execute(f"UPDATE api_keys SET calls_today = calls_today + 1 WHERE {where_clause}", (where_val,))
         conn.commit()
         return True
     finally:
