@@ -78,7 +78,12 @@ PRODUCT_TO_TIER = {v["stripe_product_id"]: k for k, v in TIERS.items() if v["str
 # ---------------------------------------------------------------------------
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    connect_args = {"cursor_factory": RealDictCursor}
+    dsn = DATABASE_URL
+    # Enforce SSL for production Postgres connections
+    if dsn and "sslmode" not in dsn and dsn.startswith("postgres"):
+        dsn = dsn + ("&" if "?" in dsn else "?") + "sslmode=require"
+    conn = psycopg2.connect(dsn, **connect_args)
     return conn
 
 
@@ -684,7 +689,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://betterask.dev",
+        "https://www.betterask.dev",
+        os.getenv("BETTERASK_BASE_URL", "https://betterask.dev"),
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1175,9 +1184,26 @@ async def get_plans():
     return {"plans": plans}
 
 
+# Rate limit store for free key creation (IP -> list of timestamps)
+_free_key_timestamps: dict[str, list[float]] = {}
+FREE_KEY_LIMIT_PER_IP = 3  # max keys per IP per day
+
 @app.post("/api-key/free")
-async def create_free_key():
+async def create_free_key(request: Request):
     """Instantly create a free-tier API key (no payment required)."""
+    import time
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    day_ago = now - 86400
+
+    # Clean old entries and check limit
+    timestamps = _free_key_timestamps.get(client_ip, [])
+    timestamps = [t for t in timestamps if t > day_ago]
+    if len(timestamps) >= FREE_KEY_LIMIT_PER_IP:
+        raise HTTPException(429, detail=f"Max {FREE_KEY_LIMIT_PER_IP} free keys per day per IP. Use your existing key or subscribe at /plans.")
+    timestamps.append(now)
+    _free_key_timestamps[client_ip] = timestamps
+
     key = create_api_key(tier="free")
     return {
         "api_key": key,
