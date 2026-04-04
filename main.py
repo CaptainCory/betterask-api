@@ -1294,7 +1294,7 @@ async def subscribe(req: SubscribeRequest):
         return {"checkout_url": session.url, "session_id": session.id}
     except stripe.StripeError as e:
         logger.error("Stripe checkout error: %s", e)
-        raise HTTPException(502, f"Stripe error: {str(e)}")
+        raise HTTPException(502, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.get("/subscribe/success")
@@ -1346,7 +1346,7 @@ async def subscribe_success(session_id: str):
 </div></body></html>""")
     except stripe.StripeError as e:
         logger.error("Error retrieving checkout session: %s", e)
-        raise HTTPException(502, f"Could not verify subscription: {e}")
+        raise HTTPException(502, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.post("/webhook")
@@ -1790,7 +1790,7 @@ async def generate(req: GenerateRequest, request: Request):
         raise
     except Exception as e:
         logger.exception("Generate endpoint error")
-        raise HTTPException(500, f"Generation failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.post("/score", response_model=ScoreResponse)
@@ -3936,7 +3936,7 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
         import traceback
         error_detail = traceback.format_exc()
         logger.exception(f"Error starting conversation session: {error_detail}")
-        raise HTTPException(500, f"Failed to start conversation: {type(e).__name__}: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.post("/session/answer")
@@ -4604,7 +4604,7 @@ async def ask(req: AskRequest, request: Request, x_api_key: str | None = Header(
         raise
     except Exception as e:
         logger.exception("/ask endpoint error")
-        raise HTTPException(500, f"Ask failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.post("/learn", response_model=LearnResponse)
@@ -4754,7 +4754,7 @@ async def learn(req: LearnRequest, x_api_key: str | None = Header(None)):
         raise
     except Exception as e:
         logger.exception("/learn endpoint error")
-        raise HTTPException(500, f"Learn failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.get("/profile/{human_id}", response_model=ProfileResponse)
@@ -4837,7 +4837,7 @@ async def capture(req: CaptureRequest, x_api_key: str | None = Header(None)):
         
     except Exception as e:
         logger.exception("/capture endpoint error")
-        raise HTTPException(500, f"Capture failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.get("/corpus/top")
@@ -4897,7 +4897,7 @@ async def get_top_corpus_questions(
         
     except Exception as e:
         logger.exception("/corpus/top endpoint error")
-        raise HTTPException(500, f"Failed to get top questions: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.get("/predict/{human_id}")
@@ -5017,7 +5017,7 @@ async def delete_profile(human_id: str, x_api_key: str | None = Header(None)):
         raise
     except Exception as e:
         logger.exception(f"/profile/{human_id} DELETE endpoint error")
-        raise HTTPException(500, f"Profile deletion failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.get("/privacy/{human_id}")
@@ -5088,7 +5088,7 @@ async def privacy_audit(human_id: str, x_api_key: str | None = Header(None)):
         raise
     except Exception as e:
         logger.exception(f"/privacy/{human_id} endpoint error")
-        raise HTTPException(500, f"Privacy audit failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.post("/profile/{human_id}/export")
@@ -5184,7 +5184,7 @@ async def export_profile(human_id: str, x_api_key: str | None = Header(None)):
         raise
     except Exception as e:
         logger.exception(f"/profile/{human_id}/export endpoint error")
-        raise HTTPException(500, f"Profile export failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 # Privacy headers middleware
@@ -5675,7 +5675,7 @@ async def record_global_feedback(req: GlobalFeedbackRequest, x_api_key: str | No
         raise
     except Exception as e:
         logger.exception("/feedback/global endpoint error")
-        raise HTTPException(500, f"Feedback recording failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 def _try_discover_pattern(cur, question_text: str, domain: str | None, 
@@ -5800,7 +5800,7 @@ async def get_effective_patterns(
         raise
     except Exception as e:
         logger.exception("/patterns/effective endpoint error")
-        raise HTTPException(500, f"Pattern retrieval failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 @app.get("/insights/global", response_model=GlobalInsightsResponse)
@@ -5931,7 +5931,7 @@ async def get_global_insights(x_api_key: str | None = Header(None)):
         raise
     except Exception as e:
         logger.exception("/insights/global endpoint error")
-        raise HTTPException(500, f"Global insights failed: {str(e)}")
+        raise HTTPException(500, "Questions Factory Undergoing Scheduled Maintenance. Try again shortly.")
 
 
 # ---------------------------------------------------------------------------
