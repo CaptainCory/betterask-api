@@ -781,6 +781,17 @@ async def rate_limit_middleware(request: Request, call_next):
     return await call_next(request)
 
 
+# Reject request bodies > 1MB
+MAX_BODY_BYTES = 1_048_576  # 1MB
+
+@app.middleware("http")
+async def body_size_limit_middleware(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_BODY_BYTES:
+        raise HTTPException(413, "Request body too large. Maximum 1MB.")
+    return await call_next(request)
+
+
 # ---------------------------------------------------------------------------
 # Human Profile helpers
 # ---------------------------------------------------------------------------
