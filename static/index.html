@@ -835,32 +835,28 @@
         </div>
     </div>
 
-    <div class="code-block">
-        <div class="code-header">
-            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-            <button class="copy-btn" onclick="copyCode()" id="copy-btn">copy</button>
+    <!-- Interactive Demo -->
+    <div id="demo-container" style="max-width:600px;margin:2rem auto;background:var(--bg-elevated);border:1px solid var(--border);border-radius:16px;padding:2rem;text-align:left;">
+        <div id="demo-chat" style="min-height:120px;">
+            <p id="demo-prompt" style="font-size:1.1rem;line-height:1.6;color:var(--text);margin:0 0 1.5rem 0;">
+                <span style="color:var(--accent);font-weight:600;">Ready?</span> Hit start and answer honestly. 3 questions. No signup.
+            </p>
         </div>
-        <pre class="code-body" id="code-block"><span class="c-comment">// Start a 7-question conversation</span>
-<span class="c-method">POST</span> <span class="c-url">/session/start</span> → {
-  <span class="c-key">"session_id"</span>: <span class="c-string">"conv_abc123"</span>,
-  <span class="c-key">"question"</span>: <span class="c-string">"What's driving your creative surge right now?"</span>
-}
-
-<span class="c-comment">// Submit answer, get insight + next question</span>
-<span class="c-method">POST</span> <span class="c-url">/session/answer</span> → {
-  <span class="c-key">"insight"</span>: { <span class="c-key">"revealed"</span>: [<span class="c-string">"Values creative freedom over stability"</span>] },
-  <span class="c-key">"next_question"</span>: <span class="c-string">"What would you regret not exploring while you have this energy?"</span>
-}
-
-<span class="c-comment">// After 7 questions: full personality synthesis</span>
-<span class="c-method">GET</span> <span class="c-url">/session/{id}/summary</span> → {
-  <span class="c-key">"personality_sketch"</span>: <span class="c-string">"This person is fundamentally driven by..."</span>
-}</pre>
-    </div>
-    
-    <div class="cta-buttons">
-        <button onclick="getApiKey(this)" class="btn btn-fill">Get Your API Key — Free</button>
-        <a href="/docs" class="btn btn-outline">Read the Docs</a>
+        <div id="demo-input-area" style="display:none;">
+            <textarea id="demo-answer" rows="3" placeholder="Type your answer..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:1rem;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;">
+                <span id="demo-turn-label" style="color:var(--text-dim);font-size:0.85rem;"></span>
+                <button onclick="submitDemoAnswer()" id="demo-submit-btn" class="btn btn-fill" style="padding:0.5rem 1.5rem;font-size:0.9rem;">Send</button>
+            </div>
+        </div>
+        <div id="demo-start-area" style="text-align:center;">
+            <button onclick="startDemo()" id="demo-start-btn" class="btn btn-fill" style="padding:0.75rem 2.5rem;">Try it — ask me anything</button>
+        </div>
+        <div id="demo-cta" style="display:none;text-align:center;margin-top:1.5rem;">
+            <p style="color:var(--text-dim);font-size:0.95rem;margin-bottom:1rem;">That was 3 questions. Imagine what 7 could reveal.</p>
+            <button onclick="getApiKey(this)" class="btn btn-fill" style="margin-right:0.5rem;">Get Your API Key — Free</button>
+            <button onclick="startDemo()" class="btn btn-outline">Try again</button>
+        </div>
     </div>
 
     <div class="hero-hint"><span>●</span> The best questions are easy to answer but hard to answer shallowly</div>
@@ -1315,6 +1311,119 @@ async function getApiKey(btn) {
     }
     setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 5000);
 }
+
+// --- Demo conversation ---
+let demoState = { demo_id: null, turn: 0, question: '' };
+
+async function startDemo() {
+    const chat = document.getElementById('demo-chat');
+    const inputArea = document.getElementById('demo-input-area');
+    const startArea = document.getElementById('demo-start-area');
+    const cta = document.getElementById('demo-cta');
+    const prompt = document.getElementById('demo-prompt');
+    const startBtn = document.getElementById('demo-start-btn');
+
+    startBtn.textContent = 'Loading...';
+    startBtn.disabled = true;
+    cta.style.display = 'none';
+
+    try {
+        const res = await fetch('/demo/start', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) { prompt.textContent = data.detail || 'Error'; return; }
+
+        demoState = { demo_id: data.demo_id, turn: data.turn, question: data.question };
+
+        // Reset chat area
+        chat.innerHTML = '';
+        appendBubble(chat, data.question, 'question');
+        
+        startArea.style.display = 'none';
+        inputArea.style.display = 'block';
+        document.getElementById('demo-answer').value = '';
+        document.getElementById('demo-answer').focus();
+        document.getElementById('demo-turn-label').textContent = `Question ${demoState.turn} of 3`;
+    } catch(e) {
+        prompt.textContent = 'Network error — try again';
+    }
+    startBtn.textContent = 'Try it — ask me anything';
+    startBtn.disabled = false;
+}
+
+async function submitDemoAnswer() {
+    const answerEl = document.getElementById('demo-answer');
+    const answer = answerEl.value.trim();
+    if (!answer) return;
+
+    const chat = document.getElementById('demo-chat');
+    const btn = document.getElementById('demo-submit-btn');
+    const inputArea = document.getElementById('demo-input-area');
+    const cta = document.getElementById('demo-cta');
+
+    // Show the answer
+    appendBubble(chat, answer, 'answer');
+    answerEl.value = '';
+    btn.textContent = 'Thinking...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/demo/answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                demo_id: demoState.demo_id,
+                turn: demoState.turn,
+                answer: answer,
+                question: demoState.question
+            })
+        });
+        const data = await res.json();
+
+        if (data.done) {
+            appendBubble(chat, '✨ ' + data.message, 'question');
+            inputArea.style.display = 'none';
+            cta.style.display = 'block';
+        } else {
+            demoState.turn = data.turn;
+            demoState.question = data.question;
+            appendBubble(chat, data.question, 'question');
+            document.getElementById('demo-turn-label').textContent = `Question ${demoState.turn} of 3`;
+            answerEl.focus();
+        }
+    } catch(e) {
+        appendBubble(chat, 'Something went wrong — try again', 'question');
+    }
+    btn.textContent = 'Send';
+    btn.disabled = false;
+}
+
+function appendBubble(container, text, type) {
+    const div = document.createElement('div');
+    const isQ = type === 'question';
+    div.style.cssText = `
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        font-size: 1rem;
+        line-height: 1.5;
+        max-width: 90%;
+        ${isQ
+            ? 'background: var(--bg); border: 1px solid var(--border); color: var(--text); font-weight: 500;'
+            : 'background: var(--accent); color: #fff; margin-left: auto; text-align: right; opacity: 0.85;'
+        }
+    `;
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+// Allow Enter to submit (Shift+Enter for newline)
+document.addEventListener('keydown', function(e) {
+    if (e.target.id === 'demo-answer' && e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitDemoAnswer();
+    }
+});
 </script>
 </body>
 </html>

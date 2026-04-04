@@ -702,15 +702,10 @@ def check_rate_limit(client_ip: str):
 # API Key auth helper
 # ---------------------------------------------------------------------------
 
-DEMO_API_KEY = "ba_demo_public_readonly"
-
 def validate_api_key(x_api_key: str | None) -> dict:
     """Validate API key and check tier rate limit. Returns the key record."""
     if not x_api_key:
         raise HTTPException(401, detail="Missing X-API-Key header. Get one at /api-key/free or subscribe at /plans.")
-    # Built-in demo key for the landing page Try It section (free-tier limits)
-    if x_api_key == DEMO_API_KEY:
-        return {"key": DEMO_API_KEY, "tier": "free", "calls_today": 0, "calls_date": "", "active": 1}
     record = get_api_key_record(x_api_key)
     if not record:
         raise HTTPException(401, detail="Invalid or deactivated API key.")
@@ -1606,6 +1601,101 @@ async def admin_stats(x_admin_key: str | None = Header(None)):
 @app.get("/health")
 async def health():
     return {"status": "healthy", "corpus_size": len(_corpus), "vectors": len(VECTORS), "version": "2.0.0"}
+
+
+# ---------------------------------------------------------------------------
+# Demo — 3-turn taste of BetterAsk (no auth, IP-rate-limited)
+# ---------------------------------------------------------------------------
+_demo_timestamps: dict[str, list[float]] = {}
+DEMO_LIMIT_PER_IP = 5  # max demo sessions per IP per day
+
+@app.post("/demo/start")
+async def demo_start(request: Request):
+    """Start a 3-turn demo conversation. No API key needed."""
+    import time as _time
+    client_ip = request.client.host if request.client else "unknown"
+    now = _time.time()
+    day_ago = now - 86400
+    timestamps = [t for t in _demo_timestamps.get(client_ip, []) if t > day_ago]
+    if len(timestamps) >= DEMO_LIMIT_PER_IP:
+        raise HTTPException(429, detail="Demo limit reached for today. Get a free API key for more!")
+    timestamps.append(now)
+    _demo_timestamps[client_ip] = timestamps
+
+    # Pick a great opening question from the corpus
+    if _corpus:
+        q = random.choice(_corpus)
+    else:
+        q = "What's something you changed your mind about in the last year that surprised you?"
+    
+    demo_id = secrets.token_hex(8)
+    return {"demo_id": demo_id, "turn": 1, "total_turns": 3, "question": q}
+
+
+@app.post("/demo/answer")
+async def demo_answer(request: Request):
+    """Submit an answer and get a follow-up question. Max 3 turns."""
+    body = await request.json()
+    demo_id = body.get("demo_id", "")
+    turn = body.get("turn", 1)
+    answer = body.get("answer", "").strip()
+    previous_question = body.get("question", "")
+
+    if not answer:
+        raise HTTPException(400, "Please provide an answer.")
+    if turn >= 3:
+        return {
+            "demo_id": demo_id,
+            "turn": turn,
+            "total_turns": 3,
+            "done": True,
+            "message": "That was just 3 questions. Imagine what 7 could reveal.",
+        }
+
+    # Generate a follow-up that threads on their answer
+    try:
+        follow_up_prompt = f"""You are a master conversationalist using the END SMALL TALK methodology.
+
+The person was asked: "{previous_question}"
+They answered: "{answer}"
+
+Generate ONE powerful follow-up question that:
+1. Threads on something specific they said
+2. Goes one level deeper
+3. Is easy to answer but hard to answer shallowly
+4. Feels natural, not clinical
+
+Return ONLY the question, nothing else."""
+
+        if GEMINI_API_KEY:
+            import google.generativeai as genai
+            genai.configure(api_key=GEMINI_API_KEY)
+            model = genai.GenerativeModel(GENERATION_MODEL)
+            response = model.generate_content(follow_up_prompt)
+            follow_up = response.text.strip().strip('"')
+        elif ANTHROPIC_API_KEY:
+            import anthropic
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            response = client.messages.create(
+                model=ANTHROPIC_MODEL, max_tokens=200,
+                messages=[{"role": "user", "content": follow_up_prompt}]
+            )
+            follow_up = response.content[0].text.strip().strip('"')
+        else:
+            # Fallback: pick from corpus
+            follow_up = random.choice(_corpus) if _corpus else "What would change if that were no longer true?"
+
+    except Exception as e:
+        logger.warning("Demo follow-up generation failed: %s", e)
+        follow_up = random.choice(_corpus) if _corpus else "What would change if that were no longer true?"
+
+    return {
+        "demo_id": demo_id,
+        "turn": turn + 1,
+        "total_turns": 3,
+        "question": follow_up,
+        "done": False,
+    }
 
 
 @app.get("/vectors", response_model=VectorResponse)
