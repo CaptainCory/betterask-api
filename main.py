@@ -3947,18 +3947,27 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
     # Cleanup expired sessions first
     cleanup_expired_sessions()
     
-    # Check session limits (max 3 active sessions per API key)
+    # Check session limits — auto-complete stale sessions first, then enforce limit
     conn = get_db()
     try:
         cur = conn.cursor()
+        # Auto-complete sessions older than 1 hour (stale/abandoned)
+        cur.execute("""
+            UPDATE conversation_sessions 
+            SET status = 'expired'
+            WHERE api_key = %s AND status = 'active' 
+            AND created_at < NOW() - INTERVAL '1 hour'
+        """, (api_key_record["key"],))
+        conn.commit()
+        
         cur.execute("""
             SELECT COUNT(*) FROM conversation_sessions 
             WHERE api_key = %s AND status = 'active'
         """, (api_key_record["key"],))
         result = cur.fetchone()
         active_count = result['count'] if result else 0
-        if active_count >= 3:
-            raise HTTPException(429, "Maximum 3 active conversation sessions allowed")
+        if active_count >= 50:
+            raise HTTPException(429, "Maximum active conversation sessions reached")
     finally:
         conn.close()
     
