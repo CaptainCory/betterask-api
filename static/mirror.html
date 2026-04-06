@@ -60,6 +60,21 @@
             transform: translateY(0);
         }
 
+        /* Mirror Graphic */
+        .mirror-graphic {
+            margin-bottom: 0.5rem;
+            animation: mirrorFloat 4s ease-in-out infinite;
+        }
+
+        .mirror-graphic svg {
+            filter: drop-shadow(0 8px 32px rgba(255, 215, 0, 0.15));
+        }
+
+        @keyframes mirrorFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
         /* Landing State */
         .landing {
             gap: 2.5rem;
@@ -485,6 +500,48 @@
     <div class="container">
         <!-- Landing State -->
         <div class="state landing active" id="landing">
+            <div class="mirror-graphic" aria-hidden="true">
+                <svg viewBox="0 0 240 340" width="240" height="340" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Mirror frame (ornate oval) -->
+                    <defs>
+                        <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffd700;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#b8860b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#ffd700;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#2a2a4e;stop-opacity:1" />
+                            <stop offset="40%" style="stop-color:#3d3d6b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1a1a2e;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="shineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:rgba(255,255,255,0.15);stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:rgba(255,255,255,0.03);stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="4" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Handle -->
+                    <rect x="108" y="270" width="24" height="60" rx="6" fill="url(#frameGrad)" />
+                    <rect x="96" y="265" width="48" height="12" rx="6" fill="url(#frameGrad)" />
+                    <!-- Outer frame -->
+                    <ellipse cx="120" cy="145" rx="110" ry="140" fill="url(#frameGrad)" filter="url(#glow)" />
+                    <!-- Inner frame border -->
+                    <ellipse cx="120" cy="145" rx="100" ry="130" fill="#1a1a2e" />
+                    <!-- Glass surface -->
+                    <ellipse cx="120" cy="145" rx="95" ry="125" fill="url(#glassGrad)" />
+                    <!-- Reflection shine -->
+                    <ellipse cx="95" cy="110" rx="55" ry="65" fill="url(#shineGrad)" transform="rotate(-15 95 110)" />
+                    <!-- Question mark in the reflection -->
+                    <text x="120" y="165" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="72" font-weight="300" fill="rgba(255,215,0,0.15)">?</text>
+                </svg>
+            </div>
             <h1>7 questions. A mirror you didn't know you needed.</h1>
             <p>No signup. No data stored. Just 12 minutes of honest conversation.</p>
             <button class="start-btn" onclick="startConversation()">Start</button>
