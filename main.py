@@ -2013,6 +2013,7 @@ class PublicSessionAnswerResponse(BaseModel):
     session_id: str
     insight: dict  # Keep insights but strip internal methodology
     next_question: PublicQuestion | None
+    next_questions: list[PublicQuestion] | None = None  # Dual-choice mode
     question_number: int
     conversation_depth: str
     non_answer: Optional[dict] = None
@@ -4197,6 +4198,7 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
     is_complete = questions_answered >= session["total_planned"]
     
     next_question = None
+    next_question_b = None
     conversation_depth = "completing"
     
     if not is_complete:
@@ -4223,28 +4225,33 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
             total_planned=session["total_planned"]
         )
         
-        question_text = generate_question_via_llm(question_prompt)
-        if not question_text:
-            # Fallback based on analysis
+        # Generate TWO questions — user picks one, we learn from the choice
+        question_text_a = generate_question_via_llm(question_prompt)
+        if not question_text_a:
             if analysis.get("thread_opportunities"):
-                question_text = f"Tell me more about {analysis['thread_opportunities'][0]}."
+                question_text_a = f"If that were a movie scene, what genre would it be?"
             else:
-                question_text = "What's behind that answer?"
+                question_text_a = "If your life right now were a weather pattern, what would it be?"
         
-        # Score recallability — advisory only in conversation mode
-        # In conversation mode, threaded questions are inherently personalized
-        # and may score lower on generic recallability. That's fine — the thread
-        # connection IS the value. Never replace a threaded LLM question with
-        # a random corpus pull.
-        recall = score_recallability(question_text)
-        if recall["recallability_score"] < 3.0:
-            # Only log, never replace — the thread matters more than recallability
-            logger.info(f"Low recallability in conversation mode ({recall['recallability_score']}): {question_text[:60]} — keeping because thread > recall")
+        # Generate second question with a different angle
+        alt_prompt = question_prompt.replace(
+            "Generate ONLY the question. No explanation, no JSON.",
+            "Generate a COMPLETELY DIFFERENT question from the one you'd normally ask. Use a different technique (if you'd use a scenario, use an analogy instead; if you'd ask about people, ask about places). Surprise yourself. Generate ONLY the question. No explanation, no JSON."
+        )
+        question_text_b = generate_question_via_llm(alt_prompt)
+        if not question_text_b or question_text_b == question_text_a:
+            # Corpus fallback for variety
+            question_text_b = find_corpus_match(next_vectors, analysis.get("themes_identified", []), [], analysis.get("themes_identified", ["unknown"])[0] if analysis.get("themes_identified") else "unknown")
+            if not question_text_b:
+                question_text_b = "If you had to describe yourself using only the names of songs, what would your setlist be?"
+        
+        recall_a = score_recallability(question_text_a)
+        recall_b = score_recallability(question_text_b)
         
         vector_names = [VECTOR_MAP[v]["name"] for v in next_vectors if v in VECTOR_MAP]
         
         next_question = AskQuestion(
-            question=question_text,
+            question=question_text_a,
             follow_up=None,
             vectors=next_vectors,
             vector_names=vector_names,
@@ -4253,10 +4260,23 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
             why=f"Following thread from previous answer: {analysis.get('thread_opportunities', ['general follow-up'])[0]}",
             what_to_listen_for="Deeper exploration of previous themes, new revelations",
             source="generated",
-            recallability=recall
+            recallability=recall_a
         )
         
-        # Record next turn
+        next_question_b = AskQuestion(
+            question=question_text_b,
+            follow_up=None,
+            vectors=next_vectors,
+            vector_names=vector_names,
+            density=len(next_vectors),
+            gap_targeted=analysis.get("themes_identified", ["unknown"])[0] if analysis.get("themes_identified") else "unknown",
+            why="Alternative angle on same thread",
+            what_to_listen_for="Different perspective on same themes",
+            source="generated",
+            recallability=recall_b
+        )
+        
+        # Record the first question as the turn (will be updated when user chooses)
         add_conversation_turn(
             req.session_id, 
             question_number + 1,
@@ -4264,6 +4284,28 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
             next_vectors,
             next_question.gap_targeted
         )
+        
+        # Store both options in session data for the choose endpoint
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE conversation_sessions 
+                SET conversation_data = %s 
+                WHERE session_id = %s
+            """, (json.dumps({
+                "pending_choice": {
+                    "question_a": question_text_a,
+                    "question_b": question_text_b,
+                    "vectors": next_vectors,
+                    "turn_number": question_number + 1
+                }
+            }), req.session_id))
+            conn.commit()
+        except Exception as e:
+            logger.warning(f"Failed to store question choices: {e}")
+        finally:
+            conn.close()
         
         # Determine conversation depth
         if question_number + 1 <= 2:
@@ -4302,16 +4344,23 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
         
         # Strip question internals if next question exists
         public_next_question = None
+        public_next_questions = None
         if next_question:
             public_next_question = PublicQuestion(
                 question=next_question.question,
                 follow_up=next_question.follow_up
             )
+            if next_question_b:
+                public_next_questions = [
+                    public_next_question,
+                    PublicQuestion(question=next_question_b.question, follow_up=next_question_b.follow_up)
+                ]
         
         return PublicSessionAnswerResponse(
             session_id=req.session_id,
             insight=public_insight,
             next_question=public_next_question,
+            next_questions=public_next_questions,
             question_number=questions_answered,
             conversation_depth=conversation_depth,
             non_answer=non_answer_result if non_answer_result["is_non_answer"] else None
@@ -4334,6 +4383,69 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
         conversation_depth=conversation_depth,
         non_answer=non_answer_result if non_answer_result["is_non_answer"] else None
     )
+
+
+class SessionChooseRequest(BaseModel):
+    session_id: str
+    chosen: str  # "a" or "b"
+
+@app.post("/session/choose")
+async def choose_question(req: SessionChooseRequest, x_api_key: str = Header(...)):
+    """Log which of the two questions the user chose. Feeds back into question quality engine."""
+    session = get_conversation_session(req.session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+    if session["api_key"] != x_api_key:
+        raise HTTPException(403, "API key mismatch")
+    
+    try:
+        session_data = json.loads(session.get("conversation_data", "{}"))
+        pending = session_data.get("pending_choice")
+        if not pending:
+            return {"status": "no_pending_choice"}
+        
+        chosen_q = pending["question_a"] if req.chosen == "a" else pending["question_b"]
+        rejected_q = pending["question_b"] if req.chosen == "a" else pending["question_a"]
+        
+        # Update the turn to use the chosen question
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE conversation_turns 
+                SET question_text = %s 
+                WHERE session_id = %s AND turn_number = %s
+            """, (chosen_q, req.session_id, pending["turn_number"]))
+            
+            # Log the choice for training data
+            cur.execute("""
+                INSERT INTO question_performance 
+                (question_text, question_source, gap_targeted, vectors_used, understanding_delta, 
+                 answer_depth, domain_explored, conversation_depth, human_context_summary, agent_role)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                rejected_q, "generated_rejected", "mirror_ab_test",
+                json.dumps(pending.get("vectors", [])), -1.0,
+                "not_chosen", None, pending["turn_number"],
+                f"User chose other question over this one", "mirror"
+            ))
+            
+            # Clear pending choice
+            session_data.pop("pending_choice", None)
+            cur.execute("""
+                UPDATE conversation_sessions SET conversation_data = %s WHERE session_id = %s
+            """, (json.dumps(session_data), req.session_id))
+            
+            conn.commit()
+        finally:
+            conn.close()
+        
+        logger.info(f"Mirror choice: chosen='{chosen_q[:50]}' rejected='{rejected_q[:50]}'")
+        return {"status": "logged", "chosen_question": chosen_q}
+    
+    except Exception as e:
+        logger.warning(f"Choice logging failed: {e}")
+        return {"status": "error", "detail": str(e)}
 
 
 @app.get("/session/{session_id}/summary")
