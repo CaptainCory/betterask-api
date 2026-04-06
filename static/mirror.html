@@ -728,9 +728,12 @@
             hideError();
             lastAction = { action: 'answer', answer, questionNumber: currentQuestionNumber };
             
-            // Disable input and button
+            // Disable input and show thinking state
             input.disabled = true;
-            document.getElementById('submit-btn').disabled = true;
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Thinking...';
+            input.style.opacity = '0.5';
             
             try {
                 const data = await apiCall('/session/answer', 'POST', {
@@ -739,10 +742,13 @@
                 });
                 
                 // Handle non-answer detection
+                btn.textContent = '→';
+                input.style.opacity = '1';
+                
                 if (data.non_answer) {
                     showInsight("Try going a little deeper.");
                     input.disabled = false;
-                    document.getElementById('submit-btn').disabled = false;
+                    btn.disabled = false;
                     return;
                 }
                 
@@ -755,14 +761,14 @@
                     showInsight(insightText);
                 }
                 
-                // Wait for insight to show, then proceed
+                // Brief pause for insight to land, then proceed
                 setTimeout(() => {
                     if (data.next_question) {
                         // Continue to next question
                         currentQuestionNumber = data.question_number + 1;
                         displayQuestion(data.next_question);
                         input.disabled = false;
-                        document.getElementById('submit-btn').disabled = false;
+                        btn.disabled = false;
                     } else {
                         // Conversation complete, show synthesis
                         showSynthesis();
@@ -772,7 +778,9 @@
             } catch (error) {
                 console.error('Submit answer error:', error);
                 input.disabled = false;
-                document.getElementById('submit-btn').disabled = false;
+                input.style.opacity = '1';
+                btn.disabled = false;
+                btn.textContent = '→';
                 showError('Failed to submit answer. Please try again.');
             }
         }

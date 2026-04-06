@@ -2304,7 +2304,39 @@ Focus on:
 
 Be specific, not generic. Focus on this particular human."""
 
-    # Try Claude first, then Gemini fallback
+    # Use Gemini Flash for analysis (fast structured JSON), Claude for question generation
+    if GEMINI_API_KEY:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.3, "maxOutputTokens": 500, "responseMimeType": "application/json"}
+            }
+            with httpx.Client(timeout=12.0) as client:
+                resp = client.post(url, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                import re
+                json_match = re.search(r'\{[\s\S]*\}', text)
+                if json_match:
+                    return json.loads(json_match.group())
+                else:
+                    logger.warning(f"Could not extract JSON from Gemini analysis: {text[:200]}")
+                    return {
+                        "revealed": ["Answer provided"],
+                        "avoided": [],
+                        "contradictions": [],
+                        "depth_score": 5.0,
+                        "themes_identified": [],
+                        "emotional_markers": [],
+                        "thread_opportunities": ["Follow up on their answer"]
+                    }
+        except Exception as e:
+            logger.warning(f"Gemini analysis failed, trying Claude: {e}")
+    
+    # Fallback to Claude Sonnet if Gemini fails
     if ANTHROPIC_API_KEY:
         try:
             with httpx.Client(timeout=25.0) as client:
@@ -2326,14 +2358,12 @@ Be specific, not generic. Focus on this particular human."""
                 data = resp.json()
                 text = data["content"][0]["text"].strip()
                 
-                # Robust JSON extraction - handle markdown wrappers and extra text
                 import re
                 json_match = re.search(r'\{[\s\S]*\}', text)
                 if json_match:
                     return json.loads(json_match.group())
                 else:
-                    logger.warning(f"Could not extract JSON from LLM response: {text[:200]}")
-                    # Return fallback
+                    logger.warning(f"Could not extract JSON from Claude analysis: {text[:200]}")
                     return {
                         "revealed": ["Answer provided"],
                         "avoided": [],
@@ -2344,7 +2374,7 @@ Be specific, not generic. Focus on this particular human."""
                         "thread_opportunities": ["Follow up on their answer"]
                     }
         except Exception as e:
-            logger.warning(f"Claude analysis failed: {e}")
+            logger.warning(f"Claude analysis also failed: {e}")
     
     # Fallback analysis if LLM fails
     return {
