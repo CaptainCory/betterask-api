@@ -2019,6 +2019,13 @@ class PublicSessionAnswerResponse(BaseModel):
     non_answer: Optional[dict] = None
 
 
+class BetterAskScoreBreakdown(BaseModel):
+    depth_reached: int = Field(description="How deep the conversation went (0-100)")
+    deflection_rate: int = Field(description="% of questions where user deflected")
+    contradiction_count: int = Field(description="Contradictions surfaced")
+    vectors_activated: int = Field(description="Out of 21 vectors that produced signal")
+    insight_density: float = Field(description="Ratio of actionable insights to questions asked")
+
 class PublicSessionSummaryResponse(BaseModel):
     session_id: str
     session_status: str
@@ -2026,6 +2033,9 @@ class PublicSessionSummaryResponse(BaseModel):
     structural_insights: list[str]
     personality_sketch: str
     suggested_followup: list[str]
+    betterask_score: int = Field(0, description="Composite understanding score 0-100")
+    score_breakdown: BetterAskScoreBreakdown | None = None
+    interpretation: str | None = None
 
 
 class LearnRequest(BaseModel):
@@ -2094,6 +2104,9 @@ class SessionSummaryResponse(BaseModel):
     conversation_quality: dict  # engagement_score, depth_achieved, etc.
     avoidance_topics: list[str] = []
     question_misses: int = 0
+    betterask_score: int = 0
+    score_breakdown: BetterAskScoreBreakdown | None = None
+    interpretation: str | None = None
 
 
 def get_question_performance_stats(question_text: str, gap: str) -> dict:
@@ -4544,6 +4557,72 @@ Be specific and insightful, not generic. Write like you really understand this p
             except:
                 continue
     
+    # ── BetterAsk Score Calculation ──────────────────────────────────
+    # Composite score (0-100) representing conversational understanding depth
+    
+    # 1. Depth reached (0-100): avg depth_score × 10
+    depth_reached = min(100, int(avg_depth * 10))
+    
+    # 2. Deflection rate: % of answers that were non-answers (avoidance type)
+    total_answered = len([t for t in history if t.get("answer_text")])
+    avoidance_count = 0
+    contradiction_count = 0
+    for turn in history:
+        if turn.get("answer_analysis"):
+            try:
+                a = json.loads(turn["answer_analysis"])
+                na = a.get("non_answer_result", {})
+                if na.get("is_non_answer") and na.get("interpretation") == "avoidance":
+                    avoidance_count += 1
+                contradiction_count += len(a.get("contradictions", []))
+            except:
+                continue
+    deflection_rate = int((avoidance_count / max(total_answered, 1)) * 100)
+    
+    # 3. Vectors activated: how many of 21 vectors produced signal
+    vectors_activated = len(vector_counts)
+    
+    # 4. Insight density: unique meaningful insights per question
+    unique_insights = len(set([i for i in all_revealed if len(i) > 20]))
+    insight_density = round(min(1.0, unique_insights / max(total_answered * 3, 1)), 2)
+    
+    # Composite score formula:
+    # 40% depth + 20% openness (inverse deflection) + 15% vector coverage + 15% insight density + 10% contradictions
+    openness_score = max(0, 100 - (deflection_rate * 3))  # Penalize deflection heavily
+    vector_coverage = min(100, int((vectors_activated / 21) * 100))
+    contradiction_bonus = min(100, contradiction_count * 25)  # Each contradiction is revealing
+    insight_score = int(insight_density * 100)
+    
+    betterask_score = int(
+        depth_reached * 0.40 +
+        openness_score * 0.20 +
+        vector_coverage * 0.15 +
+        insight_score * 0.15 +
+        contradiction_bonus * 0.10
+    )
+    betterask_score = max(0, min(100, betterask_score))
+    
+    score_breakdown = BetterAskScoreBreakdown(
+        depth_reached=depth_reached,
+        deflection_rate=deflection_rate,
+        contradiction_count=contradiction_count,
+        vectors_activated=vectors_activated,
+        insight_density=insight_density
+    )
+    
+    # Generate interpretation
+    if betterask_score >= 81:
+        interpretation = f"Mirror-level session. {vectors_activated} of 21 vectors produced signal — the user feels genuinely understood. Rare and powerful."
+    elif betterask_score >= 61:
+        openness_note = "User was unusually open" if deflection_rate < 10 else f"User deflected {deflection_rate}% of questions"
+        protective_themes = list(set(all_themes))[:2] if all_themes else ["some topics"]
+        interpretation = f"Strong session. {openness_note}. {vectors_activated} of 21 vectors activated — above average depth."
+    elif betterask_score >= 31:
+        interpretation = f"Working understanding. Patterns emerging with {vectors_activated} vectors activated, but {21 - vectors_activated} blind spots remain."
+    else:
+        interpretation = f"Surface level. Only {vectors_activated} of 21 vectors produced signal. More sessions needed to build real understanding."
+    # ── End Score Calculation ──────────────────────────────────────
+    
     # Check if admin - if not, strip proprietary methodology
     if not is_admin_request(x_api_key or ""):
         return PublicSessionSummaryResponse(
@@ -4552,7 +4631,10 @@ Be specific and insightful, not generic. Write like you really understand this p
             questions_answered=session["questions_answered"],
             structural_insights=structural_insights,
             personality_sketch=personality_sketch,
-            suggested_followup=suggested_followup
+            suggested_followup=suggested_followup,
+            betterask_score=betterask_score,
+            score_breakdown=score_breakdown,
+            interpretation=interpretation
         )
     
     # Admin gets full response
@@ -4574,7 +4656,10 @@ Be specific and insightful, not generic. Write like you really understand this p
             "avoidance_instances": len(all_avoided)
         },
         avoidance_topics=avoidance_topics,
-        question_misses=question_misses
+        question_misses=question_misses,
+        betterask_score=betterask_score,
+        score_breakdown=score_breakdown,
+        interpretation=interpretation
     )
 
 

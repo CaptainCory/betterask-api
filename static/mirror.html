@@ -121,6 +121,16 @@
             font-weight: 400;
         }
 
+        .interpretation {
+            color: #b8c5d6;
+            font-size: 0.9rem;
+            font-style: italic;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
         /* Landing State */
         .landing {
             gap: 1.5rem;
@@ -886,13 +896,20 @@
             try {
                 const summary = await apiCall(`/session/${sessionId}/summary`);
                 
-                // Calculate BetterAsk Score
-                const avgDepthScore = depthScores.reduce((sum, score) => sum + score, 0) / depthScores.length;
-                const betterAskScore = Math.min(100, Math.round(avgDepthScore * 10));
+                // Use server-calculated BetterAsk Score
+                const betterAskScore = summary.betterask_score || 0;
                 
                 // Populate results
                 document.getElementById('personality-text').textContent = summary.personality_sketch;
                 document.getElementById('score-value').textContent = betterAskScore;
+                
+                // Show interpretation if available
+                if (summary.interpretation) {
+                    const interpEl = document.createElement('p');
+                    interpEl.className = 'interpretation';
+                    interpEl.textContent = summary.interpretation;
+                    document.getElementById('personality-text').after(interpEl);
+                }
                 
                 // Populate insights
                 const insightsList = document.getElementById('insights-list');
