@@ -2591,38 +2591,41 @@ def build_conversation_question_prompt(analysis: dict, vectors: list[str], quest
             conversation_arc.append(f"A: {turn['answer_text'][:300]}")
     conversation_arc_text = "\n".join(conversation_arc[-12:]) if conversation_arc else "First question."
 
-    prompt = f"""Generate a conversation question that follows the thread from their answers so far.
+    prompt = f"""You are a conversational mentalist generating the next question in a deep conversation. Your questions should feel like the END SMALL TALK methodology — vivid, specific, imaginative, never generic.
 
-FULL CONVERSATION SO FAR:
+CONVERSATION SO FAR:
 {conversation_arc_text}
 
 THEIR MOST RECENT ANSWER: "{last_answer[:400]}"
 
-ANALYSIS OF LATEST ANSWER:
+ANALYSIS:
 - Revealed: {', '.join(analysis.get('revealed', [])[:3])}
 - Avoided: {', '.join(avoided[:2]) if avoided else 'Nothing obvious'}
 - Thread opportunities: {', '.join(threads[:3]) if threads else 'None identified'}
-- Themes across conversation: {', '.join(analysis.get('themes_identified', [])[:3])}
+- Themes: {', '.join(analysis.get('themes_identified', [])[:3])}
 
-CONVERSATION POSITION: Question {question_number} of {total_planned} - {"Building rapport — warm, approachable, specific" if question_number <= 2 else "Going deeper — pull threads from earlier answers, find contradictions, explore what they protect" if question_number <= 5 else "Final questions — go for the jugular, the question they'll think about for days"}
+POSITION: Question {question_number} of {total_planned} — {"Warm up: playful, specific, easy to answer" if question_number <= 2 else "Middle: pull threads, find contradictions, explore what they're protecting" if question_number <= 5 else "Final: the question they'll still be thinking about tomorrow"}
 
-VECTORS TO USE:
-{chr(10).join(vector_instructions)}
+QUESTION STYLE — study these examples of GREAT questions:
+- "Describing it as if it's a crime, what do you do for a living?"
+- "If your relationship were a genre of music, what genre would it be right now?"
+- "What would your mom say is your biggest blind spot?"
+- "What's the lie you tell yourself most often that you almost believe?"
+- "If you had to teach a class on something that isn't your job, what would it be?"
 
-RULES:
-- PULL A THREAD from their last answer — reference something specific they said, a phrase they used, or a feeling they hinted at
-- Ask like a brilliant friend at 2am who's genuinely fascinated by what they just said
-- 10-30 words. Conversational, not clinical. The best questions have texture and specificity.
-- Don't use therapy-speak, interview language, or "How does that make you feel?"
-- Make it impossible for anyone else on earth to get this exact question — it should only make sense given THIS conversation
-- Questions must be EASY TO RECALL. Never ask for exact counts, percentages, or ranked lists.
-- Ask for single memories, feelings, opinions, or habitual behaviors instead.
-- The best questions are easy to answer but hard to answer shallowly.
-- "Who do you call first when something good happens?" beats "How many close friends do you have?"
-- "What's the last thing that made you laugh out loud?" beats "How many times a day do you laugh?"
-- "What would your younger self think of that answer?" beats "Do you feel good about that?"
+STYLE RULES:
+1. NEVER ask "why" — reframe as a scenario, analogy, or perspective shift instead
+2. NEVER ask "how did that make you feel" or any therapy-speak derivative
+3. NEVER repeat the structure of the previous question — vary your approach every time
+4. USE these techniques: scenarios ("If..."), perspective shifts ("What would X say about..."), false binaries ("Is it more A or B?"), specificity ("Name the..."), analogies ("If that were a song/color/place...")
+5. Reference something SPECIFIC from their answers — a word, image, or detail they used
+6. 10-30 words. Conversational. The question should feel like it was custom-built for THIS person.
+7. The best questions are EASY TO ANSWER but HARD TO ANSWER SHALLOWLY.
+8. Ask for memories, opinions, gut reactions — not analysis or self-assessment.
 
-Generate ONLY the question text. No JSON, no explanation."""
+BANNED PHRASES: "Why do you think", "How does that", "What makes you", "Can you tell me more", "What do you mean by", "How do you feel about", "What's behind that", "Why is that important"
+
+Generate ONLY the question. No explanation, no JSON."""
 
     return prompt
 
