@@ -2539,7 +2539,7 @@ def select_next_question_vectors(question_number: int, total_planned: int, analy
     return available_vectors[:3] if available_vectors else ["specificity", "permission"]
 
 
-def build_conversation_question_prompt(analysis: dict, vectors: list[str], question_number: int, conversation_history: list[dict]) -> str:
+def build_conversation_question_prompt(analysis: dict, vectors: list[str], question_number: int, conversation_history: list[dict], total_planned: int = 7) -> str:
     """Build a specialized prompt for generating conversation questions."""
     
     # Extract thread opportunities from analysis
@@ -2553,30 +2553,44 @@ def build_conversation_question_prompt(analysis: dict, vectors: list[str], quest
             vec = VECTOR_MAP[v]
             vector_instructions.append(f"- {vec['name']}: {vec['prompt_template']}")
     
-    prompt = f"""Generate a conversation question that follows the thread from their last answer.
+    # Build full conversation arc
+    conversation_arc = []
+    for turn in conversation_history:
+        if turn.get('answer_text'):
+            conversation_arc.append(f"Q: {turn.get('question_text', '')}")
+            conversation_arc.append(f"A: {turn['answer_text'][:300]}")
+    conversation_arc_text = "\n".join(conversation_arc[-12:]) if conversation_arc else "First question."
 
-THEIR LAST ANSWER: "{last_answer[:300]}"
+    prompt = f"""Generate a conversation question that follows the thread from their answers so far.
 
-ANALYSIS:
-- Revealed: {', '.join(analysis.get('revealed', [])[:2])}
+FULL CONVERSATION SO FAR:
+{conversation_arc_text}
+
+THEIR MOST RECENT ANSWER: "{last_answer[:400]}"
+
+ANALYSIS OF LATEST ANSWER:
+- Revealed: {', '.join(analysis.get('revealed', [])[:3])}
 - Avoided: {', '.join(avoided[:2]) if avoided else 'Nothing obvious'}
-- Thread opportunities: {', '.join(threads[:2]) if threads else 'None identified'}
+- Thread opportunities: {', '.join(threads[:3]) if threads else 'None identified'}
+- Themes across conversation: {', '.join(analysis.get('themes_identified', [])[:3])}
 
-CONVERSATION POSITION: Question {question_number} - {"Building rapport" if question_number <= 2 else "Going deeper" if question_number <= 5 else "Wrapping up"}
+CONVERSATION POSITION: Question {question_number} of {total_planned} - {"Building rapport — warm, approachable, specific" if question_number <= 2 else "Going deeper — pull threads from earlier answers, find contradictions, explore what they protect" if question_number <= 5 else "Final questions — go for the jugular, the question they'll think about for days"}
 
 VECTORS TO USE:
 {chr(10).join(vector_instructions)}
 
 RULES:
-- PULL A THREAD from their last answer - reference something specific they said
-- Ask like a friend who's genuinely curious about that detail
-- 8-15 words max. Short and conversational.
-- Don't use therapy-speak or interview language
-- Make it impossible for anyone else to get this exact question
+- PULL A THREAD from their last answer — reference something specific they said, a phrase they used, or a feeling they hinted at
+- Ask like a brilliant friend at 2am who's genuinely fascinated by what they just said
+- 10-30 words. Conversational, not clinical. The best questions have texture and specificity.
+- Don't use therapy-speak, interview language, or "How does that make you feel?"
+- Make it impossible for anyone else on earth to get this exact question — it should only make sense given THIS conversation
 - Questions must be EASY TO RECALL. Never ask for exact counts, percentages, or ranked lists.
 - Ask for single memories, feelings, opinions, or habitual behaviors instead.
-- "Who do you call first when something good happens?" is better than "How many close friends do you have?"
-- "What's the last thing that made you laugh out loud?" is better than "How many times a day do you laugh?"
+- The best questions are easy to answer but hard to answer shallowly.
+- "Who do you call first when something good happens?" beats "How many close friends do you have?"
+- "What's the last thing that made you laugh out loud?" beats "How many times a day do you laugh?"
+- "What would your younger self think of that answer?" beats "Do you feel good about that?"
 
 Generate ONLY the question text. No JSON, no explanation."""
 
@@ -4163,7 +4177,8 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
             analysis, 
             next_vectors,
             question_number + 1,
-            history + [{"answer_text": req.answer}]
+            history + [{"answer_text": req.answer}],
+            total_planned=session["total_planned"]
         )
         
         question_text = generate_question_via_llm(question_prompt)
@@ -4174,19 +4189,15 @@ async def answer_conversation_question(req: SessionAnswerRequest, x_api_key: str
             else:
                 question_text = "What's behind that answer?"
         
-        # Score recallability
+        # Score recallability — advisory only in conversation mode
+        # In conversation mode, threaded questions are inherently personalized
+        # and may score lower on generic recallability. That's fine — the thread
+        # connection IS the value. Never replace a threaded LLM question with
+        # a random corpus pull.
         recall = score_recallability(question_text)
-        if recall["recallability_score"] < 4.0:
-            # Try corpus fallback — likely more conversational
-            alt_question = find_corpus_match(next_vectors, analysis.get("themes_identified", []), [], analysis.get("themes_identified", ["unknown"])[0] if analysis.get("themes_identified") else "unknown")
-            if alt_question:
-                alt_recall = score_recallability(alt_question)
-                if alt_recall["recallability_score"] > recall["recallability_score"]:
-                    question_text = alt_question
-                    recall = alt_recall
-            # If still low, add softener instruction to LLM prompt
-            if recall["recallability_score"] < 4.0:
-                logger.info(f"Low recallability question ({recall['recallability_score']}): {question_text[:60]}")
+        if recall["recallability_score"] < 3.0:
+            # Only log, never replace — the thread matters more than recallability
+            logger.info(f"Low recallability in conversation mode ({recall['recallability_score']}): {question_text[:60]} — keeping because thread > recall")
         
         vector_names = [VECTOR_MAP[v]["name"] for v in next_vectors if v in VECTOR_MAP]
         
@@ -6062,6 +6073,11 @@ async def get_global_insights(x_api_key: str | None = Header(None)):
 # ---------------------------------------------------------------------------
 
 @app.get("/privacy", response_class=HTMLResponse)
+@app.get("/mirror", response_class=HTMLResponse)
+async def mirror_page():
+    html_path = Path(__file__).parent / "static" / "mirror.html"
+    return HTMLResponse(html_path.read_text())
+
 @app.get("/privacy.html", response_class=HTMLResponse)
 async def privacy_page():
     html_path = Path(__file__).parent / "static" / "privacy.html"
