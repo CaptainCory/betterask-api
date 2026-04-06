@@ -3956,7 +3956,7 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
             UPDATE conversation_sessions 
             SET status = 'expired'
             WHERE api_key = %s AND status = 'active' 
-            AND created_at < NOW() - INTERVAL '1 hour'
+            AND started_at::timestamp < NOW() - INTERVAL '1 hour'
         """, (api_key_record["key"],))
         conn.commit()
         
