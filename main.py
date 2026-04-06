@@ -4013,81 +4013,41 @@ async def start_conversation_session(req: SessionStartRequest, x_api_key: str = 
         req.session_length
     )
     
-    # Generate first question using warm start strategy
-    vectors = req.starting_vectors or ["specificity", "name_an_example", "permission"][:2]
+    # Q1: Instant opener from curated pool — NO LLM call, zero latency
+    MIRROR_OPENERS = [
+        "Describing it as if it's a crime, what do you do for a living?",
+        "What's the most useless talent you have that you're secretly proud of?",
+        "If your life had a soundtrack, what song is playing right now?",
+        "What's something you changed your mind about in the last year?",
+        "If you could only keep three apps on your phone, which ones survive?",
+        "What's the best compliment you've ever received that you still think about?",
+        "What's one thing about you that surprises people when they find out?",
+        "If your personality were a type of weather, what would today's forecast be?",
+        "What's a hill you'd die on that most people would find ridiculous?",
+        "What's the last thing you did for the first time?",
+        "If you could master one skill overnight, but everyone would know you cheated, would you do it? What skill?",
+        "What's a question you wish people would ask you more often?",
+    ]
     
-    # Build a simplified AskRequest for the first question
-    ask_req = AskRequest(
-        memory="Starting new conversation session",
-        agent_role="conversation facilitator",
-        history=[],
-        count=1,
-        human_id=req.human_id
-    )
+    question_text = random.choice(MIRROR_OPENERS)
+    vectors = req.starting_vectors or ["specificity", "name_an_example"]
     
     try:
-        # Use existing ask logic to generate first question
-        analysis = analyze_for_agent(ask_req)
-        gaps = analysis["gaps"]
+        recall = {"recallability_score": 8.0, "flags": [], "penalty": 0}  # Pre-scored openers
         
-        if gaps:
-            gap = gaps[0]
-            # Generate question using conversation-optimized approach
-            vector_names = [VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP]
-            
-            # Use corpus question as base
-            corpus_question = find_corpus_match(vectors, analysis.get("themes", []), [], gap["label"])
-            
-            # Try LLM generation for more conversational tone
-            gen_prompt = build_generation_prompt(req.context, "this person", "light", vectors, [])
-            gen_prompt += "\n\nThis is the FIRST question in a conversation. Make it warm, approachable, and impossible to answer badly."
-            
-            question_text = generate_question_via_llm(gen_prompt) or corpus_question or "What's something you're excited about right now that you wish more people asked you about?"
-            
-            # Score recallability
-            recall = score_recallability(question_text)
-            if recall["recallability_score"] < 4.0:
-                # Try corpus fallback — likely more conversational
-                alt_question = find_corpus_match(vectors, analysis.get("themes", []), [], gap.get("label", ""))
-                if alt_question:
-                    alt_recall = score_recallability(alt_question)
-                    if alt_recall["recallability_score"] > recall["recallability_score"]:
-                        question_text = alt_question
-                        recall = alt_recall
-                # If still low, add softener instruction to LLM prompt
-                if recall["recallability_score"] < 4.0:
-                    logger.info(f"Low recallability question ({recall['recallability_score']}): {question_text[:60]}")
-            
-            question = AskQuestion(
-                question=question_text,
-                follow_up=None,
-                vectors=vectors,
-                vector_names=vector_names,
-                density=len(vectors),
-                gap_targeted=gap.get("label", "self_expression"),
-                why="Opening question to build rapport and establish conversation baseline",
-                what_to_listen_for="Personality markers, communication style, current emotional state",
-                source="generated",
-                generation_prompt=gen_prompt,
-                recallability=recall
-            )
-        else:
-            # Fallback question
-            fallback_text = "What's something you're excited about right now that you wish more people asked you about?"
-            fallback_recall = score_recallability(fallback_text)
-            question = AskQuestion(
-                question=fallback_text,
-                follow_up="What makes that particularly meaningful to you?",
-                vectors=vectors,
-                vector_names=[VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP],
-                density=len(vectors),
-                gap_targeted="self_expression",
-                why="Opening question to build rapport and establish conversation baseline",
-                what_to_listen_for="Interests, values, communication style",
-                source="fallback",
-                recallability=fallback_recall
-            )
-        
+        question = AskQuestion(
+            question=question_text,
+            follow_up=None,
+            vectors=vectors,
+            vector_names=[VECTOR_MAP[v]["name"] for v in vectors if v in VECTOR_MAP],
+            density=len(vectors),
+            gap_targeted="self_expression",
+            why="Curated opener — warm, specific, instant",
+            what_to_listen_for="Personality markers, communication style, current emotional state",
+            source="curated_opener",
+            recallability=recall
+        )
+
         # Record the first turn
         add_conversation_turn(session_id, 1, question.question, vectors, question.gap_targeted)
         
