@@ -1017,11 +1017,12 @@ class GenerateRequest(BaseModel):
 
 
 class GeneratedQuestion(BaseModel):
+    question: str  # The actual finished question
+    follow_up: Optional[str] = None
     vectors: list[str]
     vector_names: list[str]
-    vector_emojis: list[str] 
-    generation_prompt: str
-    example_from_corpus: Optional[str] = None
+    vector_emojis: list[str]
+    source: str = "corpus"  # "generated" (LLM) or "corpus" (from book)
     # Legacy fields for backward compatibility
     archetype: Optional[str] = None
     archetype_name: Optional[str] = None
@@ -1034,6 +1035,14 @@ class GenerateResponse(BaseModel):
     depth: str
     count: int
     promo: Optional[str] = None
+
+
+class SimpleQuestionResponse(BaseModel):
+    """Dead-simple: one question, ready to use."""
+    question: str
+    follow_up: Optional[str] = None
+    source: str = "corpus"
+    book: str = "END SMALL TALK by Cory Stout"
 
 
 class ScoreRequest(BaseModel):
@@ -1846,9 +1855,37 @@ async def get_archetypes(x_api_key: str | None = Header(None)):
     return {"archetypes": legacy_archetypes, "total": len(legacy_archetypes)}
 
 
+@app.get("/question", response_model=SimpleQuestionResponse)
+async def simple_question(request: Request, context: str = "rapport", about: str = "life"):
+    """GET /question — the simplest possible interface. One finished question."""
+    client = request.client.host if request.client else "unknown"
+    check_rate_limit(client)
+
+    if not _corpus:
+        raise HTTPException(503, "Question corpus not loaded.")
+
+    # Try LLM generation first for a personalized question
+    vectors = select_vectors(context, "auto")
+    prompt = build_generation_prompt(context, about, "medium", vectors, [])
+    llm_question = generate_question_via_llm(prompt)
+
+    if llm_question:
+        return SimpleQuestionResponse(
+            question=llm_question,
+            source="generated",
+        )
+
+    # Fallback: serve from the 607-question corpus
+    q_text = random.choice(_corpus)
+    return SimpleQuestionResponse(
+        question=q_text,
+        source="corpus",
+    )
+
+
 @app.post("/generate", response_model=GenerateResponse)
 async def generate(req: GenerateRequest, request: Request):
-    # Free for everyone — no API key required
+    """Return finished questions — LLM-generated with corpus fallback."""
     client = request.client.host if request.client else "unknown"
     check_rate_limit(client)
 
@@ -1865,11 +1902,12 @@ async def generate(req: GenerateRequest, request: Request):
 
         questions = []
         used_vector_sets = set()
-        
+        used_corpus = set()
+
         for _ in range(req.count):
             # Select vectors for this question
             vectors = select_vectors(req.context, req.vectors)
-            
+
             # Avoid duplicate vector combinations when possible
             vector_signature = tuple(sorted(vectors))
             if req.count <= 10 and vector_signature in used_vector_sets:
@@ -1880,26 +1918,42 @@ async def generate(req: GenerateRequest, request: Request):
                     attempts += 1
             used_vector_sets.add(vector_signature)
 
-            prompt = build_generation_prompt(req.context, req.about, req.depth, vectors, req.avoid)
             vector_infos = [VECTOR_MAP[v] for v in vectors]
             vector_names = [v["name"] for v in vector_infos]
             vector_emojis = [v["emoji"] for v in vector_infos]
 
-            example = None
-            if _corpus:
-                example = random.choice(_corpus)
+            # Generate the actual question — LLM first, corpus fallback
+            prompt = build_generation_prompt(req.context, req.about, req.depth, vectors, req.avoid)
+            final_question = None
+            source = "generated"
+
+            # Try LLM
+            llm_q = generate_question_via_llm(prompt)
+            if llm_q:
+                final_question = llm_q
+            else:
+                # Corpus fallback — pick one not yet used in this batch
+                source = "corpus"
+                if _corpus:
+                    available = [q for q in _corpus if q not in used_corpus]
+                    if not available:
+                        available = list(_corpus)
+                    final_question = random.choice(available)
+                    used_corpus.add(final_question)
+                else:
+                    final_question = "What's the last thing that genuinely surprised you about yourself?"
 
             question = GeneratedQuestion(
+                question=final_question,
                 vectors=vectors,
                 vector_names=vector_names,
                 vector_emojis=vector_emojis,
-                generation_prompt=prompt,
-                example_from_corpus=example,
+                source=source,
             )
-            
+
             # Add legacy fields for backward compatibility
             if len(vectors) > 0:
-                question.archetype = vectors[0]  # Use first vector as archetype
+                question.archetype = vectors[0]
                 question.archetype_name = vector_infos[0]["name"]
                 question.archetype_emoji = vector_infos[0]["emoji"]
 
