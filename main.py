@@ -44,6 +44,8 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
 DATABASE_URL = os.getenv("BETTERASK_DATABASE_URL", os.getenv("DATABASE_URL", ""))
 ADMIN_API_KEY = os.getenv("BETTERASK_ADMIN_KEY", "")
+DB_AVAILABLE = False
+DB_STARTUP_ERROR = ""
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -712,9 +714,29 @@ EXTRAS_PATH = os.getenv("EXTRAS_PATH", str(Path(__file__).parent / "seed-extras.
 
 
 def load_corpus():
-    """Load questions from DB. If DB is empty, seed from corpus + extras files."""
+    """Load questions from DB. If DB is unavailable or empty, fall back to seed files."""
     global _corpus
-    conn = get_db()
+
+    def load_seed_files() -> list[str]:
+        questions: list[str] = []
+        for path in (CORPUS_PATH, EXTRAS_PATH):
+            try:
+                text = Path(path).read_text()
+                file_questions = [q.strip() for q in re.findall(r"^\d+\.\s+(.+)$", text, re.MULTILINE)]
+                questions.extend(q for q in file_questions if q)
+                logger.info("Loaded %d questions from seed file %s", len(file_questions), path)
+            except FileNotFoundError:
+                logger.info("Seed file not found: %s (skipping)", path)
+        return questions
+
+    try:
+        conn = get_db()
+    except Exception as exc:
+        logger.warning("Database unavailable while loading corpus; using seed files: %s", exc.__class__.__name__)
+        _corpus = load_seed_files()
+        logger.info("Loaded %d questions from seed files", len(_corpus))
+        return
+
     try:
         cur = conn.cursor()
         cur.execute("SELECT COUNT(*) AS cnt FROM questions WHERE active=1")
@@ -826,9 +848,26 @@ def validate_api_key(x_api_key: str | None) -> dict:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    global DB_AVAILABLE, DB_STARTUP_ERROR
+    try:
+        init_db()
+        DB_AVAILABLE = True
+        DB_STARTUP_ERROR = ""
+    except Exception as exc:
+        DB_AVAILABLE = False
+        DB_STARTUP_ERROR = exc.__class__.__name__
+        logger.exception("Database initialization failed; starting in degraded read-only mode")
+
     load_corpus()
-    seed_global_patterns()
+
+    if DB_AVAILABLE:
+        try:
+            seed_global_patterns()
+        except Exception as exc:
+            logger.exception("Pattern seeding failed; continuing startup: %s", exc)
+    else:
+        logger.warning("Skipping pattern seeding because database is unavailable")
+
     yield
 
 
@@ -1719,7 +1758,14 @@ async def admin_stats(x_admin_key: str | None = Header(None)):
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "corpus_size": len(_corpus), "vectors": len(VECTORS), "version": "2.0.0"}
+    return {
+        "status": "healthy" if DB_AVAILABLE else "degraded",
+        "database": "ok" if DB_AVAILABLE else "unavailable",
+        "startup_error": DB_STARTUP_ERROR or None,
+        "corpus_size": len(_corpus),
+        "vectors": len(VECTORS),
+        "version": "2.0.1",
+    }
 
 
 # ---------------------------------------------------------------------------
