@@ -42,7 +42,14 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-20250514")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 BASE_URL = os.getenv("BETTERASK_BASE_URL", "http://localhost:8000")
-DATABASE_URL = os.getenv("BETTERASK_DATABASE_URL", os.getenv("DATABASE_URL", ""))
+DATABASE_URL = (
+    os.getenv("BETTERASK_DATABASE_URL")
+    or os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or os.getenv("POSTGRES_DATABASE_URL")
+    or os.getenv("PGDATABASE_URL")
+    or ""
+)
 ADMIN_API_KEY = os.getenv("BETTERASK_ADMIN_KEY", "")
 DB_AVAILABLE = False
 DB_STARTUP_ERROR = ""
